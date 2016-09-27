@@ -1,0 +1,7 @@
+<resources>
+    <!-- Title -->
+    <string name="app_name">Thumb Keyboard</string>
+
+    <!-- Labels for subtype -->
+    <string name="label_subtype_de">4-button Chorded Thumb Keyboard</string>
+</resources>
