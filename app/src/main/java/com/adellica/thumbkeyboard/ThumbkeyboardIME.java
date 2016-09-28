@@ -32,7 +32,6 @@ public class ThumbkeyboardIME extends InputMethodService {
    @Override public void requestHideSelf(int flags) {
       super.requestHideSelf(flags);
       PV.setBackgroundResource(0);
-      PV.Help = null;
       PV.reset();
    }
 
