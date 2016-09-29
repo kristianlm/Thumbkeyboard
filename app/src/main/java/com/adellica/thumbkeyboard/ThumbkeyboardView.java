@@ -191,6 +191,42 @@ public class ThumbkeyboardView extends View {
     }
 
     @Override
+    public boolean onTouchEvent(MotionEvent event) {
+
+        switch(event.getActionMasked()) {
+
+            case MotionEvent.ACTION_DOWN: { // primary finger down!
+                pressStart(event.getEventTime());
+                double  x0 = event.getX(0), y0 = event.getY(0);
+                pressDown(touch2blob(x0, y0), event.getEventTime());
+                break; }
+
+            case MotionEvent.ACTION_POINTER_DOWN: { // another finger down while holding one down
+                int i = event.getActionIndex(); // index of finger that caused the down event
+                double x = event.getX(i), y = event.getY(i);
+                pressDown(touch2blob(x, y), event.getEventTime());
+                break; }
+
+            case MotionEvent.ACTION_POINTER_UP: { // finger up, still holding one down
+                int i = event.getActionIndex(); // index of finger that caused the down event
+                double x = event.getX(i), y = event.getY(i);
+                pressUp(touch2blob(x, y), event.getEventTime());
+                break; }
+
+            case MotionEvent.ACTION_UP: { // all fingers up! obs: last finger up ?≠ first finger down
+                double  x0 = event.getX(0), y0 = event.getY(0);
+                pressUp(touch2blob(x0, y0), event.getEventTime());
+                pressComplete();
+                break; }
+            default:
+                //Log.d(TAG, "missed event " + event.getActionMasked());
+                break;
+        }
+        return true;
+    }
+
+
+    @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
@@ -237,38 +273,4 @@ public class ThumbkeyboardView extends View {
 
     }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-
-        switch(event.getActionMasked()) {
-
-            case MotionEvent.ACTION_DOWN: { // primary finger down!
-                pressStart(event.getEventTime());
-                double  x0 = event.getX(0), y0 = event.getY(0);
-                pressDown(touch2blob(x0, y0), event.getEventTime());
-                break; }
-
-            case MotionEvent.ACTION_POINTER_DOWN: { // another finger down while holding one down
-                int i = event.getActionIndex(); // index of finger that caused the down event
-                double x = event.getX(i), y = event.getY(i);
-                pressDown(touch2blob(x, y), event.getEventTime());
-                break; }
-
-            case MotionEvent.ACTION_POINTER_UP: { // finger up, still holding one down
-                int i = event.getActionIndex(); // index of finger that caused the down event
-                double x = event.getX(i), y = event.getY(i);
-                pressUp(touch2blob(x, y), event.getEventTime());
-                break; }
-
-            case MotionEvent.ACTION_UP: { // all fingers up! obs: last finger up ?≠ first finger down
-                double  x0 = event.getX(0), y0 = event.getY(0);
-                pressUp(touch2blob(x0, y0), event.getEventTime());
-                pressComplete();
-                break; }
-            default:
-                //Log.d(TAG, "missed event " + event.getActionMasked());
-                break;
-        }
-        return true;
-    }
 }
