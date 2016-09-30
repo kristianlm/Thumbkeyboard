@@ -128,7 +128,7 @@ public class ThumbkeyboardView extends View {
 
     private void press(boolean down_p, int bid, long when) {
         if(presses >= MAX_PRESSES) return;
-        pressedFlush(presses);
+        pressedFlush(presses - 1);
 
         long elapsed = when - timeLastPress;
         timeLastPress = when;
