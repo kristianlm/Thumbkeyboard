@@ -58,8 +58,8 @@ public class ThumboardLayout {
             (for-each
              (lambda (pair)
                (when (not (number? (car pair)))
-                 (print (pad (car pair) 12) " " (cadr pair))
-                 (for-each (lambda (s) (print "             " s)) (cddr pair))))
+                 (print (pad (car pair) 12) " " (and (pair? (cdr pair)) (cadr pair)))
+                 (for-each (lambda (s) (print "             " s)) (or (and (pair? (cdr pair)) (cddr pair)) '()))))
              layout))))
        ";
   }
