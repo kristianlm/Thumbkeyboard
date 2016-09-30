@@ -155,10 +155,6 @@ public class ThumbkeyboardView extends View {
         handlePattern(pattern.toArray(new String[]{}));
     }
 
-    public boolean match(String [] p0, String [] p1) {
-        return Arrays.equals(p0, p1);
-    }
-
     private String lastInput;
     private void sendInput(String s) {
         if("REPEAT".equals(s))
