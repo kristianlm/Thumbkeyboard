@@ -30,6 +30,7 @@ public class ThumbkeyboardView extends View {
     private static final String TAG = "TKEY";
     public ThumbkeyboardIME Ime;
     private boolean showHelp = false;
+    private final int MAX_DELAY_DOUBLE_COMBO = 60; // ms
 
     public ThumbkeyboardView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -106,16 +107,37 @@ public class ThumbkeyboardView extends View {
     long timeLastPress;
 
     private void pressStart(long when) {
-        presses = 0;
+        pressedFlush(presses);
+        processedPresses = presses = 0;
         timeLastPress = when;
     }
+
+    int processedPresses = 0;
+    private Runnable processInvokeCallback = new Runnable() {
+        @Override
+        public void run() {
+            pressInvoke(presses);
+        }
+    };
+    private void pressedFlush(int presses) {
+        Log.d(TAG, "flusing presses " + processedPresses + "~" + presses);
+        for (int i = processedPresses + 1; i <= presses ; i++) {
+            pressInvoke(i);
+        }
+    }
+
     private void press(boolean down_p, int bid, long when) {
         if(presses >= MAX_PRESSES) return;
+        pressedFlush(presses);
 
         long elapsed = when - timeLastPress;
         timeLastPress = when;
         press[presses] = new Press(down_p, bid, elapsed);
         presses++;
+
+        removeCallbacks(processInvokeCallback);
+        // need >60m guarantees so we don't process simultanious combinations as two strokes
+        postDelayed(processInvokeCallback, MAX_DELAY_DOUBLE_COMBO + 10);
     }
     private void pressDown(int bid, long when) {
         press(true, bid, when);
@@ -135,7 +157,10 @@ public class ThumbkeyboardView extends View {
         return s;
     }
 
-    private void pressComplete() {
+
+    private void pressInvoke(int presses) {
+        if(presses == 0) return;// avoid nullpointer ref on press[0] which may not be initialized. this is getting hacky
+
         boolean [] state = { false, false, false, false , false, false};
         if(state.length != blobPoints.length) throw new RuntimeException("button state.length is wrong ");
 
@@ -145,7 +170,7 @@ public class ThumbkeyboardView extends View {
         for ( int i = 1 ; i < presses ; i++ ) {
 
             boolean squashPress = (press[i - 1].down_p == press[i].down_p) && // we can only squash two down or two up events
-                    (press[i].ms < 60); // and only if at almost the same time
+                    (press[i].ms < MAX_DELAY_DOUBLE_COMBO); // and only if at almost the same time
 
             if(!squashPress) {
                 pattern += state2str(state) + "\n";
@@ -154,9 +179,15 @@ public class ThumbkeyboardView extends View {
             state[press[i].btn] = press[i].down_p;
             //Log.d(TAG, "squash: " + squashPress + "  " + (press[i].down_p?"down ":"up   ") + press[i].btn + " " + press[i].ms);
         }
+        // this is safe because squashPress would always be false
+        // here, since we're postDelayed >60ms after the event
+        // actually happened
+        pattern += state2str(state) + "\n";
 
-        Log.d(TAG, "===== CHORD " + ThumboardLayout.parse(pattern));
-        Log.d(TAG, state2str(state));
+        Log.d(TAG, "===== these " + presses + " CHORDs make " + ThumboardLayout.parse(pattern));
+        Log.d(TAG, pattern);
+
+        processedPresses = presses;
         handlePattern(pattern);
     }
 
@@ -185,8 +216,13 @@ public class ThumbkeyboardView extends View {
             sendInput(result);
         }
         else {
-            Toast.makeText(getContext(), "unknown chords: \n" + p, Toast.LENGTH_LONG).show();
-            Log.d(TAG, "unknown chord: " + Arrays.asList(p));
+            // there are a lot of "chord misses" because we process
+            // them on the fly, so this isn't really useful unless we
+            // know that nothing matched at all within a sequence.
+            //
+            // Toast.makeText(getContext(), "unknown chord: \n" + p,
+            // Toast.LENGTH_LONG).show(); Log.d(TAG, "unknown chord: "
+            // + Arrays.asList(p));
         }
     }
 
@@ -215,7 +251,6 @@ public class ThumbkeyboardView extends View {
             case MotionEvent.ACTION_UP: { // all fingers up! obs: last finger up ?≠ first finger down
                 double  x0 = event.getX(i), y0 = event.getY(i);
                 pressUp(touch2blob(x0, y0), event.getEventTime());
-                pressComplete();
                 break; }
             default:
                 //Log.d(TAG, "missed event " + event.getActionMasked());

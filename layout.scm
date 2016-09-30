@@ -57,14 +57,12 @@
  (Z "..x ..."
     "..x x..")
 
- (DEL "... .x."
-      ".x. .x."
-      "... .x.")
- (ENTER "... .x."
-        "..x .x."
-        "... .x.")
+ ;; multitap
+ (DEL   (: "... .x." (* any) ".x. .x." "... .x."))
+ (ENTER (: "... .x." (* any) "..x .x." "... .x."))
+ (TAB   (: "... .x." (* any) "x.. .x." "... .x."))
 
- (DPAD_UP)
- (DPAD_DOWN)
- (DPAD_LEFT)
- (DPAD_RIGHT))
+ (DPAD_UP    (: "x.. ..." (* any) "x.. ..x" "x.. ..."))
+ (DPAD_DOWN  (: "x.. ..." (* any) "x.. .x." "x.. ..."))
+ (DPAD_LEFT  (: ".x. ..." (* any) ".x. .x." ".x. ..."))
+ (DPAD_RIGHT (: ".x. ..." (* any) ".x. ..x" ".x. ...")))

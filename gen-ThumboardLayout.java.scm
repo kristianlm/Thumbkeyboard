@@ -1,4 +1,4 @@
-(use srfi-13 srfi-1)
+(use srfi-13 srfi-1 matchable)
 
 
 (define (find-duplicates l)
@@ -23,8 +23,22 @@
     (conc (make-string (max 0 (- n (string-length (conc s)))) padding) s)))
 
 (define (spec->regex spec)
-  (string-translate* (string-join spec "\\n")
-                     '(("." . "\\."))))
+
+  (define (fmt s)
+    (match s
+      ((? string? s) (conc (string-translate* s '(("." . "\\."))) "\\n"))
+      (('+ p ...) (conc "(" (fmt `(: ,@p)) ")+"))
+      ((': p ...) (conc (string-join (map fmt p) "")))
+      ('any ".")
+      (('* p ...) (conc "(" (string-join (map fmt p)) ")*"))
+      (else (error "dont know what to do with " s))))
+
+  (define simple? (string? (car spec)))
+  (conc "(?s)" ;; http://docs.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html#DOTALL
+        (string-join (map fmt spec) "")
+        (if simple?
+            (fmt "... ...")
+            "")))
 
 (print "// generated from gen-ThumboardLayout.java.scm and layout.scm
 package com.adellica.thumbkeyboard;
