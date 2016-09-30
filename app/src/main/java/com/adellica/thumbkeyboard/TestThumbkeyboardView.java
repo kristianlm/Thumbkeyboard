@@ -413,15 +413,8 @@ public class TestThumbkeyboardView extends View {
                else if (c >= (Candidates[0].length() > 0? 32 : 33)  &&  c < 0x100000) {
                   Candidates[0] = Candidates[0] + (char)c;
                   if (Dict == null) {
-                     try {
-                        BufferedReader rd = new BufferedReader(new InputStreamReader(getResources().openRawResource(R.raw.dict), StandardCharsets.UTF_8 ));
-
-                        Dict = new String[Integer.parseInt(rd.readLine())];
-                        for (i = 0;  i < Dict.length;  ++i)
-                           Dict[i] = rd.readLine();
-                        rd.close();
-                     }
-                     catch (IOException e) {Dict = null;}
+                     // delete the japanses dics part here, because I don't need it and because
+                     // it's a large file
                   }
                }
                j = 1;
