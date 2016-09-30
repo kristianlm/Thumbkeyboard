@@ -58,11 +58,11 @@
     "..x x..")
 
  ;; multitap
- (DEL   (: "... .x." (* any) ".x. .x." "... .x."))
- (ENTER (: "... .x." (* any) "..x .x." "... .x."))
- (TAB   (: "... .x." (* any) "x.. .x." "... .x."))
+ (DEL            (: (* any) ".x. .x." "... .x."))
+ (ENTER          (: (* any) "..x .x." "... .x."))
+ (TAB            (: (* any) "x.. .x." "... .x."))
 
- (DPAD_UP    (: "x.. ..." (* any) "x.. ..x" "x.. ..."))
- (DPAD_DOWN  (: "x.. ..." (* any) "x.. .x." "x.. ..."))
- (DPAD_LEFT  (: ".x. ..." (* any) ".x. .x." ".x. ..."))
- (DPAD_RIGHT (: ".x. ..." (* any) ".x. ..x" ".x. ...")))
+ (DPAD_UP        (: (* any) ".x. ..x" ".x. ..."))
+ (DPAD_DOWN      (: (* any) ".x. .x." ".x. ..."))
+ (DPAD_LEFT      (: (* any) "x.. .x." "x.. ..."))
+ (DPAD_RIGHT     (: (* any) "x.. ..x" "x.. ...")))

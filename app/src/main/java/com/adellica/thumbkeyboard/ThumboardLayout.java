@@ -36,17 +36,17 @@ public class ThumboardLayout {
     else if(p.matches("(?s)\\.\\.\\. \\.\\.x\\nx\\.\\. \\.\\.x\\n\\.\\.\\. \\.\\.\\.\\n" )) return "Q";
     else if(p.matches("(?s)\\.\\.\\. x\\.\\.\\n\\.\\.x x\\.\\.\\n\\.\\.\\. \\.\\.\\.\\n" )) return "X";
     else if(p.matches("(?s)\\.\\.x \\.\\.\\.\\n\\.\\.x x\\.\\.\\n\\.\\.\\. \\.\\.\\.\\n" )) return "Z";
-    else if(p.matches("(?s)\\.\\.\\. \\.x\\.\\n(.)*\\.x\\. \\.x\\.\\n\\.\\.\\. \\.x\\.\\n" )) return "DEL";
-    else if(p.matches("(?s)\\.\\.\\. \\.x\\.\\n(.)*\\.\\.x \\.x\\.\\n\\.\\.\\. \\.x\\.\\n" )) return "ENTER";
-    else if(p.matches("(?s)\\.\\.\\. \\.x\\.\\n(.)*x\\.\\. \\.x\\.\\n\\.\\.\\. \\.x\\.\\n" )) return "TAB";
-    else if(p.matches("(?s)x\\.\\. \\.\\.\\.\\n(.)*x\\.\\. \\.\\.x\\nx\\.\\. \\.\\.\\.\\n" )) return "DPAD_UP";
-    else if(p.matches("(?s)x\\.\\. \\.\\.\\.\\n(.)*x\\.\\. \\.x\\.\\nx\\.\\. \\.\\.\\.\\n" )) return "DPAD_DOWN";
-    else if(p.matches("(?s)\\.x\\. \\.\\.\\.\\n(.)*\\.x\\. \\.x\\.\\n\\.x\\. \\.\\.\\.\\n" )) return "DPAD_LEFT";
-    else if(p.matches("(?s)\\.x\\. \\.\\.\\.\\n(.)*\\.x\\. \\.\\.x\\n\\.x\\. \\.\\.\\.\\n" )) return "DPAD_RIGHT";
+    else if(p.matches("(?s)(.)*\\.x\\. \\.x\\.\\n\\.\\.\\. \\.x\\.\\n" )) return "DEL";
+    else if(p.matches("(?s)(.)*\\.\\.x \\.x\\.\\n\\.\\.\\. \\.x\\.\\n" )) return "ENTER";
+    else if(p.matches("(?s)(.)*x\\.\\. \\.x\\.\\n\\.\\.\\. \\.x\\.\\n" )) return "TAB";
+    else if(p.matches("(?s)(.)*\\.x\\. \\.\\.x\\n\\.x\\. \\.\\.\\.\\n" )) return "DPAD_UP";
+    else if(p.matches("(?s)(.)*\\.x\\. \\.x\\.\\n\\.x\\. \\.\\.\\.\\n" )) return "DPAD_DOWN";
+    else if(p.matches("(?s)(.)*x\\.\\. \\.x\\.\\nx\\.\\. \\.\\.\\.\\n" )) return "DPAD_LEFT";
+    else if(p.matches("(?s)(.)*x\\.\\. \\.\\.x\\nx\\.\\. \\.\\.\\.\\n" )) return "DPAD_RIGHT";
     return null;
   }
 
   public static String help() {
-    return " TOGGLE HELP ... xx.\n           E .x. ...\n           A ..x ...\n      REPEAT ... ..x\n       SPACE ... .x.\n           T ... x..\n           O ..x x..\n           I .x. .x.\n           N .x. ..x\n           S ..x .x.\n           H .x. x..\n           R x.. ..x\n           D ..x ..x\n           L x.. x..\n           C x.. .x.\n           U ..x ...\n             ..x .x.\n           M .x. ...\n             .x. .x.\n           K x.. ...\n             x.. .x.\n           W ... ..x\n             .x. ..x\n           F ... x..\n             .x. x..\n           J ... .x.\n             .x. .x.\n           P ... .x.\n             x.. .x.\n           G ... .x.\n             ..x .x.\n           Y .x. ...\n             .x. x..\n           V .x. ...\n             .x. ..x\n           B x.. ...\n             x.. ..x\n           Q ... ..x\n             x.. ..x\n           X ... x..\n             ..x x..\n           Z ..x ...\n             ..x x..\n         DEL (: ... .x. (* any) .x. .x. ... .x.)\n       ENTER (: ... .x. (* any) ..x .x. ... .x.)\n         TAB (: ... .x. (* any) x.. .x. ... .x.)\n     DPAD_UP (: x.. ... (* any) x.. ..x x.. ...)\n   DPAD_DOWN (: x.. ... (* any) x.. .x. x.. ...)\n   DPAD_LEFT (: .x. ... (* any) .x. .x. .x. ...)\n  DPAD_RIGHT (: .x. ... (* any) .x. ..x .x. ...)\n";
+    return " TOGGLE HELP ... xx.\n           E .x. ...\n           A ..x ...\n      REPEAT ... ..x\n       SPACE ... .x.\n           T ... x..\n           O ..x x..\n           I .x. .x.\n           N .x. ..x\n           S ..x .x.\n           H .x. x..\n           R x.. ..x\n           D ..x ..x\n           L x.. x..\n           C x.. .x.\n           U ..x ...\n             ..x .x.\n           M .x. ...\n             .x. .x.\n           K x.. ...\n             x.. .x.\n           W ... ..x\n             .x. ..x\n           F ... x..\n             .x. x..\n           J ... .x.\n             .x. .x.\n           P ... .x.\n             x.. .x.\n           G ... .x.\n             ..x .x.\n           Y .x. ...\n             .x. x..\n           V .x. ...\n             .x. ..x\n           B x.. ...\n             x.. ..x\n           Q ... ..x\n             x.. ..x\n           X ... x..\n             ..x x..\n           Z ..x ...\n             ..x x..\n         DEL (: (* any) .x. .x. ... .x.)\n       ENTER (: (* any) ..x .x. ... .x.)\n         TAB (: (* any) x.. .x. ... .x.)\n     DPAD_UP (: (* any) .x. ..x .x. ...)\n   DPAD_DOWN (: (* any) .x. .x. .x. ...)\n   DPAD_LEFT (: (* any) x.. .x. x.. ...)\n  DPAD_RIGHT (: (* any) x.. ..x x.. ...)\n";
   }
 }
