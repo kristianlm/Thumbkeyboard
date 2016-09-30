@@ -67,7 +67,6 @@ public class ThumbkeyboardView extends View {
             if(b.x < 0) b.x = getWidth()  + b.x;
             if(b.y < 0) b.y = getHeight() + b.y;
         }
-        Log.d(TAG, "blobs " + Arrays.asList(blobs) );
         return blobs;
     }
 
