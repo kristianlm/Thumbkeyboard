@@ -1,7 +1,6 @@
 // generated from gen-ThumboardLayout.java.scm and layout.scm
 package com.adellica.thumbkeyboard;
 import java.util.Arrays;
-import android.view.KeyEvent;
 public class ThumboardLayout {
   private static boolean match(String [] p0, String [] p1) { return Arrays.equals(p0, p1); }
   /** returns string-representation of key as defined by KeyEvent KEYCODE_'s.

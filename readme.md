@@ -43,16 +43,22 @@ wrong button won't happen too often. However, the problem is probably
 just shifted over to timing issues instead. We'll have to see how well
 this works out in practice.
 
-I don't think I want natural-language dictionaries, letter-by-letter
-input should be fast enough on its own. The reason these are needed, I
-suppose, isn't because typing on a virtual QWERTY keyboard is slow -
-but because it's error prone.
+### Dictionaryfree
 
+I don't think I want natural-language dictionaries, letter-by-letter
+input should be fast enough on its own. The reason these are needed on
+soft QWERTY, I suppose, isn't because typing is slow - but because
+it's error prone.
 
 ### Full Input Spectrum
 
 Since I'll hopefully be able to use with this `emacs` on `Termux`,
 I'll need lots of key combinations, like `M-f` and `C-M->`.
+
+### Configurable
+
+It should be possible to customize the chords so users can add their
+own.
 
 ### Hardwareizeable?
 
@@ -60,3 +66,8 @@ With 3 hardware buttons, it should be able to reimplement the keyboard
 relatively easily. That probably means that swipe-gestures should be
 available as chords too. Now you can enter text into your Arduino toy
 just the same way you'd enter text into your phone.
+
+## What's missing
+
+I don't know how non-Latin input would work with this. I'm focusing on
+Latin and programming input.
