@@ -61,8 +61,8 @@ public class ThumbkeyboardView extends View {
     // getWidth and getHeight might change.
     // there is probably a lot better way of doing this...
     private Blob [] blobs () {
-        Blob [] blobs = new Blob [4];
-        for(int i = 0 ; i < 4 ; i++) {
+        Blob [] blobs = new Blob [blobPoints.length];
+        for(int i = 0 ; i < blobPoints.length ; i++) {
             Blob b = blobs[i] = new Blob(blobPoints[i].x, blobPoints[i].y);
             if(b.x < 0) b.x = getWidth()  + b.x;
             if(b.y < 0) b.y = getHeight() + b.y;
@@ -72,16 +72,18 @@ public class ThumbkeyboardView extends View {
 
     // negative positions means right/bottom-aligned
     Point [] blobPoints = new Point[] {
-            new Point( 115, -300), // 0
-            new Point( 300, -100), // 1
-            new Point(-300, -100), // 2
-            new Point(-115, -300), // 3
+            new Point( 110, -500), // 0
+            new Point( 160, -300), // 1
+            new Point( 260, -100), // 2
+            new Point(-260, -100), // 3
+            new Point(-160, -300), // 4
+            new Point(-110, -500), // 5
     };
 
     private int touch2blob(double x, double y) {
         int nearest = 0;
         double dist2 = blobs()[0].dist2(x, y);
-        for(int bid = 1 ; bid < 4 ; bid++) {
+        for(int bid = 1 ; bid < blobPoints.length ; bid++) {
             double dist = blobs()[bid].dist2(x, y);
             if(dist < dist2) {
                 dist2 = dist;
@@ -125,15 +127,18 @@ public class ThumbkeyboardView extends View {
     // eg map [false, true, false, false] => ".x.."
     private String state2str(boolean [] state) {
         String s = "";
-        for(boolean b : state) {
+        for(int i = 0 ; i < state.length ; i++) {
+            boolean b = state[i];
+            if(i == state.length / 2) s+= " "; // add space in between
             s += b ? "x" : ".";
         }
         return s;
     }
 
     private void pressComplete() {
-        Log.d(TAG, "CHORD =========================== ");
-        boolean [] state = { false, false, false, false };
+        boolean [] state = { false, false, false, false , false, false};
+        if(state.length != blobPoints.length) throw new RuntimeException("button state.length is wrong ");
+
         List<String> pattern = new ArrayList<String>();
 
         state[press[0].btn] = press[0].down_p;
@@ -150,7 +155,7 @@ public class ThumbkeyboardView extends View {
             state[press[i].btn] = press[i].down_p;
             //Log.d(TAG, "squash: " + squashPress + "  " + (press[i].down_p?"down ":"up   ") + press[i].btn + " " + press[i].ms);
         }
-        Log.d(TAG, "CHORD pattern is " + ThumboardLayout.parse(pattern.toArray(new String[]{})));
+        Log.d(TAG, "===== CHORD pattern is " + ThumboardLayout.parse(pattern.toArray(new String[]{})));
         handlePattern(pattern.toArray(new String[]{}));
     }
 
@@ -234,9 +239,10 @@ public class ThumbkeyboardView extends View {
         cp2.setStyle(Paint.Style.STROKE);
         cp2.setStrokeWidth(4);
 
-        for (int i = 0 ; i < 4 ; i++) {
-            canvas.drawCircle((float)blobs()[i].x, (float)blobs()[i].y, 100, cp1);
-            canvas.drawCircle((float)blobs()[i].x, (float)blobs()[i].y, 100, cp2);
+        Blob bs [] = blobs();
+        for (int i = 0 ; i < bs.length ; i++) {
+            canvas.drawCircle((float)bs[i].x, (float)bs[i].y, 100, cp1);
+            canvas.drawCircle((float)bs[i].x, (float)bs[i].y, 100, cp2);
         }
 
         if(!showHelp) return;
