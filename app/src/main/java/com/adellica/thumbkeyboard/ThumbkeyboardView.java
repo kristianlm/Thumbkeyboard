@@ -139,7 +139,7 @@ public class ThumbkeyboardView extends View {
         boolean [] state = { false, false, false, false , false, false};
         if(state.length != blobPoints.length) throw new RuntimeException("button state.length is wrong ");
 
-        List<String> pattern = new ArrayList<String>();
+        String pattern = "";
 
         state[press[0].btn] = press[0].down_p;
         for ( int i = 1 ; i < presses ; i++ ) {
@@ -148,15 +148,16 @@ public class ThumbkeyboardView extends View {
                     (press[i].ms < 60); // and only if at almost the same time
 
             if(!squashPress) {
-                pattern.add(state2str(state));
-                Log.d(TAG, state2str(state));
+                pattern += state2str(state) + "\n";
             }
 
             state[press[i].btn] = press[i].down_p;
             //Log.d(TAG, "squash: " + squashPress + "  " + (press[i].down_p?"down ":"up   ") + press[i].btn + " " + press[i].ms);
         }
-        Log.d(TAG, "===== CHORD pattern is " + ThumboardLayout.parse(pattern.toArray(new String[]{})));
-        handlePattern(pattern.toArray(new String[]{}));
+
+        Log.d(TAG, "===== CHORD " + ThumboardLayout.parse(pattern));
+        Log.d(TAG, state2str(state));
+        handlePattern(pattern);
     }
 
     private String lastInput;
@@ -173,7 +174,7 @@ public class ThumbkeyboardView extends View {
             lastInput = s;
     }
 
-    private void handlePattern(String [] p) {
+    private void handlePattern(String p) {
         String result = ThumboardLayout.parse(p);
 
         if("TOGGLE HELP".equals(result)) {
@@ -184,8 +185,7 @@ public class ThumbkeyboardView extends View {
             sendInput(result);
         }
         else {
-            String pat = ""; for(String j : p) pat+=j + "\n"; // how can I else map across p like this?
-            Toast.makeText(getContext(), "unknown chords: \n" + pat, Toast.LENGTH_LONG).show();
+            Toast.makeText(getContext(), "unknown chords: \n" + p, Toast.LENGTH_LONG).show();
             Log.d(TAG, "unknown chord: " + Arrays.asList(p));
         }
     }

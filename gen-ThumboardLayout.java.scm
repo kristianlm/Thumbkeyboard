@@ -22,14 +22,16 @@
   (define (pad s n #!optional (padding #\space))
     (conc (make-string (max 0 (- n (string-length (conc s)))) padding) s)))
 
+(define (spec->regex spec)
+  (string-translate* (string-join spec "\\n")
+                     '(("." . "\\."))))
+
 (print "// generated from gen-ThumboardLayout.java.scm and layout.scm
 package com.adellica.thumbkeyboard;
-import java.util.Arrays;
 public class ThumboardLayout {
-  private static boolean match(String [] p0, String [] p1) { return Arrays.equals(p0, p1); }
   /** returns string-representation of key as defined by KeyEvent KEYCODE_'s.
   */
-  public static String parse(String [] p) {
+  public static String parse(String p) {
     if(false) {}
 ")
 
@@ -38,11 +40,8 @@ public class ThumboardLayout {
    (cond ((number? (car pair)) (print "    // unused " (wos (cdr pair))))
          ((not (null? (cdr pair)))
           (print
-           "    else if(match(p, new String[]{
-          "
-           (string-join (map wos (cdr pair)) ",\n          ")
-           "
-    }))                                return " (wos (conc (car pair))) ";" ))))
+           "    else if(p.matches(" (wos (spec->regex (cdr pair)))
+           " )) return " (wos (conc (car pair))) ";" ))))
 
  layout)
 
