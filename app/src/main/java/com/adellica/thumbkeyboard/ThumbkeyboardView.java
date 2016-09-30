@@ -29,6 +29,7 @@ import java.util.List;
 public class ThumbkeyboardView extends View {
     private static final String TAG = "TKEY";
     public ThumbkeyboardIME Ime;
+    private boolean showHelp = false;
 
     public ThumbkeyboardView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -172,7 +173,6 @@ public class ThumbkeyboardView extends View {
             lastInput = s;
     }
 
-    private boolean showHelp = false;
     private void handlePattern(String [] p) {
         String result = ThumboardLayout.parse(p);
 
