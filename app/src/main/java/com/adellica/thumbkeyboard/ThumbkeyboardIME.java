@@ -16,7 +16,6 @@ public class ThumbkeyboardIME extends InputMethodService {
    @Override public View onCreateCandidatesView() {  // http://stackoverflow.com/a/20319466/1160216
       PV = (ThumbkeyboardView)getLayoutInflater().inflate(R.layout.input, null);
       PV.Ime = this;
-      PV.reset();
       return PV;
    }
 
@@ -32,7 +31,6 @@ public class ThumbkeyboardIME extends InputMethodService {
    @Override public void requestHideSelf(int flags) {
       super.requestHideSelf(flags);
       PV.setBackgroundResource(0);
-      PV.reset();
    }
 
    @Override public void onFinishInput() {

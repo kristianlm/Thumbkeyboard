@@ -37,10 +37,6 @@ public class ThumbkeyboardView extends View {
 
     }
 
-    public void reset() {
-
-    }
-
     static class Blob {
         public double x;
         public double y;
