@@ -1,6 +1,21 @@
-(use srfi-13)
+(use srfi-13 srfi-1)
+
+
+(define (find-duplicates l)
+  (let loop ((l l) (seen '()) (r '()))
+    (if (pair? l)
+        (if (member (car l) seen)
+            (if (member (car l) r)
+                (loop (cdr l) seen r) ;; duplicate already listed
+                (loop (cdr l) seen (cons (car l) r)))
+            (loop (cdr l) (cons (car l) seen) r))
+        r)))
 
 (define layout (with-input-from-file "layout.scm" read))
+
+(let ((dups (delete '() (find-duplicates (map cdr layout)))))
+  (if (pair? dups)
+      (error "duplicates in layout.scm" dups)))
 
 (begin ;; helpers
   (define (wos s) (with-output-to-string (lambda () (write s))))
