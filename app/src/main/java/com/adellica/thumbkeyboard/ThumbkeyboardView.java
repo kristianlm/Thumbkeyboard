@@ -13,16 +13,8 @@ import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.MutableDouble;
-import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Toast;
-
-import org.w3c.dom.Text;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Created by klm on 9/27/16.
@@ -172,7 +164,7 @@ public class ThumbkeyboardView extends View {
     private String pressPattern(int presses) {
         if(presses == 0) return "";// avoid nullpointer ref on press[0] which may not be initialized. this is getting hacky
 
-        boolean [] state = { false, false, false, false , false, false};
+        boolean [] state = { false, false, false, false , false, false };
         if(state.length != blobPoints.length) throw new RuntimeException("button state.length is wrong ");
 
         String pattern = "";
