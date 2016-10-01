@@ -1,19 +1,19 @@
 (use srfi-13 srfi-1 matchable)
 
-
-(define (find-duplicates l)
-  (let loop ((l l) (seen '()) (r '()))
+;; like rassoc but return multiple values
+(define (rassoc* k l #!optional (tst eq?) (extract car))
+  (let loop ((l l)
+             (r '()))
     (if (pair? l)
-        (if (member (car l) seen)
-            (if (member (car l) r)
-                (loop (cdr l) seen r) ;; duplicate already listed
-                (loop (cdr l) seen (cons (car l) r)))
-            (loop (cdr l) (cons (car l) seen) r))
+        (if (tst k (extract (car l)))
+            (loop (cdr l) (cons (car l) r))
+            (loop (cdr l) r))
         r)))
 
 (define layout (with-input-from-file "layout.scm" read))
 
-(let ((dups (delete '() (find-duplicates (map cdr layout)))))
+(let ((dups (filter (o pair? cdr)
+                    (map (lambda (pair) (map car (rassoc* (cdr pair) layout equal? cdr))) layout))))
   (if (pair? dups)
       (error "duplicates in layout.scm" dups)))
 
