@@ -12,6 +12,7 @@ import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.MutableDouble;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -54,15 +55,23 @@ public class ThumbkeyboardView extends View {
         public String toString() { return  "[Blob " + x + " " + y + "]";}
     }
 
+
+    private int _anchorY = -100;
+    private int anchorY() {
+        if(_anchorY >= 0)
+            return _anchorY;
+        else
+            return getHeight() + _anchorY;
+    }
     // we keep the points constant and rebuild the blobs because
     // getWidth and getHeight might change.
     // there is probably a lot better way of doing this...
     private Blob [] blobs () {
         Blob [] blobs = new Blob [blobPoints.length];
         for(int i = 0 ; i < blobPoints.length ; i++) {
-            Blob b = blobs[i] = new Blob(blobPoints[i].x, blobPoints[i].y);
+            Blob b = blobs[i] = new Blob(blobPoints[i].x, anchorY() + blobPoints[i].y);
             if(b.x < 0) b.x = getWidth()  + b.x;
-            if(b.y < 0) b.y = getHeight() + b.y;
+            //if(b.y < 0) b.y = getHeight() + b.y;
         }
         return blobs;
     }
@@ -77,7 +86,7 @@ public class ThumbkeyboardView extends View {
             new Point(-110, -420), // 5
     };
 
-    private int touch2blob(double x, double y) {
+    private int touch2blob(double x, double y, MutableDouble closestDist) {
         int nearest = 0;
         double dist2 = blobs()[0].dist2(x, y);
         for(int bid = 1 ; bid < blobPoints.length ; bid++) {
@@ -87,7 +96,13 @@ public class ThumbkeyboardView extends View {
                 nearest = bid;
             }
         }
+        if(closestDist != null)
+            closestDist.value = dist2;
         return nearest;
+    }
+
+    private int touch2blob(double x, double y) {
+        return touch2blob(x, y, null);
     }
 
     static class Press {
@@ -225,6 +240,14 @@ public class ThumbkeyboardView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int i = event.getActionIndex(); // index of finger that caused the down event
+
+        MutableDouble d = new MutableDouble(-1);
+        touch2blob(event.getX(i), event.getY(i), d);
+        if(d.value > 250*250) { // min diameter to register a button click. let's be tolerant!
+            _anchorY = (int)event.getY(i);
+            postInvalidate();
+            return true;
+        }
 
         switch(event.getActionMasked()) {
 
