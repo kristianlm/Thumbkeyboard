@@ -3,5 +3,5 @@
     <string name="app_name">Thumb Keyboard</string>
 
     <!-- Labels for subtype -->
-    <string name="label_subtype">6-button Chorded Thumb Keyboard</string>
+    <string name="label_subtype">6b Chorded Thumb Keyboard</string>
 </resources>
