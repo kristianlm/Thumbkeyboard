@@ -169,8 +169,8 @@ public class ThumbkeyboardView extends View {
     }
 
 
-    private void pressInvoke(int presses) {
-        if(presses == 0) return;// avoid nullpointer ref on press[0] which may not be initialized. this is getting hacky
+    private String pressPattern(int presses) {
+        if(presses == 0) return "";// avoid nullpointer ref on press[0] which may not be initialized. this is getting hacky
 
         boolean [] state = { false, false, false, false , false, false};
         if(state.length != blobPoints.length) throw new RuntimeException("button state.length is wrong ");
@@ -194,47 +194,49 @@ public class ThumbkeyboardView extends View {
         // here, since we're postDelayed >60ms after the event
         // actually happened
         pattern += state2str(state) + "\n";
+        return pattern;
+    }
 
+
+    private void pressInvoke(int presses) {
+        String pattern = pressPattern(presses);
+        handlePattern(pattern);
         Log.d(TAG, "===== these " + presses + " CHORDs make " + ThumboardLayout.parse(pattern));
         Log.d(TAG, pattern);
-
         processedPresses = presses;
-        handlePattern(pattern);
     }
 
     private String lastInput;
-    private void sendInput(String s) {
-        if("REPEAT".equals(s))
-            if(!"REPEAT".equals(lastInput))
-                sendInput(lastInput);
-            else
-                Log.e(TAG, "error! trying to repeat the repeat command!");
-        else
-            Ime.sendDownUpKeyEvents(ThumboardKeycodes.string2keycode(s));
-
-        if(!"REPEAT".equals(s))
-            lastInput = s;
-    }
-
     private void handlePattern(String p) {
-        String result = ThumboardLayout.parse(p);
+        String s = ThumboardLayout.parse(p);
 
-        if("TOGGLE HELP".equals(result)) {
+        if("TOGGLE HELP".equals(s)) {
             showHelp = !showHelp;
             postInvalidate();
         }
-        else if(result != null) {
-            sendInput(result);
+        else if("REPEAT".equals(s)) {
+            if (!"REPEAT".equals(lastInput))
+                handlePattern(lastInput);
+            else
+                Log.e(TAG, "error! trying to repeat the repeat command!");
+        }
+        else if("TEST".equals(s)) {
+            Log.d(TAG, "TEST : " + Ime.getCurrentInputConnection().getTextAfterCursor(16, 0));
+        }
+        else if("ENTER".equals(s)) {
+            // committing ENTER like this gives a newline in things like the SMS text editor. sending the enter key sends the message.
+            Ime.getCurrentInputConnection().commitText("\n", 0);
         }
         else {
-            // there are a lot of "chord misses" because we process
-            // them on the fly, so this isn't really useful unless we
-            // know that nothing matched at all within a sequence.
-            //
-            // Toast.makeText(getContext(), "unknown chord: \n" + p,
-            // Toast.LENGTH_LONG).show(); Log.d(TAG, "unknown chord: "
-            // + Arrays.asList(p));
+            int keycode = ThumboardKeycodes.string2keycode(s);
+            if(keycode == 0) {
+                Log.d(TAG, "couldn't find keycode for " + s);
+            } else
+                Ime.sendDownUpKeyEvents(keycode);
         }
+
+        if(!"REPEAT".equals(s)) // avoid infinite recursion
+            lastInput = s;
     }
 
     @Override
