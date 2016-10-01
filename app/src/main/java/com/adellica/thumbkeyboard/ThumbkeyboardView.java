@@ -69,12 +69,12 @@ public class ThumbkeyboardView extends View {
 
     // negative positions means right/bottom-aligned
     Point [] blobPoints = new Point[] {
-            new Point( 110, -500), // 0
-            new Point( 160, -300), // 1
-            new Point( 260, -100), // 2
-            new Point(-260, -100), // 3
-            new Point(-160, -300), // 4
-            new Point(-110, -500), // 5
+            new Point( 110, -420), // 0
+            new Point( 160, -200), // 1
+            new Point( 260, 0), // 2
+            new Point(-260, 0), // 3
+            new Point(-160, -200), // 4
+            new Point(-110, -420), // 5
     };
 
     private int touch2blob(double x, double y) {
