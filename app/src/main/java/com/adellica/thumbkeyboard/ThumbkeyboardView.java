@@ -210,40 +210,55 @@ public class ThumbkeyboardView extends View {
                 handleToken(token);
         }
     }
+    private String cmd(String token) {
+        int idx = token.indexOf(' ');
 
-    private String lastInput;
+        if(idx >= 0)
+            return token.substring(0, idx);
+        else
+            // no space means we've got an unparamterized command
+            return token;
+    }
+    private String value(String token) {
+        int idx = token.indexOf(' ');
+        if(idx >= 0)
+            return token.substring(idx + 1);
+        else
+            // no space means we've got an unparameterized command
+            return null;
+    }
+
+
+    private String lastToken;
     private void handleToken(String t) {
+        String cmd = cmd(t);
 
-        if("TOGGLE HELP".equals(t)) {
+        if ("help".equals(cmd)) {
             showHelp = !showHelp;
             postInvalidate();
-        }
-        else if("REPEAT".equals(t)) {
-            Log.d(TAG, "repeating with " + lastInput);
-            if (!"REPEAT".equals(lastInput)) {
-                handleToken(lastInput);
-            }
-            else
-                Log.e(TAG, "error! trying to repeat the repeat command!");
-        }
-        else if("TEST".equals(t)) {
-            Log.d(TAG, "TEST : " + Ime.getCurrentInputConnection().getTextAfterCursor(16, 0));
-        }
-        else if("ENTER".equals(t)) {
-            // committing ENTER like this gives a newline in things like the SMS text editor. sending the enter key sends the message.
-            Ime.getCurrentInputConnection().commitText("\n", 0);
-        }
-        else {
-            int keycode = ThumboardKeycodes.string2keycode(t);
-            if(keycode == 0) {
-                Log.d(TAG, "couldn't find keycode for " + t + ", entering as raw text");
-                Ime.getCurrentInputConnection().commitText(t, 0);
+        } else if("repeat".equals(cmd)) {
+            Log.d(TAG, "repeating with " + lastToken);
+            if (!"repeat".equals(cmd(lastToken))) {
+                    handleToken(lastToken);
             } else
-                Ime.sendDownUpKeyEvents(keycode);
+                Log.e(TAG, "error! trying to repeat the repeat command!");
+        } else if ("key".equals(cmd)) {
+            handleKey(value(t));
+        } else if ("input".equals(cmd)) {
+            handleInput(value(t));
         }
 
-        if(!"REPEAT".equals(t)) // avoid infinite recursion
-            lastInput = t;
+        if (!"repeat".equals(cmd)) // avoid infinite recursion
+            lastToken = t;
+    }
+
+    private void handleInput(String input) {
+        Ime.getCurrentInputConnection().commitText(input, 0);
+    }
+
+    private void handleKey(String key) {
+        int keycode = ThumboardKeycodes.string2keycode(key);
+        Ime.sendDownUpKeyEvents(keycode);
     }
 
     boolean holding = false;

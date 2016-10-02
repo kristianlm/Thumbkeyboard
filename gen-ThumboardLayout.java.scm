@@ -58,7 +58,12 @@ public class ThumboardLayout {
          ((not (null? (cdr pair)))
           (print
            "    else if(p.matches(" (wos (spec->regex (cdr pair)))
-           " )) return " (wos (conc (car pair))) ";" ))))
+           " )) return "
+           (wos (match (car pair)
+                  ((? symbol? s) (conc "key " s))
+                  ((? string? s) (conc "input " s))
+                  ('(repeat) (conc "repeat"))))
+           ";" ))))
 
  layout)
 
