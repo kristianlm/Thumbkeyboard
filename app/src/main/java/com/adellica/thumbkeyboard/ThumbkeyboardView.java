@@ -1,6 +1,7 @@
 package com.adellica.thumbkeyboard;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
@@ -13,6 +14,7 @@ import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.MutableDouble;
+import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -24,6 +26,7 @@ public class ThumbkeyboardView extends View {
     public ThumbkeyboardIME Ime;
     private boolean showHelp = false;
     private final int MAX_DELAY_DOUBLE_COMBO = 60; // ms
+    private final int BLOB_RADIUS = 50; // dpi
 
     public ThumbkeyboardView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -61,7 +64,7 @@ public class ThumbkeyboardView extends View {
     private Blob [] blobs () {
         Blob [] blobs = new Blob [blobPoints.length];
         for(int i = 0 ; i < blobPoints.length ; i++) {
-            Blob b = blobs[i] = new Blob(blobPoints[i].x, anchorY() + blobPoints[i].y);
+            Blob b = blobs[i] = new Blob(pixels(blobPoints[i].x), anchorY() + pixels(blobPoints[i].y));
             if(b.x < 0) b.x = getWidth()  + b.x;
             //if(b.y < 0) b.y = getHeight() + b.y;
         }
@@ -70,12 +73,13 @@ public class ThumbkeyboardView extends View {
 
     // negative positions means right/bottom-aligned
     Point [] blobPoints = new Point[] {
-            new Point( 110, -420), // 0
-            new Point( 160, -200), // 1
-            new Point( 260, 0), // 2
-            new Point(-260, 0), // 3
-            new Point(-160, -200), // 4
-            new Point(-110, -420), // 5
+            // units dpi
+            new Point( 50, -210), // 0
+            new Point( 80, -100), // 1
+            new Point( 120, 0), // 2
+            new Point(-120, 0), // 3
+            new Point(-80, -100), // 4
+            new Point(-50, -210), // 5
     };
 
     private int touch2blob(double x, double y, MutableDouble closestDist) {
@@ -141,6 +145,7 @@ public class ThumbkeyboardView extends View {
         removeCallbacks(processInvokeCallback);
         // need >60m guarantees so we don't process simultanious combinations as two strokes
         postDelayed(processInvokeCallback, MAX_DELAY_DOUBLE_COMBO + 10);
+        postInvalidate();
     }
     private void pressDown(int bid, long when) {
         press(true, bid, when);
@@ -231,9 +236,15 @@ public class ThumbkeyboardView extends View {
             lastInput = s;
     }
 
+    boolean holding = false;
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int i = event.getActionIndex(); // index of finger that caused the down event
+
+        switch (event.getActionMasked()) {
+            case MotionEvent.ACTION_DOWN: holding = true; break;
+            case MotionEvent.ACTION_UP: holding = false; break;
+        }
 
         MutableDouble d = new MutableDouble(-1);
         touch2blob(event.getX(i), event.getY(i), d);
@@ -272,6 +283,10 @@ public class ThumbkeyboardView extends View {
         return true;
     }
 
+    private int pixels(int dpi) {
+        Resources r = getResources();
+        return (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dpi, r.getDisplayMetrics());
+    }
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -288,9 +303,15 @@ public class ThumbkeyboardView extends View {
         cp2.setStrokeWidth(4);
 
         Blob bs [] = blobs();
+        final Paint fill = new Paint();
+        fill.setStyle(Paint.Style.FILL);
+        if(holding)
+            fill.setColor(Color.argb(0x80, 0x80, 0x80, 0));
+        else
+            fill.setColor(Color.argb(0x20, 0x80, 0x80, 0));
+
         for (int i = 0 ; i < bs.length ; i++) {
-            canvas.drawCircle((float)bs[i].x, (float)bs[i].y, 100, cp1);
-            canvas.drawCircle((float)bs[i].x, (float)bs[i].y, 100, cp2);
+            canvas.drawCircle((float)bs[i].x, (float)bs[i].y, pixels(BLOB_RADIUS), fill);
         }
 
         if(!showHelp) return;
