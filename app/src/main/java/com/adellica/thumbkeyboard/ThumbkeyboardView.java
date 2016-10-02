@@ -203,37 +203,47 @@ public class ThumbkeyboardView extends View {
         processedPresses = presses;
     }
 
-    private String lastInput;
     private void handlePattern(String p) {
-        String s = ThumboardLayout.parse(p);
+        if(p != null) {
+            String token = ThumboardLayout.parse(p);
+            if(token != null)
+                handleToken(token);
+        }
+    }
 
-        if("TOGGLE HELP".equals(s)) {
+    private String lastInput;
+    private void handleToken(String t) {
+
+        if("TOGGLE HELP".equals(t)) {
             showHelp = !showHelp;
             postInvalidate();
         }
-        else if("REPEAT".equals(s)) {
-            if (!"REPEAT".equals(lastInput))
-                handlePattern(lastInput);
+        else if("REPEAT".equals(t)) {
+            Log.d(TAG, "repeating with " + lastInput);
+            if (!"REPEAT".equals(lastInput)) {
+                handleToken(lastInput);
+            }
             else
                 Log.e(TAG, "error! trying to repeat the repeat command!");
         }
-        else if("TEST".equals(s)) {
+        else if("TEST".equals(t)) {
             Log.d(TAG, "TEST : " + Ime.getCurrentInputConnection().getTextAfterCursor(16, 0));
         }
-        else if("ENTER".equals(s)) {
+        else if("ENTER".equals(t)) {
             // committing ENTER like this gives a newline in things like the SMS text editor. sending the enter key sends the message.
             Ime.getCurrentInputConnection().commitText("\n", 0);
         }
         else {
-            int keycode = ThumboardKeycodes.string2keycode(s);
+            int keycode = ThumboardKeycodes.string2keycode(t);
             if(keycode == 0) {
-                Log.d(TAG, "couldn't find keycode for " + s);
+                Log.d(TAG, "couldn't find keycode for " + t + ", entering as raw text");
+                Ime.getCurrentInputConnection().commitText(t, 0);
             } else
                 Ime.sendDownUpKeyEvents(keycode);
         }
 
-        if(!"REPEAT".equals(s)) // avoid infinite recursion
-            lastInput = s;
+        if(!"REPEAT".equals(t)) // avoid infinite recursion
+            lastInput = t;
     }
 
     boolean holding = false;
