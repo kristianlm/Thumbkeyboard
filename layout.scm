@@ -65,4 +65,42 @@
  (DPAD_UP        (: (* any) ".x. ..x" ".x. ..."))
  (DPAD_DOWN      (: (* any) ".x. .x." ".x. ..."))
  (DPAD_LEFT      (: (* any) "x.. .x." "x.. ..."))
- (DPAD_RIGHT     (: (* any) "x.. ..x" "x.. ...")))
+ (DPAD_RIGHT     (: (* any) "x.. ..x" "x.. ..."))
+
+ ;; hold'n tap for period
+ (|.| "..x ..."
+      "..x .x."
+      "..x ...")
+ ;; hold'n tap twice for colon
+ (|:| "..x ..."
+      "..x .x."
+      "..x ..."
+      "..x .x."
+      "..x ...")
+
+ ;; hold'n tap for comma
+ (|,|  "..x ..."
+       "..x x.."
+       "..x ...")
+ ;; hold'n tap twice for semicolon
+ (";" (: "..x ..."
+         "..x x.."
+         "..x ..."
+         "..x x.."
+         "..x ..."
+         "... ..."))
+
+ (! "..x ..."
+    "..x ..x"
+    "..x ..."
+    "..x ..x"
+    "..x ...")
+
+ (? "..x ..."
+    "..x ..x"
+    "..x ..."
+    "..x ..x"
+    "..x ..."
+    "..x ..x"
+    "..x ...")
+ )
