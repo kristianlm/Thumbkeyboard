@@ -120,7 +120,7 @@ public class ThumbkeyboardView extends View {
             }
         }
         if(closestDist != null)
-            closestDist.value = dist2;
+            closestDist.value = Math.sqrt(dist2);
         return nearest;
     }
 
@@ -339,7 +339,7 @@ public class ThumbkeyboardView extends View {
 
         MutableDouble d = new MutableDouble(-1);
         touch2blob(event.getX(i), event.getY(i), d);
-        if(d.value > 250*250) { // min diameter to register a button click. let's be tolerant!
+        if(d.value > pixels((int)(BLOB_RADIUS * 1.5))) { // min diameter to register a button click. let's be tolerant!
             _anchorY = (int)event.getY(i);
             postInvalidate();
             return true;
