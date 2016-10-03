@@ -253,11 +253,13 @@ public class ThumbkeyboardView extends View {
             showHelp = !showHelp;
             postInvalidate();
         } else if("repeat".equals(cmd)) {
-            Log.d(TAG, "repeating with " + lastToken);
-            if (!"repeat".equals(cmd(lastToken))) {
+            if(lastToken != null) {
+                Log.d(TAG, "repeating with " + lastToken);
+                if (!"repeat".equals(cmd(lastToken))) {
                     handleToken(lastToken);
-            } else
-                Log.e(TAG, "error! trying to repeat the repeat command!");
+                } else
+                    Log.e(TAG, "error! trying to repeat the repeat command!");
+            }
         } else if ("key".equals(cmd)) {
             handleKey(value(t));
         } else if ("input".equals(cmd)) {
