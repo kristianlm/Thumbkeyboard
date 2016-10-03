@@ -62,8 +62,10 @@ public class ThumbkeyboardView extends View {
         final private double x;
         final private double y;
         final private String name;
+        final private int bid;
 
-        Blob(String name, double x, double y) {
+        Blob(int bid, String name, double x, double y) {
+            this.bid = bid;
             this.name = name;
             this.x = x;
             this.y = y;
@@ -80,6 +82,7 @@ public class ThumbkeyboardView extends View {
         @Override
         public String toString() { return  "[Blob " + x() + " " + y() + "]";}
         public String name() { return name; }
+        public int bid() { return bid; }
     }
 
 
@@ -96,16 +99,16 @@ public class ThumbkeyboardView extends View {
     // negative positions means right/bottom-aligned
     Blob [] _blobs = new Blob [] {
             //        ,-- label   ,-- dpi
-            new Blob("X",    BS+BB, -5*BS), // left hand
-            new Blob("A",    BS+BB, -3*BS),
-            new Blob("C",    BS+BB,   -BS),
-            new Blob("B",  3*BS+BB, -3*BS),
-            new Blob("D",  3*BS+BB,   -BS),
-            new Blob("G", -3*BS-BB,   -BS), // right hand
-            new Blob("E", -3*BS-BB, -3*BS),
-            new Blob("H",   -BS-BB,   -BS),
-            new Blob("F",   -BS-BB, -3*BS),
-            new Blob("W",   -BS-BB, -5*BS),
+            new Blob(0, "W",    BS+BB, -5*BS), // left hand
+            new Blob(1, "A",    BS+BB, -3*BS),
+            new Blob(2, "C",    BS+BB,   -BS),
+            new Blob(3, "B",  3*BS+BB, -3*BS),
+            new Blob(4, "D",  3*BS+BB,   -BS),
+            new Blob(5, "G", -3*BS-BB,   -BS), // right hand
+            new Blob(6, "E", -3*BS-BB, -3*BS),
+            new Blob(7, "H",   -BS-BB,   -BS),
+            new Blob(8, "F",   -BS-BB, -3*BS),
+            new Blob(9, "Z",   -BS-BB, -5*BS),
     };
     private Blob [] blobs () { return _blobs; }
 
@@ -129,10 +132,19 @@ public class ThumbkeyboardView extends View {
     }
 
     static class Press {
-        boolean down_p; // true for down events, false otherwise
-        int btn; // 0-3 where 0 is left-most button or whatever
+        PressType type;
+        Blob [] pressing;
         long ms; // milliseconds after previous press
-        Press(boolean down_p, int btn, long when) { this.down_p = down_p; this.btn = btn; this.ms = when; }
+        Press(PressType type, Blob [] btn, long when) { this.type = type; this.pressing = btn.clone(); this.ms = when; }
+        public boolean [] toState () {
+            boolean [] state = new boolean [10];
+            for(int i = 0 ; i < pressing.length ; i++) {
+                int bid = pressing[i] == null ? -1 : pressing[i].bid();
+                if(bid >= 0) // no need to handle fingers not touching anything
+                    state[bid] = true;
+            }
+            return state;
+        }
     }
 
     static final int MAX_PRESSES = 512;
@@ -164,14 +176,18 @@ public class ThumbkeyboardView extends View {
         }
     }
 
-    private void press(boolean down_p, int bid, long when) {
+    enum PressType {
+        DOWN, UP, SWIPE
+    }
+
+    private void press(PressType type, Blob [] bleh, long when) {
         if(presses >= MAX_PRESSES) return;
-        buttonStates[bid] = down_p;
         pressedFlush(presses - 1);
 
         long elapsed = when - timeLastPress;
         timeLastPress = when;
-        press[presses] = new Press(down_p, bid, elapsed);
+        press[presses] = new Press(type, bleh, elapsed);
+        buttonStates = press[presses].toState();
         presses++;
 
         removeCallbacks(processInvokeCallback);
@@ -182,12 +198,6 @@ public class ThumbkeyboardView extends View {
 
     private boolean [] buttonStates = new boolean[] {false,false,false,false,false,   false,false,false,false,false };
 
-    private void pressDown(int bid, long when) {
-        press(true, bid, when);
-    }
-    private void pressUp(int bid, long when) {
-        press(false, bid, when);
-    }
 
     // eg map [false, true, false, false] => ".x.."
     private String state2str(boolean [] state) {
@@ -201,26 +211,23 @@ public class ThumbkeyboardView extends View {
     }
 
 
+
     private String pressPattern(int presses) {
         if(presses == 0) return "";// avoid nullpointer ref on press[0] which may not be initialized. this is getting hacky
 
-        boolean [] state = { false,false,false,false,false,     false,false,false,false,false };
-        if(state.length != blobs().length) throw new RuntimeException("button state.length is wrong ");
-
+        boolean [] state = press[0].toState();
         String pattern = "";
 
-        state[press[0].btn] = press[0].down_p;
         for ( int i = 1 ; i < presses ; i++ ) {
 
-            boolean squashPress = (press[i - 1].down_p == press[i].down_p) && // we can only squash two down or two up events
+            boolean squashPress = (press[i - 1].type == press[i].type) && // we can only squash two down or two up events
                     (press[i].ms < MAX_DELAY_DOUBLE_COMBO); // and only if at almost the same time
 
             if(!squashPress) {
                 pattern += state2str(state) + "\n";
             }
 
-            state[press[i].btn] = press[i].down_p;
-            //Log.d(TAG, "squash: " + squashPress + "  " + (press[i].down_p?"down ":"up   ") + press[i].btn + " " + press[i].ms);
+            state = press[i].toState();
         }
         // this is safe because squashPress would always be false
         // here, since we're postDelayed >60ms after the event
@@ -328,6 +335,8 @@ public class ThumbkeyboardView extends View {
     }
 
     boolean holding = false;
+    Blob [] fingerTouches = new Blob [ 4 ]; // who'se got 4 thumbs anyway?
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int i = event.getActionIndex(); // index of finger that caused the down event
@@ -335,6 +344,11 @@ public class ThumbkeyboardView extends View {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN: holding = true; break;
             case MotionEvent.ACTION_UP: holding = false; break;
+        }
+
+        if(event.getPointerId(i) >= fingerTouches.length) {
+            Log.e(TAG, "only up to " + fingerTouches.length + " simultanious fingers supported ...");
+            return false;
         }
 
         MutableDouble d = new MutableDouble(-1);
@@ -349,24 +363,40 @@ public class ThumbkeyboardView extends View {
 
             case MotionEvent.ACTION_DOWN: { // primary finger down!
                 pressStart(event.getEventTime());
-                double  x0 = event.getX(i), y0 = event.getY(i);
-                pressDown(touch2blob(x0, y0), event.getEventTime());
+                int btn = touch2blob(event.getX(i), event.getY(i));
+                int fid = event.getPointerId(i);
+
+                fingerTouches[fid] = blobs()[btn];
+                press(PressType.DOWN, fingerTouches, event.getEventTime());
                 break; }
 
             case MotionEvent.ACTION_POINTER_DOWN: { // another finger down while holding one down
-                double x = event.getX(i), y = event.getY(i);
-                pressDown(touch2blob(x, y), event.getEventTime());
+                int btn = touch2blob(event.getX(i), event.getY(i));
+                int fid = event.getPointerId(i);
+                fingerTouches[fid] = blobs()[btn];
+                press(PressType.DOWN, fingerTouches, event.getEventTime());
                 break; }
 
             case MotionEvent.ACTION_POINTER_UP: { // finger up, still holding one down
-                double x = event.getX(i), y = event.getY(i);
-                pressUp(touch2blob(x, y), event.getEventTime());
+                int fid = event.getPointerId(i);
+                fingerTouches[fid] = null;
+                press(PressType.UP, fingerTouches, event.getEventTime());
                 break; }
-
+            case MotionEvent.ACTION_MOVE: {
+                for( int j = 0 ; j < event.getPointerCount() ; j++) {
+                    Blob btn = blobs()[touch2blob(event.getX(j), event.getY(j))];
+                    if(btn != fingerTouches[event.getPointerId(j)]) {
+                        int fid = event.getPointerId(j);
+                        fingerTouches[fid] = btn;
+                        press(PressType.SWIPE, fingerTouches, event.getEventTime());
+                    }
+                }
+                break;
+            }
             case MotionEvent.ACTION_UP: { // all fingers up! obs: last finger up ?≠ first finger down
-                double  x0 = event.getX(i), y0 = event.getY(i);
-                pressUp(touch2blob(x0, y0), event.getEventTime());
-                pressComplete();
+                int fid = event.getPointerId(i);
+                fingerTouches[fid] = null;
+                press(PressType.UP, fingerTouches, event.getEventTime());
                 break; }
             default:
                 //Log.d(TAG, "missed event " + event.getActionMasked());
