@@ -274,7 +274,10 @@ public class ThumbkeyboardView extends View {
 
     private void handleKey(String key) {
         int keycode = ThumboardKeycodes.string2keycode(key);
-        Ime.sendDownUpKeyEvents(keycode);
+        if(keycode != 0)
+            Ime.sendDownUpKeyEvents(keycode);
+        else
+            Log.e(TAG, "key \"" + key + "\" not recognized");
     }
 
     boolean holding = false;
