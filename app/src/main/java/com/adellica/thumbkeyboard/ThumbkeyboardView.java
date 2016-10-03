@@ -75,7 +75,7 @@ public class ThumbkeyboardView extends View {
 
         // screen coordinates
         public float x() { return x < 0 ? (getWidth()  + pixels((int)x)) : pixels((int)x); }
-        public float y() { return y < 0 ? (getHeight() + pixels((int)y)) : pixels((int)y); }
+        public float y() { return y < 0 ? (anchorY() + pixels((int)y)) : pixels((int)y); }
 
         @Override
         public String toString() { return  "[Blob " + x() + " " + y() + "]";}
