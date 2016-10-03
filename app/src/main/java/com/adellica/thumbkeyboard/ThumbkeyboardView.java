@@ -404,7 +404,7 @@ public class ThumbkeyboardView extends View {
             boolean holding = buttonStates[i];
             if(any)
                 if(holding) fill.setColor(Color.argb(0xB0, 0xff, 0xff, 0x00));
-                else        fill.setColor(Color.argb(0x80, 0xff, 0xff, 0x00));
+                else        fill.setColor(Color.argb(0x40, 0xff, 0xff, 0x00));
             else            fill.setColor(Color.argb(0x40, 0xff, 0xff, 0x00));
             //canvas.drawCircle((float)bs[i].x, (float)bs[i].y, pixels(BLOB_RADIUS), fill);
             final Blob b = bs[i];
