@@ -15,6 +15,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.util.MutableDouble;
 import android.util.TypedValue;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -28,6 +29,28 @@ public class ThumbkeyboardView extends View {
     private final int MAX_DELAY_DOUBLE_COMBO = 60; // ms
     private static final int BLOB_RADIUS = 40; // dpi
     private static final int BLOB_BORDER = 2; // dpi
+
+    private static class Modifiers {
+        public final static int
+                Shift = 0x01,
+                Ctrl = 0x02,
+                Alt = 0x04,
+                Meta = 0x08; // I don't now what this one is but it's in KeyEvent. Maybe win/option/command
+    }
+
+    private int _ModifierMask = 0;
+    private void modifiersClear() {
+        _ModifierMask = 0;
+    }
+
+    private void modShift(boolean down_p) { _ModifierMask = down_p?(_ModifierMask|Modifiers.Shift):(_ModifierMask&~Modifiers.Shift); }
+    private void modCtrl(boolean down_p)  { _ModifierMask = down_p?(_ModifierMask|Modifiers.Ctrl):(_ModifierMask&~Modifiers.Ctrl); }
+    private void modAlt(boolean down_p)   { _ModifierMask = down_p?(_ModifierMask|Modifiers.Alt):(_ModifierMask&~Modifiers.Alt); }
+    private void modMeta(boolean down_p)  { _ModifierMask = down_p?(_ModifierMask|Modifiers.Meta):(_ModifierMask&~Modifiers.Meta); }
+    private  boolean modMeta()  { return (_ModifierMask & Modifiers.Meta) != 0;  }
+    private  boolean modAlt()   { return (_ModifierMask & Modifiers.Alt) != 0;  }
+    private  boolean modCtrl()  { return (_ModifierMask & Modifiers.Ctrl) != 0;  }
+    private  boolean modShift() { return (_ModifierMask & Modifiers.Shift) != 0;  }
 
     public ThumbkeyboardView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -249,7 +272,15 @@ public class ThumbkeyboardView extends View {
     private void handleToken(String t) {
         String cmd = cmd(t);
 
-        if ("help".equals(cmd)) {
+        if("shift".equals(cmd))
+            modShift(!modShift());
+        else if("ctrl".equals(cmd))
+            modCtrl(!modCtrl());
+        else if("alt".equals(cmd)) {
+            modAlt(!modAlt());
+        } else if("meta".equals(cmd))
+            modMeta(!modMeta());
+        else if ("help".equals(cmd)) {
             showHelp = !showHelp;
             postInvalidate();
         } else if("repeat".equals(cmd)) {
@@ -274,12 +305,27 @@ public class ThumbkeyboardView extends View {
         Ime.getCurrentInputConnection().commitText(input, 0);
     }
 
+    private int getMetaState() {
+        int meta = 0;
+        if (modShift()) meta |= KeyEvent.META_SHIFT_ON | KeyEvent.META_SHIFT_LEFT_ON;
+        if (modCtrl())  meta |= KeyEvent.META_CTRL_ON  | KeyEvent.META_CTRL_LEFT_ON;
+        if (modAlt())   meta |= KeyEvent.META_ALT_ON   | KeyEvent.META_ALT_LEFT_ON;
+        if (modMeta())  meta |= KeyEvent.META_META_ON  | KeyEvent.META_META_LEFT_ON;
+        return meta;
+    }
+
     private void handleKey(String key) {
-        int keycode = ThumboardKeycodes.string2keycode(key);
-        if(keycode != 0)
-            Ime.sendDownUpKeyEvents(keycode);
-        else
-            Log.e(TAG, "key \"" + key + "\" not recognized");
+
+        final int keycode = ThumboardKeycodes.string2keycode(key);
+        int meta = getMetaState();
+        Log.d(TAG, "keystroke " + key + " shift = " + modShift() + " meta: " + meta);
+        if (keycode != 0) {
+            long now = System.currentTimeMillis();
+            Ime.getCurrentInputConnection().sendKeyEvent(new KeyEvent(now, now, KeyEvent.ACTION_DOWN, keycode, 0, meta));
+            Ime.getCurrentInputConnection().sendKeyEvent(new KeyEvent(now, now, KeyEvent.ACTION_UP,   keycode, 0, meta));
+        }
+
+        modifiersClear();
     }
 
     boolean holding = false;
