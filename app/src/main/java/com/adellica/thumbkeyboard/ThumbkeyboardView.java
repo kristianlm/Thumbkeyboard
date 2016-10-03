@@ -57,21 +57,29 @@ public class ThumbkeyboardView extends View {
 
     }
 
-    static class Blob {
-        public double x;
-        public double y;
+    class Blob {
+        // dpi coordinates (negative counts from right/bottom)
+        final private double x;
+        final private double y;
+        final private String name;
 
-        Blob(double x, double y) {
+        Blob(String name, double x, double y) {
+            this.name = name;
             this.x = x;
             this.y = y;
         }
         public double dist2(double x, double y) {
-            return  (this.x - x) * (this.x - x) +
-                    (this.y - y) * (this.y - y);
+            return  (this.x() - x) * (this.x() - x) +
+                    (this.y() - y) * (this.y() - y);
         }
 
+        // screen coordinates
+        public float x() { return x < 0 ? (getWidth()  + pixels((int)x)) : pixels((int)x); }
+        public float y() { return y < 0 ? (getHeight() + pixels((int)y)) : pixels((int)y); }
+
         @Override
-        public String toString() { return  "[Blob " + x + " " + y + "]";}
+        public String toString() { return  "[Blob " + x() + " " + y() + "]";}
+        public String name() { return name; }
     }
 
 
@@ -82,41 +90,29 @@ public class ThumbkeyboardView extends View {
         else
             return getHeight() + _anchorY;
     }
-    // we keep the points constant and rebuild the blobs because
-    // getWidth and getHeight might change.
-    // there is probably a lot better way of doing this...
-    private Blob [] blobs () {
-        Blob [] blobs = new Blob [blobPoints.length];
-        for(int i = 0 ; i < blobPoints.length ; i++) {
-            Blob b = blobs[i] = new Blob(pixels(blobPoints[i].x), anchorY() + pixels(blobPoints[i].y));
-            if(b.x < 0) b.x = getWidth()  + b.x;
-            //if(b.y < 0) b.y = getHeight() + b.y;
-        }
-        return blobs;
-    }
 
     final int BS = BLOB_RADIUS;
     static final int BB = BLOB_BORDER * 2; // wall margin
     // negative positions means right/bottom-aligned
-    Point [] blobPoints = new Point[] {
-            // units dpi
-            new Point(   BS+BB, -5*BS), // left hand
-            new Point(   BS+BB, -3*BS),
-            new Point(   BS+BB,   -BS),
-            new Point( 3*BS+BB, -3*BS),
-            new Point( 3*BS+BB,   -BS),
-
-            new Point(-3*BS-BB,   -BS), // right hand
-            new Point(-3*BS-BB, -3*BS),
-            new Point(  -BS-BB,   -BS),
-            new Point(  -BS-BB, -3*BS),
-            new Point(  -BS-BB, -5*BS),
+    Blob [] _blobs = new Blob [] {
+            //        ,-- label   ,-- dpi
+            new Blob("X",    BS+BB, -5*BS), // left hand
+            new Blob("A",    BS+BB, -3*BS),
+            new Blob("C",    BS+BB,   -BS),
+            new Blob("B",  3*BS+BB, -3*BS),
+            new Blob("D",  3*BS+BB,   -BS),
+            new Blob("G", -3*BS-BB,   -BS), // right hand
+            new Blob("E", -3*BS-BB, -3*BS),
+            new Blob("H",   -BS-BB,   -BS),
+            new Blob("F",   -BS-BB, -3*BS),
+            new Blob("W",   -BS-BB, -5*BS),
     };
+    private Blob [] blobs () { return _blobs; }
 
     private int touch2blob(double x, double y, MutableDouble closestDist) {
-        int nearest = 0;
-        double dist2 = blobs()[0].dist2(x, y);
-        for(int bid = 1 ; bid < blobPoints.length ; bid++) {
+        int nearest = 0; // index
+        double dist2 = blobs()[nearest].dist2(x, y);
+        for(int bid = 1 ; bid < blobs().length ; bid++) {
             double dist = blobs()[bid].dist2(x, y);
             if(dist < dist2) {
                 dist2 = dist;
@@ -209,7 +205,7 @@ public class ThumbkeyboardView extends View {
         if(presses == 0) return "";// avoid nullpointer ref on press[0] which may not be initialized. this is getting hacky
 
         boolean [] state = { false,false,false,false,false,     false,false,false,false,false };
-        if(state.length != blobPoints.length) throw new RuntimeException("button state.length is wrong ");
+        if(state.length != blobs().length) throw new RuntimeException("button state.length is wrong ");
 
         String pattern = "";
 
@@ -410,7 +406,7 @@ public class ThumbkeyboardView extends View {
             //canvas.drawCircle((float)bs[i].x, (float)bs[i].y, pixels(BLOB_RADIUS), fill);
             final Blob b = bs[i];
             final int S = pixels(BLOB_RADIUS - BLOB_BORDER);
-            canvas.drawRect((float)b.x-S, (float)b.y-S, (float)b.x+S, (float)b.y+S, fill);
+            canvas.drawRect(b.x()-S, b.y()-S, b.x()+S, b.y()+S, fill);
         }
 
         if(!showHelp) return;
