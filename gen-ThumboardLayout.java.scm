@@ -40,7 +40,7 @@
   (conc "(?s)" ;; http://docs.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html#DOTALL
         (string-join (map fmt spec) "")
         (if simple?
-            (fmt "... ...")
+            (fmt "..... .....")
             "")))
 
 (print "// generated from gen-ThumboardLayout.java.scm and layout.scm
@@ -62,7 +62,8 @@ public class ThumboardLayout {
            (wos (match (car pair)
                   ((? symbol? s) (conc "key " s))
                   ((? string? s) (conc "input " s))
-                  ('(repeat) (conc "repeat"))))
+                  ((cmd)         (conc cmd))
+                  ((cmd param)   (conc cmd " " param))))
            ";" ))))
 
  layout)

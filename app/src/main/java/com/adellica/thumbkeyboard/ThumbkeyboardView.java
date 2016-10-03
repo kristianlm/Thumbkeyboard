@@ -26,7 +26,8 @@ public class ThumbkeyboardView extends View {
     public ThumbkeyboardIME Ime;
     private boolean showHelp = false;
     private final int MAX_DELAY_DOUBLE_COMBO = 60; // ms
-    private final int BLOB_RADIUS = 50; // dpi
+    private static final int BLOB_RADIUS = 40; // dpi
+    private static final int BLOB_BORDER = 2; // dpi
 
     public ThumbkeyboardView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -71,15 +72,22 @@ public class ThumbkeyboardView extends View {
         return blobs;
     }
 
+    final int BS = BLOB_RADIUS;
+    static final int BB = BLOB_BORDER;
     // negative positions means right/bottom-aligned
     Point [] blobPoints = new Point[] {
             // units dpi
-            new Point( 50, -210), // 0
-            new Point( 80, -100), // 1
-            new Point( 120, 0), // 2
-            new Point(-120, 0), // 3
-            new Point(-80, -100), // 4
-            new Point(-50, -210), // 5
+            new Point(   BS+BB, -5*BS), // left hand
+            new Point(   BS+BB, -3*BS),
+            new Point(   BS+BB,   -BS),
+            new Point( 3*BS+BB, -3*BS),
+            new Point( 3*BS+BB,   -BS),
+
+            new Point(-3*BS-BB,   -BS), // right hand
+            new Point(-3*BS-BB, -3*BS),
+            new Point(  -BS-BB,   -BS),
+            new Point(  -BS-BB, -3*BS),
+            new Point(  -BS-BB, -5*BS),
     };
 
     private int touch2blob(double x, double y, MutableDouble closestDist) {
