@@ -73,7 +73,7 @@ public class ThumbkeyboardView extends View {
     }
 
     final int BS = BLOB_RADIUS;
-    static final int BB = BLOB_BORDER;
+    static final int BB = BLOB_BORDER * 2; // wall margin
     // negative positions means right/bottom-aligned
     Point [] blobPoints = new Point[] {
             // units dpi
@@ -126,6 +126,10 @@ public class ThumbkeyboardView extends View {
         processedPresses = presses = 0;
         timeLastPress = when;
     }
+    private void pressComplete() {
+        for(int i = 0 ; i < buttonStates.length ; i++)
+            buttonStates[i] = false;
+    }
 
     int processedPresses = 0;
     private Runnable processInvokeCallback = new Runnable() {
@@ -143,6 +147,7 @@ public class ThumbkeyboardView extends View {
 
     private void press(boolean down_p, int bid, long when) {
         if(presses >= MAX_PRESSES) return;
+        buttonStates[bid] = down_p;
         pressedFlush(presses - 1);
 
         long elapsed = when - timeLastPress;
@@ -155,6 +160,9 @@ public class ThumbkeyboardView extends View {
         postDelayed(processInvokeCallback, MAX_DELAY_DOUBLE_COMBO + 10);
         postInvalidate();
     }
+
+    private boolean [] buttonStates = new boolean[] {false,false,false,false,false,   false,false,false,false,false };
+
     private void pressDown(int bid, long when) {
         press(true, bid, when);
     }
@@ -177,7 +185,7 @@ public class ThumbkeyboardView extends View {
     private String pressPattern(int presses) {
         if(presses == 0) return "";// avoid nullpointer ref on press[0] which may not be initialized. this is getting hacky
 
-        boolean [] state = { false, false, false, false , false, false };
+        boolean [] state = { false,false,false,false,false,     false,false,false,false,false };
         if(state.length != blobPoints.length) throw new RuntimeException("button state.length is wrong ");
 
         String pattern = "";
@@ -308,6 +316,7 @@ public class ThumbkeyboardView extends View {
             case MotionEvent.ACTION_UP: { // all fingers up! obs: last finger up ?≠ first finger down
                 double  x0 = event.getX(i), y0 = event.getY(i);
                 pressUp(touch2blob(x0, y0), event.getEventTime());
+                pressComplete();
                 break; }
             default:
                 //Log.d(TAG, "missed event " + event.getActionMasked());
@@ -338,13 +347,19 @@ public class ThumbkeyboardView extends View {
         Blob bs [] = blobs();
         final Paint fill = new Paint();
         fill.setStyle(Paint.Style.FILL);
-        if(holding)
-            fill.setColor(Color.argb(0x80, 0x80, 0x80, 0));
-        else
-            fill.setColor(Color.argb(0x20, 0x80, 0x80, 0));
+        boolean any = false;
+        for (int i = 0 ; i < bs.length ; i++) { any = any || buttonStates[i]; }
 
         for (int i = 0 ; i < bs.length ; i++) {
-            canvas.drawCircle((float)bs[i].x, (float)bs[i].y, pixels(BLOB_RADIUS), fill);
+            boolean holding = buttonStates[i];
+            if(any)
+                if(holding) fill.setColor(Color.argb(0xB0, 0xff, 0xff, 0x00));
+                else        fill.setColor(Color.argb(0x80, 0xff, 0xff, 0x00));
+            else            fill.setColor(Color.argb(0x40, 0xff, 0xff, 0x00));
+            //canvas.drawCircle((float)bs[i].x, (float)bs[i].y, pixels(BLOB_RADIUS), fill);
+            final Blob b = bs[i];
+            final int S = pixels(BLOB_RADIUS - BLOB_BORDER);
+            canvas.drawRect((float)b.x-S, (float)b.y-S, (float)b.x+S, (float)b.y+S, fill);
         }
 
         if(!showHelp) return;
