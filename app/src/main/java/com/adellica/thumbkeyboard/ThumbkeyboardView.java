@@ -275,9 +275,9 @@ public class ThumbkeyboardView extends View {
 
         if("shift".equals(cmd))
             modShift(!modShift());
-        else if("ctrl".equals(cmd))
-            modCtrl(!modCtrl());
-        else if("alt".equals(cmd)) {
+        else if("ctrl".equals(cmd)) {
+            handleCtrl(value(t));
+        } else if("alt".equals(cmd)) {
             modAlt(!modAlt());
         } else if("meta".equals(cmd))
             modMeta(!modMeta());
@@ -300,6 +300,17 @@ public class ThumbkeyboardView extends View {
 
         if (!"repeat".equals(cmd)) // avoid infinite recursion
             lastToken = t;
+    }
+
+    private void handleCtrl(String param) {
+        if(param == null || "".equals(param))
+            modCtrl(!modCtrl());
+        else {
+            boolean old = modCtrl();
+            modCtrl(true);
+            handleToken("key " + param);
+            modCtrl(old);
+        }
     }
 
     private void handleInput(String input) {
