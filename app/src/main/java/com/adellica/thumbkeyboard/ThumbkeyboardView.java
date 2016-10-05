@@ -6,7 +6,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
-import android.graphics.Point;
 import android.graphics.Typeface;
 import android.text.Layout;
 import android.text.StaticLayout;
@@ -170,7 +169,6 @@ public class ThumbkeyboardView extends View {
         }
     };
     private void pressedFlush(int presses) {
-        Log.d(TAG, "flusing presses " + processedPresses + "~" + presses);
         for (int i = processedPresses + 1; i <= presses ; i++) {
             pressInvoke(i);
         }
@@ -324,7 +322,6 @@ public class ThumbkeyboardView extends View {
 
         final int keycode = ThumboardKeycodes.string2keycode(key);
         int meta = getMetaState();
-        Log.d(TAG, "keystroke " + key + " shift = " + modShift() + " meta: " + meta);
         if (keycode != 0) {
             long now = System.currentTimeMillis();
             Ime.getCurrentInputConnection().sendKeyEvent(new KeyEvent(now, now, KeyEvent.ACTION_DOWN, keycode, 0, meta));
