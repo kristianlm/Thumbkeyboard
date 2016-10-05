@@ -218,7 +218,8 @@ public class ThumbkeyboardView extends View {
 
         for ( int i = 1 ; i < presses ; i++ ) {
 
-            boolean squashPress = (press[i - 1].type == press[i].type) && // we can only squash two down or two up events
+            boolean squashPress = (press[i - 1].type == press[i].type) &&
+                    press[i].type != PressType.SWIPE && // we can only squash two down or two up events
                     (press[i].ms < MAX_DELAY_DOUBLE_COMBO); // and only if at almost the same time
 
             if(!squashPress) {
