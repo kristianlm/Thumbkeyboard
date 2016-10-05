@@ -79,7 +79,7 @@ public class ThumbkeyboardView extends View {
         public float y() { return y < 0 ? (anchorY() + pixels((int)y)) : pixels((int)y); }
 
         @Override
-        public String toString() { return  "[Blob " + x() + " " + y() + "]";}
+        public String toString() { return  name;}
         public String name() { return name; }
         public int bid() { return bid; }
     }
