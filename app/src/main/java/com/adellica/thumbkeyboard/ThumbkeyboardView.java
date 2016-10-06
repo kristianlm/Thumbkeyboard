@@ -12,7 +12,6 @@ import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.util.MutableDouble;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -28,6 +27,14 @@ public class ThumbkeyboardView extends View {
     private final int MAX_DELAY_DOUBLE_COMBO = 60; // ms
     private static final int BLOB_RADIUS = 40; // dpi
     private static final int BLOB_BORDER = 2; // dpi
+
+    private static class MutableDouble {
+        public double value;
+
+        public MutableDouble(double i) {
+            this.value = i;
+        }
+    }
 
     private static class Modifiers {
         public final static int
