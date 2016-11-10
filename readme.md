@@ -81,6 +81,5 @@ Latin and programming input.
 - cannot type "C-/" (text insert vs pressing key?)
 - & is quite long
 - ^ is missing
-- swap modifier for () and <>
 - separate number-mode (for numeric input, phone numbers, time, date etc)
 
