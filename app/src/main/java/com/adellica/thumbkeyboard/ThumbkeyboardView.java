@@ -247,7 +247,10 @@ public class ThumbkeyboardView extends View {
         String pattern = pressPattern(presses);
         handlePattern(pattern);
         Log.d(TAG, "===== these " + presses + " CHORDs make " + ThumboardLayout.parse(pattern));
-        Log.d(TAG, pattern);
+        // surround pattern with " so that the printed logging matches our layout.scm formats better
+        for(String line : pattern.split("\n")) {
+            Log.d(TAG, "\"" + line + "\"");
+        }
         processedPresses = presses;
     }
 
