@@ -33,8 +33,8 @@
       (('* p ...) (conc "(" (string-join (map fmt p)) ")*"))
       (else (error "dont know what to do with " s))))
 
-  ;; only on-the-fly chords don't have an implicit "... ..." match at
-  ;; the end.
+  ;; a simple match has an implicit "... ..." at the end, because it
+  ;; will only match after all fingers have been released.
   (define simple? (string? (car spec)))
 
   (conc "(?s)" ;; http://docs.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html#DOTALL
