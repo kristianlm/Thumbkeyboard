@@ -71,3 +71,17 @@ just the same way you'd enter text into your phone.
 
 I don't know how non-Latin input would work with this. I'm focusing on
 Latin and programming input.
+
+
+# TODO
+
+- fixme: make it so that inserting "Å" and friends releases shift
+- arrow keys as single swipe keys. replace -/+ swipes perhaps? arrows
+  are probably used more often
+- cannot type "C-/" (text insert vs pressing key?)
+- & is quite long
+- ^ is missing
+- swap modifier for () and <>
+- make CTRL + friends work with single doble-tap
+- separate number-mode (for numeric input, phone numbers, time, date etc)
+
