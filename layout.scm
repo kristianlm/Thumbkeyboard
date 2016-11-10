@@ -196,7 +196,6 @@
 
  (TAB "..... .x..."
       "..... ...x.") ;; right hand, swipe right
- (TAB            (: (* any) "..x.. ....x" "..... ....x"))
 
  (DPAD_UP        (: (* any) "x.... ....x" "x.... ....."))
  (DPAD_DOWN      (: (* any) "x.... ...x." "x.... ....."))
