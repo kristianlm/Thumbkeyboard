@@ -26,7 +26,7 @@ public class ThumbkeyboardView extends View {
     private boolean showHelp = false;
     private final int MAX_DELAY_DOUBLE_COMBO = 60; // ms
     private static final int BLOB_RADIUS = 40; // dpi
-    private static final int BLOB_BORDER = 2; // dpi
+    private static final int BLOB_BORDER = 4; // dpi
 
     private static class MutableDouble {
         public double value;
@@ -498,7 +498,7 @@ public class ThumbkeyboardView extends View {
         for (int i = 0 ; i < bs.length ; i++) {
             boolean holding = buttonStates[i];
             if(any)
-                if(holding) fill.setColor(Color.argb(0xB0, 0xff, 0xff, 0x00));
+                if(holding) fill.setColor(Color.argb(0xB0, 0xff, 0x80, 0x00));
                 else        fill.setColor(Color.argb(0x40, 0xff, 0xff, 0x00));
             else            fill.setColor(Color.argb(0x40, 0xff, 0xff, 0x00));
             //canvas.drawCircle((float)bs[i].x, (float)bs[i].y, pixels(BLOB_RADIUS), fill);
