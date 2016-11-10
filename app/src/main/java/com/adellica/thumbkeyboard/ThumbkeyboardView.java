@@ -337,6 +337,8 @@ public class ThumbkeyboardView extends View {
             Ime.getCurrentInputConnection().commitText(input.toUpperCase(), 0);
         else
             Ime.getCurrentInputConnection().commitText(input, 0);
+
+        modifiersClear();
     }
 
     private int getMetaState() {
