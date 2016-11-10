@@ -27,6 +27,7 @@
   (define (fmt s)
     (match s
       ((? string? s) (conc (string-translate* s '(("." . "\\."))) "\\n"))
+      (('? p ...) (conc "(" (fmt `(: ,@p)) ")?"))
       (('+ p ...) (conc "(" (fmt `(: ,@p)) ")+"))
       ((': p ...) (conc (string-join (map fmt p) "")))
       ('any ".")

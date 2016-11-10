@@ -82,6 +82,5 @@ Latin and programming input.
 - & is quite long
 - ^ is missing
 - swap modifier for () and <>
-- make CTRL + friends work with single doble-tap
 - separate number-mode (for numeric input, phone numbers, time, date etc)
 
