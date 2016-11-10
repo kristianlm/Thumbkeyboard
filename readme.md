@@ -80,4 +80,5 @@ Latin and programming input.
 - & is quite long
 - separate number-mode (for numeric input, phone numbers, time, date etc)
 - configure layout at runtime
-
+- allow deleting words at a time, not just characters (faster backspace)
+- fix crash: press TAB, then press REPEAT
