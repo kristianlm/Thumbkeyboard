@@ -82,4 +82,5 @@ Latin and programming input.
 - & is quite long
 - ^ is missing
 - separate number-mode (for numeric input, phone numbers, time, date etc)
+- configure layout at runtime
 
