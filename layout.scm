@@ -182,11 +182,17 @@
  (DEL            "..... ...x." "..... .x...") ;; swipe left
  (FORWARD_DEL    "..... ...x." "..... ....x") ;; swipe up
 
- ("\n"          (: (* any) "...x. ....x" "..... ....x"))
- ("\n"                     "..... ....x" "...x. ....x")
- (ENTER "..... ...x."
+ ;; this is like pressing the enter key, usually also means "go!"
+ (ENTER "..... ....x"
+        "..... ...x."
         "..... ..x.."
-        "..... x....") ;; swipe down then left
+        "..... x....")
+ ;; this one won't press "go!" and just insert a newline
+ ("\n"
+  "x.... ....."
+  ".x... ....."
+  "..x.. ....."
+  "....x .....")
 
  (TAB "..... .x..."
       "..... ...x.") ;; right hand, swipe right
