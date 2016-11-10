@@ -77,7 +77,6 @@ Latin and programming input.
 
 - arrow keys as single swipe keys. replace -/+ swipes perhaps? arrows
   are probably used more often
-- cannot type "C-/" (text insert vs pressing key?)
 - & is quite long
 - ^ is missing
 - separate number-mode (for numeric input, phone numbers, time, date etc)

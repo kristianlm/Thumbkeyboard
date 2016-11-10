@@ -292,15 +292,15 @@ public class ThumbkeyboardView extends View {
     private void handleToken(String t) {
         String cmd = cmd(t);
 
-        if("shift".equals(cmd))
-            modShift(!modShift());
-        else if("ctrl".equals(cmd)) {
+        if("shift".equals(cmd)) {
+            handleShift(value(t));
+        } else if("ctrl".equals(cmd)) {
             handleCtrl(value(t));
         } else if("alt".equals(cmd)) {
-            modAlt(!modAlt());
-        } else if("meta".equals(cmd))
-            modMeta(!modMeta());
-        else if ("help".equals(cmd)) {
+            handleAlt(value(t));
+        } else if("meta".equals(cmd)) {
+            handleMeta(value(t));
+        } else if ("help".equals(cmd)) {
             showHelp = !showHelp;
             postInvalidate();
         } else if("repeat".equals(cmd)) {
@@ -321,6 +321,17 @@ public class ThumbkeyboardView extends View {
             lastToken = t;
     }
 
+    private void handleShift(String param) {
+        if(param == null || "".equals(param))
+            modShift(!modShift());
+        else {
+            boolean old = modShift();
+            modShift(true);
+            handleToken("key " + param);
+            modShift(old);
+        }
+    }
+
     private void handleCtrl(String param) {
         if(param == null || "".equals(param))
             modCtrl(!modCtrl());
@@ -329,6 +340,28 @@ public class ThumbkeyboardView extends View {
             modCtrl(true);
             handleToken("key " + param);
             modCtrl(old);
+        }
+    }
+
+    private void handleAlt(String param) {
+        if(param == null || "".equals(param))
+            modAlt(!modAlt());
+        else {
+            boolean old = modAlt();
+            modAlt(true);
+            handleToken("key " + param);
+            modAlt(old);
+        }
+    }
+
+    private void handleMeta(String param) {
+        if(param == null || "".equals(param))
+            modMeta(!modMeta());
+        else {
+            boolean old = modMeta();
+            modMeta(true);
+            handleToken("key " + param);
+            modMeta(old);
         }
     }
 
