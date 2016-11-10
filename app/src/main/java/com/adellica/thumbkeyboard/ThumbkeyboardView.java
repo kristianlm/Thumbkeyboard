@@ -258,6 +258,11 @@ public class ThumbkeyboardView extends View {
                 handleToken(token);
         }
     }
+
+    /**
+     * @param token
+     * @return just the command part of a token
+     */
     private String cmd(String token) {
         int idx = token.indexOf(' ');
 
@@ -267,6 +272,12 @@ public class ThumbkeyboardView extends View {
             // no space means we've got an unparamterized command
             return token;
     }
+
+    /**
+     *
+     * @param token
+     * @return just the arguments/value part of a token
+     */
     private String value(String token) {
         int idx = token.indexOf(' ');
         if(idx >= 0)
