@@ -82,3 +82,5 @@ Latin and programming input.
 - configure layout at runtime
 - allow deleting words at a time, not just characters (faster backspace)
 - fix crash: press TAB, then press REPEAT
+- real borders: give each button/box a deadzone/margin so that enter
+  doesn't need two swipes down to not conflict with swipe left.
