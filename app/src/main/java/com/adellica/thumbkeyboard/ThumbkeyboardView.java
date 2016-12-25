@@ -65,19 +65,19 @@ public class ThumbkeyboardView extends View {
 
     class Blob {
         // dpi coordinates (negative counts from right/bottom)
-        final private double x;
-        final private double y;
-        final private String name;
+        final private int col;
+        final private int row;
         final private int bid;
         public boolean holding = false;
+        public boolean tapping = false;
+
 
         final Paint fill = new Paint();
 
-        Blob(int bid, String name, double x, double y) {
+        Blob(int bid, int col, int row) {
             this.bid = bid;
-            this.name = name;
-            this.x = x;
-            this.y = y;
+            this.col = col;
+            this.row = row;
             this.fill.setStyle(Paint.Style.FILL);
         }
         public double dist2(double x, double y) {
@@ -86,24 +86,23 @@ public class ThumbkeyboardView extends View {
         }
 
         // screen coordinates
-        public float x() { return x < 0 ? (getWidth()  + pixels((int)x)) : pixels((int)x); }
-        public float y() { return y < 0 ? (anchorY() + pixels((int)y)) : pixels((int)y); }
+        public float x() { return (col < 0 ? getWidth() : 0) + pixels(col * (BS * 2) + BS); }
+        public float y() { return getHeight() - (pixels((2 - row) * (BS * 2) + BS)); }
 
-        @Override
-        public String toString() { return  name;}
-        public String name() { return name; }
         public int bid() { return bid; }
 
         public void draw(Canvas canvas, boolean anybody_up) {
             if(anybody_up)
-                if(holding) fill.setColor(Color.argb(0xB0, 0xff, 0x80, 0xff));
-                else        fill.setColor(Color.argb(0x40, 0xff, 0xff, 0xff));
-            else            fill.setColor(Color.argb(0x40, 0xff, 0xff, 0xff));
-            //canvas.drawCircle((float)bs[i].x, (float)bs[i].y, pixels(BLOB_RADIUS), fill);
+                if(holding) fill.setColor(Color.argb(0xB0, 0x00, 0x80, 0xff));
+                else        fill.setColor(Color.argb(0x40, 0x00, 0xff, 0xff));
+            else            fill.setColor(Color.argb(0x40, 0x00, 0xff, 0xff));
+
             final int S = pixels(BLOB_RADIUS - BLOB_BORDER);
             canvas.drawRect(x()-S, y()-S, x()+S, y()+S, fill);
         }
     }
+
+
 
 
     private int _anchorY = -100;
@@ -118,19 +117,56 @@ public class ThumbkeyboardView extends View {
     static final int BB = BLOB_BORDER * 2; // wall margin
     // negative positions means right/bottom-aligned
     Blob [] _blobs = new Blob [] {
-            //        ,-- label   ,-- dpi
-            new Blob(0, "W",    BS+BB, -5*BS), // left hand
-            new Blob(1, "A",    BS+BB, -3*BS),
-            new Blob(2, "C",    BS+BB,   -BS),
-            new Blob(3, "B",  3*BS+BB, -3*BS),
-            new Blob(4, "D",  3*BS+BB,   -BS),
-            new Blob(5, "G", -3*BS-BB,   -BS), // right hand
-            new Blob(6, "E", -3*BS-BB, -3*BS),
-            new Blob(7, "H",   -BS-BB,   -BS),
-            new Blob(8, "F",   -BS-BB, -3*BS),
-            new Blob(9, "Z",   -BS-BB, -5*BS),
+            //       idx col row
+            new Blob( 0,  0, 0),
+            new Blob( 1,  1, 0),
+            new Blob( 2, -2, 0),
+            new Blob( 3, -1, 0),
+            new Blob( 4,  0, 1),
+            new Blob( 5,  1, 1),
+            new Blob( 6, -2, 1),
+            new Blob( 7, -1, 1),
+            new Blob( 8,  0, 2),
+            new Blob( 9,  1, 2),
+            new Blob(10, -2, 2),
+            new Blob(11, -1, 2),
     };
     private Blob [] blobs () { return _blobs; }
+
+
+    class Stroke {
+        public int taps[] = new int[blobs().length];
+        public int ups[] = new int[blobs().length];
+        public int downs[] = new int[blobs().length];
+        public int lefts[] = new int[blobs().length];
+        public int rights[] = new int[blobs().length];
+
+        public void clear() {
+            for(int i = 0 ; i < taps.length ; i++) {
+                taps[i] = 0;
+                ups[i] = 0;
+                downs[i] = 0;
+                lefts[i] = 0;
+                rights[i] = 0;
+            }
+        }
+
+        @Override
+        public String toString() {
+            String s = "";
+            for(int j = 0 ; j < taps.length ; j += 4) {
+                s += ""
+                    + taps[j + 0] + lefts[j+0] + ups[j+0] + downs[j+0] + rights[j+0] + "-"
+                    + taps[j + 1] + lefts[j+1] + ups[j+1] + downs[j+1] + rights[j+1]
+                    + " "
+                    + taps[j + 2] + lefts[j+2] + ups[j+2] + downs[j+2] + rights[j+2] + "-"
+                    + taps[j + 3] + lefts[j+3] + ups[j+3] + downs[j+3] + rights[j+3]
+                    + "\n";
+            }
+            return s;
+        }
+    }
+    Stroke stroke = new Stroke();
 
     private int touch2blob(double x, double y, MutableDouble closestDist) {
         int nearest = 0; // index
@@ -151,122 +187,6 @@ public class ThumbkeyboardView extends View {
         return touch2blob(x, y, null);
     }
 
-    static class Press {
-        PressType type;
-        Blob [] pressing;
-        long ms; // milliseconds after previous press
-        Press(PressType type, Blob [] btn, long when) { this.type = type; this.pressing = btn.clone(); this.ms = when; }
-        public boolean [] toState () {
-            boolean [] state = new boolean [10];
-            for(int i = 0 ; i < pressing.length ; i++) {
-                int bid = pressing[i] == null ? -1 : pressing[i].bid();
-                if(bid >= 0) // no need to handle fingers not touching anything
-                    state[bid] = true;
-            }
-            return state;
-        }
-    }
-
-    static final int MAX_PRESSES = 512;
-    Press [] press = new Press [MAX_PRESSES];
-    int presses = 0;
-    long timeLastPress;
-
-    private void pressStart(long when) {
-        pressedFlush(presses);
-        processedPresses = presses = 0;
-        timeLastPress = when;
-    }
-    private void pressComplete() {
-        for(int i = 0 ; i < buttonStates.length ; i++)
-            buttonStates[i] = false;
-    }
-
-    int processedPresses = 0;
-    private Runnable processInvokeCallback = new Runnable() {
-        @Override
-        public void run() {
-            pressInvoke(presses);
-        }
-    };
-    private void pressedFlush(int presses) {
-        for (int i = processedPresses + 1; i <= presses ; i++) {
-            pressInvoke(i);
-        }
-    }
-
-    enum PressType {
-        DOWN, UP, SWIPE
-    }
-
-    private void press(PressType type, Blob [] bleh, long when) {
-        if(presses >= MAX_PRESSES) return;
-        pressedFlush(presses - 1);
-
-        long elapsed = when - timeLastPress;
-        timeLastPress = when;
-        press[presses] = new Press(type, bleh, elapsed);
-        buttonStates = press[presses].toState();
-        presses++;
-
-        removeCallbacks(processInvokeCallback);
-        // need >60m guarantees so we don't process simultanious combinations as two strokes
-        postDelayed(processInvokeCallback, MAX_DELAY_DOUBLE_COMBO + 10);
-        postInvalidate();
-    }
-
-    private boolean [] buttonStates = new boolean[] {false,false,false,false,false,   false,false,false,false,false };
-
-
-    // eg map [false, true, false, false] => ".x.."
-    private String state2str(boolean [] state) {
-        String s = "";
-        for(int i = 0 ; i < state.length ; i++) {
-            boolean b = state[i];
-            if(i == state.length / 2) s+= " "; // add space in between
-            s += b ? "x" : ".";
-        }
-        return s;
-    }
-
-
-
-    private String pressPattern(int presses) {
-        if(presses == 0) return "";// avoid nullpointer ref on press[0] which may not be initialized. this is getting hacky
-
-        boolean [] state = press[0].toState();
-        String pattern = "";
-
-        for ( int i = 1 ; i < presses ; i++ ) {
-
-            boolean squashPress = (press[i - 1].type == press[i].type) &&
-                    press[i].type != PressType.SWIPE && // we can only squash two down or two up events
-                    (press[i].ms < MAX_DELAY_DOUBLE_COMBO); // and only if at almost the same time
-
-            if(!squashPress) {
-                pattern += state2str(state) + "\n";
-            }
-
-            state = press[i].toState();
-        }
-        // this is safe because squashPress would always be false
-        // here, since we're postDelayed >60ms after the event
-        // actually happened
-        pattern += state2str(state) + "\n";
-        return pattern;
-    }
-
-
-    private void pressInvoke(int presses) {
-        String pattern = pressPattern(presses);
-        handlePattern(pattern);
-        Log.d(TAG, "===== these " + presses + " CHORDs make " + ThumboardLayout.parse(pattern));
-        // surround pattern with " so that the printed logging matches our layout.scm formats better
-        for(String line : pattern.split("\n")) {
-            Log.d(TAG, "\"" + line + "\"");
-        }
-        processedPresses = presses;
-    }
 
     private void handlePattern(String p) {
         if(p != null) {
@@ -441,41 +361,52 @@ public class ThumbkeyboardView extends View {
         switch(event.getActionMasked()) {
 
             case MotionEvent.ACTION_DOWN: { // primary finger down!
-                pressStart(event.getEventTime());
-                int btn = touch2blob(event.getX(i), event.getY(i));
-                int fid = event.getPointerId(i);
-
-                fingerTouches[fid] = blobs()[btn];
-                press(PressType.DOWN, fingerTouches, event.getEventTime());
+                final int btn = touch2blob(event.getX(i), event.getY(i));
+                blobs()[btn].tapping = true;
                 break; }
 
             case MotionEvent.ACTION_POINTER_DOWN: { // another finger down while holding one down
-                int btn = touch2blob(event.getX(i), event.getY(i));
-                int fid = event.getPointerId(i);
-                fingerTouches[fid] = blobs()[btn];
-                press(PressType.DOWN, fingerTouches, event.getEventTime());
+                final int btn = touch2blob(event.getX(i), event.getY(i));
+                blobs()[btn].tapping = true;
                 break; }
 
             case MotionEvent.ACTION_POINTER_UP: { // finger up, still holding one down
-                int fid = event.getPointerId(i);
-                fingerTouches[fid] = null;
-                press(PressType.UP, fingerTouches, event.getEventTime());
+                final int btn = touch2blob(event.getX(i), event.getY(i));
+                if(blobs()[btn].tapping)
+                    stroke.taps[btn]++;
                 break; }
             case MotionEvent.ACTION_MOVE: {
                 for( int j = 0 ; j < event.getPointerCount() ; j++) {
-                    Blob btn = blobs()[touch2blob(event.getX(j), event.getY(j))];
+                    final Blob btn = blobs()[touch2blob(event.getX(j), event.getY(j))]; // <-- going to
                     if(btn != fingerTouches[event.getPointerId(j)]) {
-                        int fid = event.getPointerId(j);
+                        final int fid = event.getPointerId(j);
+                        final Blob old = fingerTouches[fid]; // <-- coming from
+                        if(old != null) {
+                            final int bid = old.bid();
+                            int ox = old.bid() % 4, oy = old.bid() / 4;
+                            int nx = btn.bid() % 4, ny = btn.bid() / 4;
+                            int dx = nx - ox, dy = ny - oy;
+                            Log.i(TAG, "swipe on " + bid + ": " + dx + "," + dy);
+                            int table [] = (dx == 0
+                                    ? (dy == 1 ? stroke.downs : stroke.ups)
+                                    : (dx == 1 ? stroke.rights : stroke.lefts));
+                            table[bid]++;
+                            old.tapping = false; // this is no longer a tap
+                        }
                         fingerTouches[fid] = btn;
-                        press(PressType.SWIPE, fingerTouches, event.getEventTime());
                     }
                 }
                 break;
             }
             case MotionEvent.ACTION_UP: { // all fingers up! obs: last finger up ?≠ first finger down
-                int fid = event.getPointerId(i);
-                fingerTouches[fid] = null;
-                press(PressType.UP, fingerTouches, event.getEventTime());
+                final int btn = touch2blob(event.getX(i), event.getY(i));
+                if(blobs()[btn].tapping)
+                    stroke.taps[btn]++;
+                Log.i(TAG, "===============================");
+                Log.i(TAG, "" + stroke);
+                stroke.clear();
+                for(int j = 0 ; j < fingerTouches.length ; j++) fingerTouches[j] = null;
+                for(int j = 0 ; j < blobs().length ; j++) blobs()[j].tapping = false;
                 break; }
             default:
                 //Log.d(TAG, "missed event " + event.getActionMasked());
@@ -505,7 +436,6 @@ public class ThumbkeyboardView extends View {
 
         Blob bs [] = blobs();
         boolean any = false;
-        for (int i = 0 ; i < bs.length ; i++) { any = any || (bs[i].holding = buttonStates[i]); }
 
         for (int i = 0 ; i < bs.length ; i++) {
            bs[i].draw(canvas, any);
