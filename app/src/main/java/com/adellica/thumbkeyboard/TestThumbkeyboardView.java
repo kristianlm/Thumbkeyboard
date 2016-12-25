@@ -466,7 +466,7 @@ public class TestThumbkeyboardView extends View {
             case 0x100048:  // HELP (FUNCT-H)
                if (Help == null) {
                   Help = new Paint();
-                  setBackgroundResource(R.drawable.help);
+                   //setBackgroundResource(R.drawable.help);
                   Help.setTextAlign(Paint.Align.CENTER);
                }
                break;
