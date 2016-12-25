@@ -69,12 +69,16 @@ public class ThumbkeyboardView extends View {
         final private double y;
         final private String name;
         final private int bid;
+        public boolean holding = false;
+
+        final Paint fill = new Paint();
 
         Blob(int bid, String name, double x, double y) {
             this.bid = bid;
             this.name = name;
             this.x = x;
             this.y = y;
+            this.fill.setStyle(Paint.Style.FILL);
         }
         public double dist2(double x, double y) {
             return  (this.x() - x) * (this.x() - x) +
@@ -89,6 +93,16 @@ public class ThumbkeyboardView extends View {
         public String toString() { return  name;}
         public String name() { return name; }
         public int bid() { return bid; }
+
+        public void draw(Canvas canvas, boolean anybody_up) {
+            if(anybody_up)
+                if(holding) fill.setColor(Color.argb(0xB0, 0xff, 0x80, 0x00));
+                else        fill.setColor(Color.argb(0x40, 0xff, 0xff, 0x00));
+            else            fill.setColor(Color.argb(0x40, 0xff, 0xff, 0x00));
+            //canvas.drawCircle((float)bs[i].x, (float)bs[i].y, pixels(BLOB_RADIUS), fill);
+            final int S = pixels(BLOB_RADIUS - BLOB_BORDER);
+            canvas.drawRect(x()-S, y()-S, x()+S, y()+S, fill);
+        }
     }
 
 
@@ -490,21 +504,11 @@ public class ThumbkeyboardView extends View {
         cp2.setStrokeWidth(4);
 
         Blob bs [] = blobs();
-        final Paint fill = new Paint();
-        fill.setStyle(Paint.Style.FILL);
         boolean any = false;
-        for (int i = 0 ; i < bs.length ; i++) { any = any || buttonStates[i]; }
+        for (int i = 0 ; i < bs.length ; i++) { any = any || (bs[i].holding = buttonStates[i]); }
 
         for (int i = 0 ; i < bs.length ; i++) {
-            boolean holding = buttonStates[i];
-            if(any)
-                if(holding) fill.setColor(Color.argb(0xB0, 0xff, 0x80, 0x00));
-                else        fill.setColor(Color.argb(0x40, 0xff, 0xff, 0x00));
-            else            fill.setColor(Color.argb(0x40, 0xff, 0xff, 0x00));
-            //canvas.drawCircle((float)bs[i].x, (float)bs[i].y, pixels(BLOB_RADIUS), fill);
-            final Blob b = bs[i];
-            final int S = pixels(BLOB_RADIUS - BLOB_BORDER);
-            canvas.drawRect(b.x()-S, b.y()-S, b.x()+S, b.y()+S, fill);
+           bs[i].draw(canvas, any);
         }
 
         if(!showHelp) return;
