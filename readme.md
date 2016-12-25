@@ -78,7 +78,7 @@ Latin and programming input.
 - arrow keys as single swipe keys. replace -/+ swipes perhaps? arrows
   are probably used more often
 - & is quite long
-- separate number-mode (for numeric input, phone numbers, time, date etc)
+- separate number-mode (for numbers, currencies, time, date, ip-addresses etc)
 - configure layout at runtime
 - allow deleting words at a time, not just characters (faster backspace)
 - fix crash: press TAB, then press REPEAT
