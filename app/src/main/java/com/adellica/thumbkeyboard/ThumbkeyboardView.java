@@ -96,9 +96,9 @@ public class ThumbkeyboardView extends View {
 
         public void draw(Canvas canvas, boolean anybody_up) {
             if(anybody_up)
-                if(holding) fill.setColor(Color.argb(0xB0, 0xff, 0x80, 0x00));
-                else        fill.setColor(Color.argb(0x40, 0xff, 0xff, 0x00));
-            else            fill.setColor(Color.argb(0x40, 0xff, 0xff, 0x00));
+                if(holding) fill.setColor(Color.argb(0xB0, 0xff, 0x80, 0xff));
+                else        fill.setColor(Color.argb(0x40, 0xff, 0xff, 0xff));
+            else            fill.setColor(Color.argb(0x40, 0xff, 0xff, 0xff));
             //canvas.drawCircle((float)bs[i].x, (float)bs[i].y, pixels(BLOB_RADIUS), fill);
             final int S = pixels(BLOB_RADIUS - BLOB_BORDER);
             canvas.drawRect(x()-S, y()-S, x()+S, y()+S, fill);

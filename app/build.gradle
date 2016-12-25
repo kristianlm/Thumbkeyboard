@@ -5,7 +5,7 @@ android {
     buildToolsVersion "21.1.2"
 
     defaultConfig {
-        applicationId "com.adellica.thumbkeyboard"
+        applicationId "com.adellica.thumbkeyboard2"
         minSdkVersion 21
         targetSdkVersion 21
         versionCode 1
