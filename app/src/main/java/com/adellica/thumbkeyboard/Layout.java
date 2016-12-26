@@ -92,6 +92,10 @@ public class Layout {
 
         final File directory = new File(ThumbkeyboardView.layoutnamedir());
         final File[] files = directory.listFiles();
+        if(files == null){
+            Log.e(TAG, "files is null, no layouts fonud");
+            return layouts;
+        }
         Log.d(TAG, "Loading config files " + Arrays.asList(files));
         for (int i = 0; i < files.length; i++)
         {
