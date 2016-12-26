@@ -16,6 +16,7 @@ import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputConnection;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -467,8 +468,11 @@ public class ThumbkeyboardView extends View {
         int meta = getMetaState();
         if (keycode != 0) {
             long now = System.currentTimeMillis();
-            Ime.getCurrentInputConnection().sendKeyEvent(new KeyEvent(now, now, KeyEvent.ACTION_DOWN, keycode, 0, meta));
-            Ime.getCurrentInputConnection().sendKeyEvent(new KeyEvent(now, now, KeyEvent.ACTION_UP,   keycode, 0, meta));
+            final InputConnection ic = Ime.getCurrentInputConnection();
+            if(ic != null) {
+                ic.sendKeyEvent(new KeyEvent(now, now, KeyEvent.ACTION_DOWN, keycode, 0, meta));
+                ic.sendKeyEvent(new KeyEvent(now, now, KeyEvent.ACTION_UP,   keycode, 0, meta));
+            } else Log.e(TAG, "obs: current input connection is null");
         }
 
         modifiersClear();
