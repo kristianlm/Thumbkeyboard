@@ -529,7 +529,7 @@ public class ThumbkeyboardView extends View {
         return dir + name + ".chords";
     }
 
-    public class Layout {
+    public static class Layout {
         final public String name;
         final Map<String, String> map;
         public Layout(String name) {
@@ -571,6 +571,26 @@ public class ThumbkeyboardView extends View {
             return l;
         }
 
+        public static Layout fromFile(final String name) {
+            final String filename = layoutname2path(name);
+            Log.i(TAG, "loading layout from file " + filename);
+            try {
+                String line;
+                Map<String, String> map = new HashMap<String, String>();
+                InputStream fis = new FileInputStream(filename);
+                InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
+                BufferedReader br = new BufferedReader(isr);
+
+                while ((line = br.readLine()) != null) {
+                    final String pair[] = Stroke.parse(line);
+                    map.put(pair[0], pair[1]);
+                }
+                return new Layout(name, map);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
     }
 
     Map<String, Layout> layouts = new HashMap<String, Layout>();
@@ -587,33 +607,12 @@ public class ThumbkeyboardView extends View {
             if(filename.endsWith(".chords")) {
                 final String name = filename.substring(0, filename.length() - 7);
                 Log.i(TAG, "loading chords file " + layoutname2path(name) + " as " + name);
-                final Layout layout = fromFile(name);
+                final Layout layout = Layout.fromFile(name);
                 layouts.put(name, layout);
             }
         }
 
         return layouts;
-    }
-
-    public Layout fromFile(final String name) {
-        final String filename = layoutname2path(name);
-        Log.i(TAG, "loading layout from file " + filename);
-        try {
-            String line;
-            Map<String, String> map = new HashMap<String, String>();
-            InputStream fis = new FileInputStream(filename);
-            InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
-            BufferedReader br = new BufferedReader(isr);
-
-            while ((line = br.readLine()) != null) {
-                final String pair[] = Stroke.parse(line);
-                map.put(pair[0], pair[1]);
-            }
-            return new Layout(name, map);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     @Override
