@@ -584,17 +584,20 @@ public class ThumbkeyboardView extends View {
             case MotionEvent.ACTION_DOWN: { // primary finger down!
                 final int btn = touch2blob(event.getX(i), event.getY(i));
                 blobs()[btn].tapping = true;
+                postInvalidate();
                 break; }
 
             case MotionEvent.ACTION_POINTER_DOWN: { // another finger down while holding one down
                 final int btn = touch2blob(event.getX(i), event.getY(i));
                 blobs()[btn].tapping = true;
+                postInvalidate();
                 break; }
 
             case MotionEvent.ACTION_POINTER_UP: { // finger up, still holding one down
                 final int btn = touch2blob(event.getX(i), event.getY(i));
                 if(blobs()[btn].tapping)
                     stroke.taps[btn]++;
+                postInvalidate();
                 break; }
             case MotionEvent.ACTION_MOVE: {
                 for( int j = 0 ; j < event.getPointerCount() ; j++) {
@@ -613,6 +616,7 @@ public class ThumbkeyboardView extends View {
                                     : (dx == 1 ? stroke.rights : stroke.lefts));
                             table[bid]++;
                             old.tapping = false; // this is no longer a tap
+                            postInvalidate();
                         }
                         fingerTouches[fid] = btn;
                     }
@@ -633,6 +637,7 @@ public class ThumbkeyboardView extends View {
                 for(int j = 0 ; j < blobs().length ; j++) blobs()[j].tapping = false;
 
                 handlePattern(pattern);
+                postInvalidate();
                 break; }
             default:
                 //Log.d(TAG, "missed event " + event.getActionMasked());
@@ -672,7 +677,11 @@ public class ThumbkeyboardView extends View {
 
         for (int i = 0 ; i < bs.length ; i++) {
             tempStroke.copyFrom(stroke);
-            tempStroke.taps[i] ++;
+            tempStroke.taps[i] ++; // <-- pretend we tapped current
+            for(int j = 0 ; j < blobs().length ; j++)
+                if(blobs()[j].tapping)
+                    tempStroke.taps[j]++; // <-- pretend we tapped held buttons
+
             final String token = shownLayout().get(tempStroke.toString());
             bs[i].draw(canvas, any, token == null ? "" : token);
             if(i == 2) {
