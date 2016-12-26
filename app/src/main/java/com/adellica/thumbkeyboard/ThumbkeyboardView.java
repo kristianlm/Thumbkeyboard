@@ -507,8 +507,7 @@ public class ThumbkeyboardView extends View {
 
             List<String> l = new ArrayList<String>(map.keySet());
             Collections.sort(l); Collections.reverse(l);
-            String filename = //StoragePath.getStorageDirectories()[0] +
-                    "/sdcard/" + name + ".chords";
+            String filename = StoragePath.getStorageDirectories()[0] + name + ".chords";
             Log.i(TAG, "saving layout to " + filename);
             try {
                 PrintWriter out = new PrintWriter(filename);
