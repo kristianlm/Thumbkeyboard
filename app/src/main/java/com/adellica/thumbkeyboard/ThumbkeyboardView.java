@@ -300,8 +300,9 @@ public class ThumbkeyboardView extends View {
                 _superlayout(!_superlayout());
             } else if(_write_stroke()) {
                 _write_stroke(false);
-                final Layout layout = layouts.get(currentLayout());
-                handleInput(p + (layout == null ? "" : layout.get(p)) + "\n"); // spit out raw stroke!
+                final Layout layout = currentLayout();
+                final String token = layout.get(p);
+                handleInput("\n" + token); // spit out stroke action
             } else if(_stroke_record()) {
                 _stroke_record(false);
                 final String line = readBackwardsUntil("\n", true) + readForwardsUntil("\n", true);
