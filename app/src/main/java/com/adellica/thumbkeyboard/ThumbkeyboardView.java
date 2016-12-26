@@ -734,7 +734,9 @@ public class ThumbkeyboardView extends View {
                 if(token == null) token = strokeTry(i, stroke, tempStroke, tempStroke.rights, -1, 0);
                 if(token == null) token = strokeTry(i, stroke, tempStroke, tempStroke.lefts, 1, 0);
             }
+            if(i == 2 && _write_stroke()) token = "✏"; // pencil icon
             bs[i].draw(canvas, any, token == null ? "" : prettify(token));
+
             if(i == 2 && token == null) {
                 if(_stroke_record()) {
                     final Paint red = new Paint();
@@ -758,13 +760,24 @@ public class ThumbkeyboardView extends View {
 
     }
 
-    // describe a token to the user (lower case letter? input?).
+    // describe a token to the user (lower case letter? special command?).
     // we can make this as pretty as we want.
     private String prettify(final String token) {
         if("key SPACE".equals(token)) return "␣";
         if("repeat".equals(token)) return "↺";
-        final String label = token.startsWith("key ") ? token.substring(4) : token;
-        return modShift() ? label.toUpperCase() : label.toLowerCase();
+        if("key DEL".equals(token)) return "⇐";
+        if("key ENTER".equals(token)) return "⏎";
+        if("key DPAD_LEFT".equals(token)) return "←";
+        if("key DPAD_UP".equals(token)) return "↑";
+        if("key DPAD_RIGHT".equals(token)) return "→";
+        if("key DPAD_DOWN".equals(token)) return "↓";
+        if(token.startsWith("key ")) {
+            final String key = token.substring(4);
+            return key.length() == 1
+                    ? (modShift() ? key.toUpperCase() : key.toLowerCase()) // eg "key S"
+                    : key; // eg "key DEL"
+        }
+        return token; // eg "input å"
     }
 
 }
