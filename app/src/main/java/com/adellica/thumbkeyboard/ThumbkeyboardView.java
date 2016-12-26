@@ -135,11 +135,11 @@ public class ThumbkeyboardView extends View {
 
         public int bid() { return bid; }
 
-        public void draw(Canvas canvas, boolean anybody_up, final String label) {
-            if(anybody_up)
+        public void draw(Canvas canvas, boolean idle, final String label) {
+            if(idle)
                 if(holding) fill.setColor(Color.argb(0xB0, 0x00, 0x80, 0xff));
                 else        fill.setColor(Color.argb(0x40, 0x00, 0xff, 0xff));
-            else            fill.setColor(Color.argb(0x40, 0x00, 0xff, 0xff));
+            else            fill.setColor(Color.argb(0x30, 0x00, 0xff, 0xff));
 
             final int S = pixels(BLOB_RADIUS - BLOB_BORDER);
             canvas.drawRect(x()-S, y()-S, x()+S, y()+S, fill);
@@ -601,12 +601,14 @@ public class ThumbkeyboardView extends View {
             case MotionEvent.ACTION_DOWN: { // primary finger down!
                 final int btn = touch2blob(event.getX(i), event.getY(i));
                 blobs()[btn].tapping = true;
+                blobs()[btn].holding = true;
                 postInvalidate();
                 break; }
 
             case MotionEvent.ACTION_POINTER_DOWN: { // another finger down while holding one down
                 final int btn = touch2blob(event.getX(i), event.getY(i));
                 blobs()[btn].tapping = true;
+                blobs()[btn].holding = true;
                 postInvalidate();
                 break; }
 
@@ -614,6 +616,7 @@ public class ThumbkeyboardView extends View {
                 final int btn = touch2blob(event.getX(i), event.getY(i));
                 if(blobs()[btn].tapping)
                     stroke.taps[btn]++;
+                blobs()[btn].holding = false;
                 postInvalidate();
                 break; }
             case MotionEvent.ACTION_MOVE: {
@@ -623,6 +626,9 @@ public class ThumbkeyboardView extends View {
                         final int fid = event.getPointerId(j);
                         final Blob old = fingerTouches[fid]; // <-- coming from
                         if(old != null) {
+                            old.holding = false;
+                            btn.holding = true;
+
                             final int bid = old.bid();
                             int ox = old.bid() % 4, oy = old.bid() / 4;
                             int nx = btn.bid() % 4, ny = btn.bid() / 4;
@@ -651,7 +657,10 @@ public class ThumbkeyboardView extends View {
                 }
                 stroke.clear();
                 for(int j = 0 ; j < fingerTouches.length ; j++) fingerTouches[j] = null;
-                for(int j = 0 ; j < blobs().length ; j++) blobs()[j].tapping = false;
+                for(int j = 0 ; j < blobs().length ; j++) {
+                    blobs()[j].tapping = false;
+                    blobs()[j].holding = false;
+                }
 
                 handlePattern(pattern);
                 postInvalidate();
@@ -690,7 +699,10 @@ public class ThumbkeyboardView extends View {
         cp2.setStrokeWidth(4);
 
         Blob bs [] = blobs();
-        boolean any = false;
+        boolean any = false; // <-- anybody being pressed?
+        for (int i = 0 ; i < bs.length ; i++) {
+            any |= bs[i].holding;
+        }
 
         for (int i = 0 ; i < bs.length ; i++) {
             tempStroke.copyFrom(stroke);
