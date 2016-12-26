@@ -285,7 +285,7 @@ public class ThumbkeyboardView extends View {
     public Layout superLayout() {
         HashMap m = new HashMap<String, String>();
         m.put("10000-00000:00000-00000 00000-00000:00000-00000 00000-00000:00000-00000 ", "stroke write");
-        m.put("00000-00000:00000-00000 10000-00000:00000-00000 00000-00000:00000-00000 ", "stroke set");
+        m.put("00000-00000:00000-00000 10000-00000:00000-00000 00000-00000:00000-00000 ", "stroke record");
         m.put("00000-00000:00000-00000 00000-00000:00000-00000 10000-00000:00000-00000 ", "debug layout");
         return new Layout("supert", m);
     }
@@ -392,7 +392,7 @@ public class ThumbkeyboardView extends View {
                 Log.i(TAG, "<<< " + line);
                 String[] pair = Stroke.parse(line);
                 currentLayout().put(pair[0], pair[1]);
-            } else if("set".equals(value(t))) {
+            } else if("record".equals(value(t))) {
                 _stroke_record(true);
             } else {
                 Log.i(TAG, "Don't know how to handle " + t);
