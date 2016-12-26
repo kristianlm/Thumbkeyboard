@@ -382,14 +382,14 @@ public class ThumbkeyboardView extends View {
         } else if ("input".equals(cmd)) {
             handleInput(value(t));
         } else if ("stroke".equals(cmd)) {
-            if("write".equals(value(t))) {
+            if ("write".equals(value(t))) {
                 _write_stroke(true);
-            } else if("read".equals(value(t))) {
+            } else if ("read".equals(value(t))) {
                 String line = readBackwardsUntil("\n", true) + readForwardsUntil("\n", true);
                 Log.i(TAG, "<<< " + line);
                 String[] pair = Stroke.parse(line);
                 currentLayout().put(pair[0], pair[1]);
-            } else if("record".equals(value(t))) {
+            } else if ("record".equals(value(t))) {
                 _stroke_record(true);
             } else {
                 Log.i(TAG, "Don't know how to handle " + t);
