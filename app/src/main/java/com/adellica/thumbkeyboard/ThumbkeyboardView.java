@@ -272,11 +272,17 @@ public class ThumbkeyboardView extends View {
         return touch2blob(x, y, null);
     }
 
+    /**
+     * The superlayout is read-only
+     * @return
+     */
     public Layout superLayout() {
         HashMap m = new HashMap<String, String>();
         m.put("10000-00000:00000-00000 00000-00000:00000-00000 00000-00000:00000-00000 ", "stroke write");
         m.put("00000-00000:00000-00000 10000-00000:00000-00000 00000-00000:00000-00000 ", "stroke record");
         m.put("00000-00000:00000-00000 00000-00000:00000-00000 10000-00000:00000-00000 ", "debug layout");
+        m.put("00000-00000:00000-10000 00000-00000:00000-00000 00000-00000:00000-00000 ", "layout default");
+        m.put("00000-00000:00000-00000 00000-00000:10000-00000 00000-00000:00000-00000 ", "layout num");
         return new Layout("supert", m);
     }
 
@@ -389,8 +395,7 @@ public class ThumbkeyboardView extends View {
                 Log.i(TAG, "Don't know how to handle " + t);
             }
         } else if("layout".equals(cmd)){
-            final String layout_s = value(t);
-
+            currentLayoutName(value(t));
         } else if("delete".equals(cmd)) {
             if("line".equals(value(t))) {
                 final String preline = readBackwardsUntil("\n", true);
@@ -415,15 +420,24 @@ public class ThumbkeyboardView extends View {
             lastToken = t;
     }
 
-    String currentLayoutName = "default";
+    String _currentLayoutName = "default";
+    public String currentLayoutName() { return _currentLayoutName; }
+    public void currentLayoutName(String name) {
+        Log.i(TAG, "current layout is now \"" + name + "\" ( was \"" + _currentLayoutName + "\")");
+        _currentLayoutName = name;
+        postInvalidate();
+    }
 
     // never return null because that would force nullpointer-checks
     // on every other line in this file.
     private Layout currentLayout() {
-        final Layout l = layouts.get(currentLayoutName);
-        if(l == null)
-            return new Layout("missing");
-        else
+        final Layout l = layouts.get(currentLayoutName());
+        // layout name not found, create it!
+        if(l == null) {
+            Layout layout = new Layout(currentLayoutName());
+            layouts.put(currentLayoutName(), layout);
+            return layout;
+        } else
             return l;
     }
 
