@@ -538,17 +538,6 @@ public class ThumbkeyboardView extends View {
     boolean holding = false;
     Blob [] fingerTouches = new Blob [ 4 ]; // who'se got 4 thumbs anyway?
 
-    public static String layoutnamedir() {
-        return android.os.Environment.getExternalStorageDirectory()
-                + File.separator
-                + "thumb-keyboard"
-                + File.separator;
-    }
-    public static String layoutname2path(final String name) {
-        final String dir = layoutnamedir();
-        new File(dir).mkdirs();
-        return dir + name + ".chords";
-    }
 
     Map<String, Layout> layouts = new HashMap<String, Layout>();
 

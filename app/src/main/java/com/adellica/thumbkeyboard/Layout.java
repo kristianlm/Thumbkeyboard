@@ -40,7 +40,7 @@ public class Layout {
 
         List<String> l = new ArrayList<String>(map.keySet());
         Collections.sort(l); Collections.reverse(l);
-        String filename = ThumbkeyboardView.layoutname2path(name);
+        String filename = layoutname2path(name);
         Log.i(TAG, "saving layout to " + filename);
         try {
             PrintWriter out = new PrintWriter(filename);
@@ -55,6 +55,18 @@ public class Layout {
         return result;
     }
 
+    public static String layoutnamedir() {
+        return android.os.Environment.getExternalStorageDirectory()
+                + File.separator
+                + "thumb-keyboard"
+                + File.separator;
+    }
+    public static String layoutname2path(final String name) {
+        final String dir = layoutnamedir();
+        new File(dir).mkdirs();
+        return dir + name + ".chords";
+    }
+
     public String get(String key) {
         return map.get(key);
     }
@@ -66,7 +78,7 @@ public class Layout {
     }
 
     public static Layout fromFile(final String name) {
-        final String filename = ThumbkeyboardView.layoutname2path(name);
+        final String filename = layoutname2path(name);
         Log.i(TAG, "loading layout from file " + filename);
         try {
             String line;
@@ -102,7 +114,7 @@ public class Layout {
             final String filename = files[i].getName();
             if(filename.endsWith(".chords")) {
                 final String name = filename.substring(0, filename.length() - 7);
-                Log.i(TAG, "loading chords file " + ThumbkeyboardView.layoutname2path(name) + " as " + name);
+                Log.i(TAG, "loading chords file " + layoutname2path(name) + " as " + name);
                 final Layout layout = fromFile(name);
                 layouts.put(name, layout);
             }
