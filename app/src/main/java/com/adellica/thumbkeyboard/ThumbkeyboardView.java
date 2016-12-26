@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Typeface;
+import android.os.Environment;
 import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.util.AttributeSet;
@@ -18,6 +19,7 @@ import android.view.View;
 import android.view.inputmethod.InputConnection;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -506,8 +508,16 @@ public class ThumbkeyboardView extends View {
     Blob [] fingerTouches = new Blob [ 4 ]; // who'se got 4 thumbs anyway?
     Map<String, Layout> layouts = new HashMap<String, Layout>();
 
+    public static String layoutnamedir() {
+        return android.os.Environment.getExternalStorageDirectory()
+                + File.separator
+                + "thumb-keyboard"
+                + File.separator;
+    }
     public static String layoutname2path(final String name) {
-        return android.os.Environment.getExternalStorageDirectory() + "/" + name + ".chords";
+        final String dir = layoutnamedir();
+        new File(dir).mkdirs();
+        return dir + name + ".chords";
     }
 
     public class Layout {
@@ -556,6 +566,7 @@ public class ThumbkeyboardView extends View {
 
     public Layout fromFile(final String name) {
         final String filename = layoutname2path(name);
+        Log.i(TAG, "loading layout from file " + filename);
         try {
             String line;
             Map<String, String> map = new HashMap<String, String>();
