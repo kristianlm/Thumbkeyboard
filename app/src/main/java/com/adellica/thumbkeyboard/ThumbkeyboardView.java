@@ -727,7 +727,7 @@ public class ThumbkeyboardView extends View {
 
             final String token = shownLayout().get(tempStroke.toString());
             bs[i].draw(canvas, any, token == null ? "" : prettify(token));
-            if(i == 2) {
+            if(i == 2 && token == null) {
                 if(_stroke_record()) {
                     final Paint red = new Paint();
                     red.setStyle(Paint.Style.FILL);
@@ -741,7 +741,7 @@ public class ThumbkeyboardView extends View {
                 } else {
                     final Paint red = new Paint();
                     red.setStyle(Paint.Style.STROKE);
-                    red.setStrokeWidth(pixels(5));
+                    red.setStrokeWidth(pixels(3));
                     red.setColor(Color.argb(0xe0, 0, 0xff, 0xff));
                     canvas.drawCircle(bs[i].x(), bs[i].y(), pixels(BS / 4), red);
                 }
