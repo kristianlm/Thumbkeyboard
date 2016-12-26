@@ -45,25 +45,31 @@ public class ThumbkeyboardView extends View {
 
 
     // utils
-    String readBackwardsUntil(String p) {
+    String readBackwardsUntil(String p, boolean eof) {
+        final InputConnection ic = Ime.getCurrentInputConnection();
+        if(ic == null) return null;
         int size = 32;
+        String c = null;
         while(size < 4096) {
-            String c = Ime.getCurrentInputConnection().getTextBeforeCursor(size, 0).toString();
+            c = ic.getTextBeforeCursor(size, 0).toString();
             int idx = c.lastIndexOf(p);
             if(idx >= 0) { return c.substring(idx + 1); }
             size *= 2;
         }
-        return null;
+        return eof ? c : null;
     }
-    String readForwardsUntil(String p) {
+    String readForwardsUntil(String p, boolean eof) {
+        final InputConnection ic = Ime.getCurrentInputConnection();
+        if(ic == null) return null;
         int size = 32;
+        String c = null;
         while(size < 4096) {
-            String c = Ime.getCurrentInputConnection().getTextAfterCursor(size, 0).toString();
+            c = ic.getTextAfterCursor(size, 0).toString();
             int idx = c.indexOf(p);
             if(idx >= 0) { return c.substring(0, idx); }
             size *= 2;
         }
-        return null;
+        return eof ? c : null;
     }
 
     private static class MutableDouble {
@@ -290,7 +296,7 @@ public class ThumbkeyboardView extends View {
                 handleInput(p + (layout == null ? "" : layout.get(p)) + "\n"); // spit out raw stroke!
             } else if(_stroke_record()) {
                 _stroke_record(false);
-                final String line = readBackwardsUntil("\n") + readForwardsUntil("\n");
+                final String line = readBackwardsUntil("\n", true) + readForwardsUntil("\n", true);
                 Log.d(TAG, "storing " + p + " as \"" + line + "\"");
                 currentLayout().put(p, line);
             } else {
@@ -364,7 +370,7 @@ public class ThumbkeyboardView extends View {
             if("write".equals(value(t))) {
                 _write_stroke(true);
             } else if("read".equals(value(t))) {
-                String line = readBackwardsUntil("\n") + readForwardsUntil("\n");
+                String line = readBackwardsUntil("\n", true) + readForwardsUntil("\n", true);
                 Log.i(TAG, "<<< " + line);
                 String[] pair = addStrokeLine(line);
                 currentLayout().put(pair[0], pair[1]);
@@ -375,8 +381,8 @@ public class ThumbkeyboardView extends View {
             }
         } else if("delete".equals(cmd)) {
             if("line".equals(value(t))) {
-                final String preline = readBackwardsUntil("\n");
-                final String postline = readForwardsUntil("\n");
+                final String preline = readBackwardsUntil("\n", true);
+                final String postline = readForwardsUntil("\n", true);
                 final InputConnection ic = Ime.getCurrentInputConnection();
                 if(ic != null) //                                                  ,-- delete newline too
                     ic.deleteSurroundingText(
