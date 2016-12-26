@@ -198,13 +198,21 @@ public class ThumbkeyboardView extends View {
     private Blob [] blobs () { return _blobs; }
 
 
-    class Stroke {
-        public int taps[] = new int[blobs().length];
-        public int ups[] = new int[blobs().length];
-        public int downs[] = new int[blobs().length];
-        public int lefts[] = new int[blobs().length];
-        public int rights[] = new int[blobs().length];
+    static class Stroke {
+        public int taps[];
+        public int ups[];
+        public int downs[];
+        public int lefts[];
+        public int rights[];
 
+        public Stroke(int len) {
+            taps = new int[len];
+            ups = new int[len];
+            downs = new int[len];
+            lefts = new int[len];
+            rights = new int[len];
+
+        }
         public void clear() {
             for(int i = 0 ; i < taps.length ; i++) {
                 taps[i] = 0;
@@ -229,6 +237,17 @@ public class ThumbkeyboardView extends View {
             }
             return s;
         }
+        // read a line like 00000-00000:00000-00000 00000-00000:00000-00000 00100-00000:00000-00000 key DPAD_UP
+        // and return it's stroke part and its token-part. This is tightly connected to Stroke.toString implementation.
+        public static String[] parse(final String line) {
+            if(line.length() >= 72) {
+                String stroke = line.substring(0, 72);
+                String token = line.substring(72);
+                Log.i(TAG, "setting \"" + stroke + "\" to \"" + token + "\"");
+                return new String [] {stroke, token};
+            }
+            return null;
+        }
 
         public void copyFrom(Stroke stroke) {
             if(stroke.taps.length != taps.length)
@@ -242,7 +261,7 @@ public class ThumbkeyboardView extends View {
             }
         }
     }
-    Stroke stroke = new Stroke();
+    Stroke stroke = new Stroke(blobs().length);
 
     private int touch2blob(double x, double y, MutableDouble closestDist) {
         int nearest = 0; // index
@@ -371,7 +390,7 @@ public class ThumbkeyboardView extends View {
             } else if("read".equals(value(t))) {
                 String line = readBackwardsUntil("\n", true) + readForwardsUntil("\n", true);
                 Log.i(TAG, "<<< " + line);
-                String[] pair = addStrokeLine(line);
+                String[] pair = Stroke.parse(line);
                 currentLayout().put(pair[0], pair[1]);
             } else if("set".equals(value(t))) {
                 _stroke_record(true);
@@ -397,16 +416,6 @@ public class ThumbkeyboardView extends View {
 
         if (!"repeat".equals(cmd)) // avoid infinite recursion
             lastToken = t;
-    }
-
-    public String[] addStrokeLine(final String line) {
-        if(line.length() >= 72) {
-            String stroke = line.substring(0, 72);
-            String token = line.substring(72);
-            Log.i(TAG, "setting \"" + stroke + "\" to \"" + token + "\"");
-            return new String [] {stroke, token};
-        }
-        return null;
     }
 
     Layout currentLayout = new Layout("default");
@@ -551,7 +560,7 @@ public class ThumbkeyboardView extends View {
             BufferedReader br = new BufferedReader(isr);
 
             while ((line = br.readLine()) != null) {
-                final String pair[] = addStrokeLine(line);
+                final String pair[] = Stroke.parse(line);
                 map.put(pair[0], pair[1]);
             }
             return new Layout(name, map);
@@ -664,7 +673,7 @@ public class ThumbkeyboardView extends View {
         else return currentLayout();
     }
 
-    Stroke tempStroke = new Stroke();
+    Stroke tempStroke = new Stroke(blobs().length);
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
