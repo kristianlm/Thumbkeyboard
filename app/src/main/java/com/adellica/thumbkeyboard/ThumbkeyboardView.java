@@ -661,6 +661,44 @@ public class ThumbkeyboardView extends View {
         else return currentLayout();
     }
 
+    /**
+     * Tricky business! Going from Blob index to the Blob index
+     * of a nextdoor Blob (from delta).
+     * @param bid index of button
+     * @param dx delta to move in x direction (should be 0 if dy ≠ 0)
+     * @param dy delta to move in y direction (should be 0 if dx ≠ 0)
+     * @return -1 if outside 4x3 Blob grid
+     */
+    public static int Blobdelta(int bid, int dx, int dy) {
+        int x = (bid % 4) + dx;
+        int y = (bid / 4) + dy;
+        //Log.i(TAG, "bid " + bid + " + " + dx + "," + dy + "  = " + x + "," + y + "  ");
+        if(y >= 0 && y <= 2)
+            if(x >= 0 && x <= 3)
+                return (y * 4) + x;
+        return -1;
+    }
+
+    /**
+     * This is supertricky and a complete mess.
+     * @param bid the index of the Blob that you're looking at (the one we're trying to label)
+     * @param original the unmodified stroke
+     * @param stroke our temp stroke
+     * @param i array of inverse direction of dx,dy
+     * @param dx on Blob grid, +1 is right, -1 is left
+     * @param dy on Blob grid, +1 is down, -1 is up
+     * @return
+     */
+    public String strokeTry(int bid, Stroke original, Stroke stroke, int [] i, int dx, int dy) {
+        stroke.copyFrom(original);
+        int j = Blobdelta(bid, dx, dy);
+        if(j >= 0 && blobs()[j].holding) {
+            i[j]++;
+            return shownLayout().get(stroke.toString());
+        }
+        return null;
+    }
+
     Stroke tempStroke = new Stroke(blobs().length);
     @Override
     protected void onDraw(Canvas canvas) {
@@ -689,7 +727,13 @@ public class ThumbkeyboardView extends View {
                 if(blobs()[j].tapping)
                     tempStroke.taps[j]++; // <-- pretend we tapped held buttons
 
-            final String token = shownLayout() == null ? null : shownLayout().get(tempStroke.toString());
+            String token = shownLayout().get(tempStroke.toString());
+            if(any) { // try surrounding swipes
+                if(token == null) token = strokeTry(i, stroke, tempStroke, tempStroke.downs,    0,-1);
+                if(token == null) token = strokeTry(i, stroke, tempStroke, tempStroke.ups,  0, 1);
+                if(token == null) token = strokeTry(i, stroke, tempStroke, tempStroke.rights, -1, 0);
+                if(token == null) token = strokeTry(i, stroke, tempStroke, tempStroke.lefts, 1, 0);
+            }
             bs[i].draw(canvas, any, token == null ? "" : prettify(token));
             if(i == 2 && token == null) {
                 if(_stroke_record()) {
