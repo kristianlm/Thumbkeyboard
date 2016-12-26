@@ -576,9 +576,6 @@ public class ThumbkeyboardView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-
-
-
         int i = event.getActionIndex(); // index of finger that caused the down event
 
         switch (event.getActionMasked()) {
