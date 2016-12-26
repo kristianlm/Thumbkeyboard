@@ -238,7 +238,6 @@ public class ThumbkeyboardView extends View {
             if(line.length() >= 72) {
                 String stroke = line.substring(0, 72);
                 String token = line.substring(72);
-                Log.i(TAG, "setting \"" + stroke + "\" to \"" + token + "\"");
                 return new String [] {stroke, token};
             }
             return null;

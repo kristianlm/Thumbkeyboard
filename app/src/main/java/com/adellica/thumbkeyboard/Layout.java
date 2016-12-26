@@ -46,7 +46,6 @@ public class Layout {
             PrintWriter out = new PrintWriter(filename);
             for(String stroke : l) {
                 out.println(stroke + map.get(stroke));
-                Log.i(TAG, "saved: " + stroke + map.get(stroke));
             }
             out.close();
         } catch (FileNotFoundException e) {
