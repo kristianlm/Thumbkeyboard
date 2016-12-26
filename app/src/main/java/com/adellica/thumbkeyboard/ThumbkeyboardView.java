@@ -268,7 +268,7 @@ public class ThumbkeyboardView extends View {
 
     boolean __write_stroke = false;
     boolean __stroke_record = false;
-    boolean __superlayout = true;
+    boolean __superlayout = false;
 
     void _write_stroke(boolean setting) { __write_stroke = setting; postInvalidate(); };
     boolean _write_stroke() { return __write_stroke; };
