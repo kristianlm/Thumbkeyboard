@@ -685,7 +685,7 @@ public class ThumbkeyboardView extends View {
                     tempStroke.taps[j]++; // <-- pretend we tapped held buttons
 
             final String token = shownLayout().get(tempStroke.toString());
-            bs[i].draw(canvas, any, token == null ? "" : token);
+            bs[i].draw(canvas, any, token == null ? "" : prettify(token));
             if(i == 2) {
                 if(_stroke_record()) {
                     final Paint red = new Paint();
@@ -733,6 +733,11 @@ public class ThumbkeyboardView extends View {
         canvas.restore();
 
 
+    }
+
+    private String prettify(final String token) {
+        if(token.startsWith("key ")) return token.substring(4);
+        else return token;
     }
 
 }
