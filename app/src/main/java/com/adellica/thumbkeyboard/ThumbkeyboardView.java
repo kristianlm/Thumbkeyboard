@@ -748,32 +748,6 @@ public class ThumbkeyboardView extends View {
             }
         }
 
-        if(!showHelp) return;
-
-        final TextPaint p = new TextPaint();
-        final int w = canvas.getWidth();
-        final int h = canvas.getHeight();
-        final int y = Math.min(w, h);
-
-        final Paint background = new Paint();
-        background.setColor(Color.argb(0xC0, 20, 20, 20));
-
-
-        StaticLayout textLayout = new StaticLayout(ThumboardLayout.help(), p, canvas.getWidth() / 3, android.text.Layout.Alignment.ALIGN_NORMAL, 1.8f, 0.0f, false);
-
-        p.setTypeface(Typeface.MONOSPACE);
-        p.setTextSize(y / 36);
-
-        p.setStyle(Paint.Style.FILL);
-        p.setColor(Color.rgb(255, 255, 255));
-        canvas.save();
-        canvas.translate(450, 0);
-        canvas.drawRect(0, 0, textLayout.getWidth() + 100, textLayout.getHeight() + 100, background);
-        canvas.translate(50, 20);
-        textLayout.draw(canvas);
-        canvas.restore();
-
-
     }
 
     // describe a token to the user (lower case letter? input?).
