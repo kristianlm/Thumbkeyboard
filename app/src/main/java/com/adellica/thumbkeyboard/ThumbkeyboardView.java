@@ -373,6 +373,14 @@ public class ThumbkeyboardView extends View {
             } else {
                 Log.i(TAG, "Don't know how to handle " + t);
             }
+        } else if("delete".equals(cmd)) {
+            if("line".equals(value(t))) {
+                final String preline = readBackwardsUntil("\n");
+                final String postline = readForwardsUntil("\n");
+                final InputConnection ic = Ime.getCurrentInputConnection();
+                if(ic != null) //                                                  ,-- delete newline too
+                    ic.deleteSurroundingText(preline.length(), postline.length() + 1);
+            }
         } else if("debug".equals(cmd)) {
             Layout layout = currentLayout();
             for(String stroke : layout.keys()) {
