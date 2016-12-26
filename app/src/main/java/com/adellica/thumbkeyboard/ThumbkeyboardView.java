@@ -107,7 +107,7 @@ public class ThumbkeyboardView extends View {
     public ThumbkeyboardView(Context context, AttributeSet attrs) {
         super(context, attrs);
         Log.i(TAG, "WDOIWAJDOWAUHDWADWAOIDJWAODHWAODJWAOIDJOWAIJDWAOIDJWAOIJDOWA");
-        layouts = loadLayouts();
+        layouts = Layout.loadLayouts();
     }
 
     class Blob {
@@ -591,29 +591,31 @@ public class ThumbkeyboardView extends View {
             }
             return null;
         }
+
+
+        static public Map<String, Layout> loadLayouts() {
+            Map<String, Layout> layouts = new HashMap<String, Layout>();
+
+            final File directory = new File(layoutnamedir());
+            final File[] files = directory.listFiles();
+            Log.d(TAG, "Loading config files " + Arrays.asList(files));
+            for (int i = 0; i < files.length; i++)
+            {
+                final String filename = files[i].getName();
+                if(filename.endsWith(".chords")) {
+                    final String name = filename.substring(0, filename.length() - 7);
+                    Log.i(TAG, "loading chords file " + layoutname2path(name) + " as " + name);
+                    final Layout layout = fromFile(name);
+                    layouts.put(name, layout);
+                }
+            }
+
+            return layouts;
+        }
+
     }
 
     Map<String, Layout> layouts = new HashMap<String, Layout>();
-
-    public Map<String, Layout> loadLayouts() {
-        Map<String, Layout> layouts = new HashMap<String, Layout>();
-
-        final File directory = new File(layoutnamedir());
-        final File[] files = directory.listFiles();
-        Log.d(TAG, "Loading config files " + Arrays.asList(files));
-        for (int i = 0; i < files.length; i++)
-        {
-            final String filename = files[i].getName();
-            if(filename.endsWith(".chords")) {
-                final String name = filename.substring(0, filename.length() - 7);
-                Log.i(TAG, "loading chords file " + layoutname2path(name) + " as " + name);
-                final Layout layout = Layout.fromFile(name);
-                layouts.put(name, layout);
-            }
-        }
-
-        return layouts;
-    }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
