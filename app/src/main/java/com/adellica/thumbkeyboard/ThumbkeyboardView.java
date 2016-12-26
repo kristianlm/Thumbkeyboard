@@ -773,9 +773,11 @@ public class ThumbkeyboardView extends View {
 
     }
 
+    // describe a token to the user (lower case letter? input?).
+    // we can make this as pretty as we want.
     private String prettify(final String token) {
-        if(token.startsWith("key ")) return token.substring(4);
-        else return token;
+        final String label = token.startsWith("key ") ? token.substring(4) : token;
+        return modShift() ? label.toUpperCase() : label.toLowerCase();
     }
 
 }
