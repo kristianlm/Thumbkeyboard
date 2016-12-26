@@ -99,7 +99,7 @@ public class ThumbkeyboardView extends View {
     public ThumbkeyboardView(Context context, AttributeSet attrs) {
         super(context, attrs);
         Log.i(TAG, "WDOIWAJDOWAUHDWADWAOIDJWAODHWAODJWAOIDJOWAIJDWAOIDJWAOIJDOWA");
-        layouts = Layout.loadLayouts();
+        layouts = Layout.loadLayouts(getContext().getAssets());
     }
 
     class Blob {

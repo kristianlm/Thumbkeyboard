@@ -1,15 +1,19 @@
 package com.adellica.thumbkeyboard;
 
+import android.content.res.AssetManager;
 import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -97,16 +101,63 @@ public class Layout {
         return null;
     }
 
+    static private boolean copyFdToFile(AssetManager am, final String name, final String dir) {
+        boolean ok = false;
+        InputStream in = null;
+        OutputStream out = null;
+        Log.i(TAG, "copying " + name + " to " + dir);
+        try {
+            in = am.open(name);
+            layoutname2path(name); // <-- HACK: ensure parent dirs exits
+            out = new FileOutputStream(new File(dir + name));
+            copyStream(in, out);
+            ok = true;
+        } catch(IOException e) {
+            Log.e(TAG, "Failed to copy asset file: " + name + " to " + dir, e);
+        } finally {
+            try { if (in  != null)  in.close(); } catch (IOException e) { e.printStackTrace(); }
+            try { if (out != null) out.close(); } catch (IOException e) { e.printStackTrace(); }
+        }
+        return ok;
+    }
+    static private void copyStream(InputStream in, OutputStream out) throws IOException {
+        byte[] buffer = new byte[1024];
+        int read;
+        while((read = in.read(buffer)) != -1){
+            out.write(buffer, 0, read);
+        }
+    }
 
-    static public Map<String, Layout> loadLayouts() {
+    static public File[] ensureExists(AssetManager am, File[] files, String name) {
+        boolean found = false;
+        for (File f : files) {
+            if (name.equals(f.getName()))
+                found = true;
+        }
+        if (!found) {
+            if(copyFdToFile(am, name, layoutnamedir())) {
+                // add File to files
+                File[] tmp = Arrays.copyOf(files, files.length + 1);
+                tmp[files.length] = new File(name);
+                Log.i(TAG, "new files is " + Arrays.asList(tmp));
+                return tmp;
+            } else {
+                Log.e(TAG, "copying failed");
+            }
+        }
+        return files; // already present, files array
+    }
+
+    static public Map<String, Layout> loadLayouts(AssetManager am) {
         Map<String, Layout> layouts = new HashMap<String, Layout>();
 
-        final File directory = new File(ThumbkeyboardView.layoutnamedir());
-        final File[] files = directory.listFiles();
-        if(files == null){
-            Log.e(TAG, "files is null, no layouts fonud");
-            return layouts;
-        }
+        final File directory = new File(layoutnamedir());
+        File[] files = directory.listFiles();
+        if(files == null) files = new File[] {};
+
+        files = ensureExists(am, files, "default.chords");
+        files = ensureExists(am, files, "num.chords");
+
         Log.d(TAG, "Loading config files " + Arrays.asList(files));
         for (int i = 0; i < files.length; i++)
         {
