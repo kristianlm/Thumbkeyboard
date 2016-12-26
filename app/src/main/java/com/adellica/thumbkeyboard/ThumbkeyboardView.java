@@ -1,6 +1,7 @@
 package com.adellica.thumbkeyboard;
 
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -17,7 +18,11 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputConnection;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -280,7 +285,7 @@ public class ThumbkeyboardView extends View {
         HashMap m = new HashMap<String, String>();
         m.put("10000-00000:00000-00000 00000-00000:00000-00000 00000-00000:00000-00000 ", "stroke write");
         m.put("00000-00000:00000-00000 10000-00000:00000-00000 00000-00000:00000-00000 ", "stroke record");
-        m.put("00000-00000:00000-00000 00000-00000:00000-00000 10000-00000:00000-00000 ", "debug layout");
+        m.put("00000-00000:00000-00000 00000-00000:00000-00000 10000-00000:00000-00000 ", "dump actions");
         m.put("00000-00000:00000-10000 00000-00000:00000-00000 00000-00000:00000-00000 ", "layout default");
         m.put("00000-00000:00000-00000 00000-00000:10000-00000 00000-00000:00000-00000 ", "layout num");
         return new Layout("supert", m);
@@ -393,6 +398,17 @@ public class ThumbkeyboardView extends View {
                 _stroke_record(true);
             } else {
                 Log.i(TAG, "Don't know how to handle " + t);
+            }
+        } else if("dump".equals(cmd)) {
+            try {
+                BufferedReader in = new BufferedReader(new InputStreamReader(getContext().getAssets().open(value(t))));
+                String line = null;
+                while((line = in.readLine()) != null) {
+                    handleInput(line + "\n");
+                }
+                in.close();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         } else if("layout".equals(cmd)){
             currentLayoutName(value(t));
