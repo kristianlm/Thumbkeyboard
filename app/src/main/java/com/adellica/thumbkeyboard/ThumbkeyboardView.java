@@ -28,6 +28,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -106,7 +107,7 @@ public class ThumbkeyboardView extends View {
     public ThumbkeyboardView(Context context, AttributeSet attrs) {
         super(context, attrs);
         Log.i(TAG, "WDOIWAJDOWAUHDWADWAOIDJWAODHWAODJWAOIDJOWAIJDWAOIDJWAOIJDOWA");
-        currentLayout = fromFile("default");
+        layouts = loadLayouts();
     }
 
     class Blob {
@@ -423,10 +424,16 @@ public class ThumbkeyboardView extends View {
             lastToken = t;
     }
 
-    Layout currentLayout = new Layout("default");
+    String currentLayoutName = "default";
 
+    // never return null because that would force nullpointer-checks
+    // on every other line in this file.
     private Layout currentLayout() {
-        return currentLayout;
+        final Layout l = layouts.get(currentLayoutName);
+        if(l == null)
+            return new Layout("missing");
+        else
+            return l;
     }
 
     private void handleShift(String param) {
@@ -509,7 +516,6 @@ public class ThumbkeyboardView extends View {
 
     boolean holding = false;
     Blob [] fingerTouches = new Blob [ 4 ]; // who'se got 4 thumbs anyway?
-    Map<String, Layout> layouts = new HashMap<String, Layout>();
 
     public static String layoutnamedir() {
         return android.os.Environment.getExternalStorageDirectory()
@@ -565,6 +571,28 @@ public class ThumbkeyboardView extends View {
             return l;
         }
 
+    }
+
+    Map<String, Layout> layouts = new HashMap<String, Layout>();
+
+    public Map<String, Layout> loadLayouts() {
+        Map<String, Layout> layouts = new HashMap<String, Layout>();
+
+        final File directory = new File(layoutnamedir());
+        final File[] files = directory.listFiles();
+        Log.d(TAG, "Loading config files " + Arrays.asList(files));
+        for (int i = 0; i < files.length; i++)
+        {
+            final String filename = files[i].getName();
+            if(filename.endsWith(".chords")) {
+                final String name = filename.substring(0, filename.length() - 7);
+                Log.i(TAG, "loading chords file " + layoutname2path(name) + " as " + name);
+                final Layout layout = fromFile(name);
+                layouts.put(name, layout);
+            }
+        }
+
+        return layouts;
     }
 
     public Layout fromFile(final String name) {
@@ -725,7 +753,7 @@ public class ThumbkeyboardView extends View {
                 if(blobs()[j].tapping)
                     tempStroke.taps[j]++; // <-- pretend we tapped held buttons
 
-            final String token = shownLayout().get(tempStroke.toString());
+            final String token = shownLayout() == null ? null : shownLayout().get(tempStroke.toString());
             bs[i].draw(canvas, any, token == null ? "" : prettify(token));
             if(i == 2 && token == null) {
                 if(_stroke_record()) {
