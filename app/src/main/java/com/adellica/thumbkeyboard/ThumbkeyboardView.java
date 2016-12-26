@@ -506,6 +506,10 @@ public class ThumbkeyboardView extends View {
     Blob [] fingerTouches = new Blob [ 4 ]; // who'se got 4 thumbs anyway?
     Map<String, Layout> layouts = new HashMap<String, Layout>();
 
+    public static String layoutname2path(final String name) {
+        return android.os.Environment.getExternalStorageDirectory() + "/" + name + ".chords";
+    }
+
     public class Layout {
         final public String name;
         final Map<String, String> map;
@@ -523,7 +527,7 @@ public class ThumbkeyboardView extends View {
 
             List<String> l = new ArrayList<String>(map.keySet());
             Collections.sort(l); Collections.reverse(l);
-            String filename = StoragePath.getStorageDirectories()[0] + name + ".chords";
+            String filename = layoutname2path(name);
             Log.i(TAG, "saving layout to " + filename);
             try {
                 PrintWriter out = new PrintWriter(filename);
@@ -551,7 +555,7 @@ public class ThumbkeyboardView extends View {
     }
 
     public Layout fromFile(final String name) {
-        final String filename = "/sdcard/" + name + ".chords";
+        final String filename = layoutname2path(name);
         try {
             String line;
             Map<String, String> map = new HashMap<String, String>();
