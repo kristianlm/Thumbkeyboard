@@ -126,7 +126,7 @@ public class ThumbkeyboardView extends View {
 
         // screen coordinates
         public float x() { return (col < 0 ? getWidth() : 0) + pixels(col * (BS * 2) + BS); }
-        public float y() { return getHeight() - (pixels((2 - row) * (BS * 2) + BS)); }
+        public float y() { return anchorY() + (pixels(row * (BS * 2) + BS)); }
 
         public int bid() { return bid; }
 
@@ -137,7 +137,10 @@ public class ThumbkeyboardView extends View {
             else            fill.setColor(Color.argb(0x30, 0x00, 0xff, 0xff));
 
             final int S = pixels(BLOB_RADIUS - BLOB_BORDER);
-            canvas.drawRect(x()-S, y()-S, x()+S, y()+S, fill);
+            if(bid() == 1)
+                canvas.drawCircle(x(), y(), pixels(BS), fill);
+            else
+                canvas.drawRect(x()-S, y()-S, x()+S, y()+S, fill);
 
 
             final TextPaint p = new TextPaint();
@@ -164,12 +167,18 @@ public class ThumbkeyboardView extends View {
 
 
 
-    private int _anchorY = -100;
+    private int __anchorY = -1;
+    // input: y screen coordinate of top of keyboard
+    private void anchorY(int newValue) {
+        __anchorY = newValue;
+        postInvalidate();
+    }
+    // screen coordinates of top of top-most button
     private int anchorY() {
-        if(_anchorY >= 0)
-            return _anchorY;
+        if(__anchorY < 0)
+            return getHeight() - pixels(BS*2*3);
         else
-            return getHeight() + _anchorY;
+            return __anchorY;
     }
 
     final int BS = BLOB_RADIUS;
@@ -549,6 +558,10 @@ public class ThumbkeyboardView extends View {
         Ime.setCandidatesViewShown(true);
     }
 
+    // used to indicate (when >= 0) whether we're sliding
+    // the keyboard placement (anchor) up/down.
+    private int anchorFinger = -1;
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int i = event.getActionIndex(); // index of finger that caused the down event
@@ -565,9 +578,8 @@ public class ThumbkeyboardView extends View {
 
         MutableDouble d = new MutableDouble(-1);
         touch2blob(event.getX(i), event.getY(i), d);
-        // min diameter to register a button click. let's be tolerant!
-        if(d.value > pixels((int)(BLOB_RADIUS * 1.5))) {
-            _anchorY = (int)event.getY(i);
+        // we're pressing "outside" of keyboard, hide it
+        if(anchorFinger < 0 && d.value > pixels((int)(BLOB_RADIUS * 1.5))) {
             flushStroke();
             postInvalidate();
             hide();
@@ -577,7 +589,9 @@ public class ThumbkeyboardView extends View {
 
             case MotionEvent.ACTION_DOWN: { // primary finger down!
                 final int btn = touch2blob(event.getX(i), event.getY(i));
-                if(btn >= 0) {
+                if(btn == 1) { // anchor button. no layouts for this guy
+                    anchorFinger = i;
+                } else if(btn >= 0) {
                     blobs()[btn].tapping = true;
                     blobs()[btn].holding = true;
                     postInvalidate();
@@ -585,6 +599,7 @@ public class ThumbkeyboardView extends View {
                 break; }
 
             case MotionEvent.ACTION_POINTER_DOWN: { // another finger down while holding one down
+                if(anchorFinger >= 0) break; // moving anchor, cancel
                 final int btn = touch2blob(event.getX(i), event.getY(i));
                 if(btn >= 0) {
                     blobs()[btn].tapping = true;
@@ -594,6 +609,7 @@ public class ThumbkeyboardView extends View {
                 break; }
 
             case MotionEvent.ACTION_POINTER_UP: { // finger up, still holding one down
+                if(anchorFinger >= 0) break;
                 final int btn = touch2blob(event.getX(i), event.getY(i));
                 if(btn >= 0) {
                     if (blobs()[btn].tapping)
@@ -603,6 +619,10 @@ public class ThumbkeyboardView extends View {
                 }
                 break; }
             case MotionEvent.ACTION_MOVE: {
+                if(anchorFinger >= 0) {
+                    anchorY((int)event.getY(anchorFinger) - pixels(BS));
+                    break;
+                }
                 for( int j = 0 ; j < event.getPointerCount() ; j++) {
                     final Blob btn = blobs()[touch2blob(event.getX(j), event.getY(j))]; // <-- going to
                     if(btn.bid() >= 0) {
@@ -645,6 +665,7 @@ public class ThumbkeyboardView extends View {
                     handlePattern(pattern);
                     postInvalidate();
                 }
+                anchorFinger = -1;
                 show();
                 break; }
             default:
