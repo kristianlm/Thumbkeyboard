@@ -75,12 +75,8 @@ Latin and programming input.
 
 # TODO
 
-- arrow keys as single swipe keys. replace -/+ swipes perhaps? arrows
-  are probably used more often
-- & is quite long
-- separate number-mode (for numbers, currencies, time, date, ip-addresses etc)
-- configure layout at runtime
+- & isn't there anymore
 - allow deleting words at a time, not just characters (faster backspace)
-- fix crash: press TAB, then press REPEAT
 - real borders: give each button/box a deadzone/margin so that enter
   doesn't need two swipes down to not conflict with swipe left.
+- a quick and easy way to update/share layouts/strokes
