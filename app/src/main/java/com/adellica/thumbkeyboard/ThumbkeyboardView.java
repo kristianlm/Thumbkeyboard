@@ -539,6 +539,16 @@ public class ThumbkeyboardView extends View {
 
     Map<String, Layout> layouts = new HashMap<String, Layout>();
 
+    private boolean hidden = false;
+    private void hide() {
+        // Ime.requestHideSelf(0); // <-- does a silly animation
+        Ime.setCandidatesViewShown(false);
+    }
+    private void show() {
+        Log.i(TAG, "SHOWING");
+        Ime.setCandidatesViewShown(true);
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int i = event.getActionIndex(); // index of finger that caused the down event
@@ -555,86 +565,102 @@ public class ThumbkeyboardView extends View {
 
         MutableDouble d = new MutableDouble(-1);
         touch2blob(event.getX(i), event.getY(i), d);
-        if(d.value > pixels((int)(BLOB_RADIUS * 1.5))) { // min diameter to register a button click. let's be tolerant!
+        // min diameter to register a button click. let's be tolerant!
+        if(d.value > pixels((int)(BLOB_RADIUS * 1.5))) {
             _anchorY = (int)event.getY(i);
+            flushStroke();
             postInvalidate();
-            return true;
+            hide();
         }
 
         switch(event.getActionMasked()) {
 
             case MotionEvent.ACTION_DOWN: { // primary finger down!
                 final int btn = touch2blob(event.getX(i), event.getY(i));
-                blobs()[btn].tapping = true;
-                blobs()[btn].holding = true;
-                postInvalidate();
+                if(btn >= 0) {
+                    blobs()[btn].tapping = true;
+                    blobs()[btn].holding = true;
+                    postInvalidate();
+                }
                 break; }
 
             case MotionEvent.ACTION_POINTER_DOWN: { // another finger down while holding one down
                 final int btn = touch2blob(event.getX(i), event.getY(i));
-                blobs()[btn].tapping = true;
-                blobs()[btn].holding = true;
-                postInvalidate();
+                if(btn >= 0) {
+                    blobs()[btn].tapping = true;
+                    blobs()[btn].holding = true;
+                    postInvalidate();
+                }
                 break; }
 
             case MotionEvent.ACTION_POINTER_UP: { // finger up, still holding one down
                 final int btn = touch2blob(event.getX(i), event.getY(i));
-                if(blobs()[btn].tapping)
-                    stroke.taps[btn]++;
-                blobs()[btn].holding = false;
-                postInvalidate();
+                if(btn >= 0) {
+                    if (blobs()[btn].tapping)
+                        stroke.taps[btn]++;
+                    blobs()[btn].holding = false;
+                    postInvalidate();
+                }
                 break; }
             case MotionEvent.ACTION_MOVE: {
                 for( int j = 0 ; j < event.getPointerCount() ; j++) {
                     final Blob btn = blobs()[touch2blob(event.getX(j), event.getY(j))]; // <-- going to
-                    if(btn != fingerTouches[event.getPointerId(j)]) {
-                        final int fid = event.getPointerId(j);
-                        final Blob old = fingerTouches[fid]; // <-- coming from
-                        if(old != null) {
-                            old.holding = false;
-                            btn.holding = true;
+                    if(btn.bid() >= 0) {
+                        if (btn != fingerTouches[event.getPointerId(j)]) {
+                            final int fid = event.getPointerId(j);
+                            final Blob old = fingerTouches[fid]; // <-- coming from
+                            if (old != null) {
+                                old.holding = false;
+                                btn.holding = true;
 
-                            final int bid = old.bid();
-                            int ox = old.bid() % 4, oy = old.bid() / 4;
-                            int nx = btn.bid() % 4, ny = btn.bid() / 4;
-                            int dx = nx - ox, dy = ny - oy;
-                            Log.i(TAG, "swipe on " + bid + ": " + dx + "," + dy);
-                            int table [] = (dx == 0
-                                    ? (dy == 1 ? stroke.downs : stroke.ups)
-                                    : (dx == 1 ? stroke.rights : stroke.lefts));
-                            table[bid]++;
-                            old.tapping = false; // this is no longer a tap
-                            postInvalidate();
+                                final int bid = old.bid();
+                                int ox = old.bid() % 4, oy = old.bid() / 4;
+                                int nx = btn.bid() % 4, ny = btn.bid() / 4;
+                                int dx = nx - ox, dy = ny - oy;
+                                Log.i(TAG, "swipe on " + bid + ": " + dx + "," + dy);
+                                int table[] = (dx == 0
+                                        ? (dy == 1 ? stroke.downs : stroke.ups)
+                                        : (dx == 1 ? stroke.rights : stroke.lefts));
+                                table[bid]++;
+                                old.tapping = false; // this is no longer a tap
+                                postInvalidate();
+                            }
+                            fingerTouches[fid] = btn;
                         }
-                        fingerTouches[fid] = btn;
                     }
                 }
                 break;
             }
             case MotionEvent.ACTION_UP: { // all fingers up! obs: last finger up ?≠ first finger down
                 final int btn = touch2blob(event.getX(i), event.getY(i));
-                if(blobs()[btn].tapping)
-                    stroke.taps[btn]++;
-                String pattern = stroke.toString();
-                Log.i(TAG, "xxx " + pattern);
-                for(String p : pattern.split(" ")) {
-                    Log.i(TAG, "#   " + p);
+                if(btn >= 0) {
+                    if (blobs()[btn].tapping)
+                        stroke.taps[btn]++;
+                    String pattern = stroke.toString();
+                    Log.i(TAG, "xxx " + pattern);
+                    for (String p : pattern.split(" ")) {
+                        Log.i(TAG, "#   " + p);
+                    }
+                    flushStroke();
+                    handlePattern(pattern);
+                    postInvalidate();
                 }
-                stroke.clear();
-                for(int j = 0 ; j < fingerTouches.length ; j++) fingerTouches[j] = null;
-                for(int j = 0 ; j < blobs().length ; j++) {
-                    blobs()[j].tapping = false;
-                    blobs()[j].holding = false;
-                }
-
-                handlePattern(pattern);
-                postInvalidate();
+                show();
                 break; }
             default:
                 //Log.d(TAG, "missed event " + event.getActionMasked());
                 break;
         }
         return true;
+    }
+
+    private void flushStroke() {
+        stroke.clear();
+        for(int j = 0 ; j < fingerTouches.length ; j++) fingerTouches[j] = null;
+        for(int j = 0 ; j < blobs().length ; j++) {
+            blobs()[j].tapping = false;
+            blobs()[j].holding = false;
+        }
     }
 
     private int pixels(int dpi) {
