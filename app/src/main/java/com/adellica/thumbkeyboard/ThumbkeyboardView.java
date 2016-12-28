@@ -428,7 +428,11 @@ public class ThumbkeyboardView extends View {
                         ic.deleteSurroundingText(1, 0); // line is empty, delete up to previous line
                 }
             } else if("word".equals(value(t))) {
-                deleteSurroundingUntil(" ", true, " ", true, true, false);
+                // what a mess:
+                if(readBackwardsUntil(" ", true).isEmpty()) //     ,------,--- delete ending space
+                    deleteSurroundingUntil(" ", true, " ", true, false, true);
+                else //                                            ,------,--- delete starting space
+                    deleteSurroundingUntil(" ", true, " ", true, true, false);
 
             }
         } else if("debug".equals(cmd)) {
