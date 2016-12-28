@@ -75,7 +75,6 @@ Latin and programming input.
 
 # TODO
 
-- & isn't there anymore
 - allow deleting words at a time, not just characters (faster backspace)
 - real borders: give each button/box a deadzone/margin so that enter
   doesn't need two swipes down to not conflict with swipe left.
