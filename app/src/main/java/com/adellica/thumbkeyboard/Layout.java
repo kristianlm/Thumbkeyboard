@@ -93,7 +93,7 @@ public class Layout {
             BufferedReader br = new BufferedReader(isr);
 
             while ((line = br.readLine()) != null) {
-                final String pair[] = ThumbkeyboardView.Stroke.parse(line);
+                final String pair[] = Stroke.parse(line);
                 map.put(pair[0], pair[1]);
             }
             return new Layout(name, map);
