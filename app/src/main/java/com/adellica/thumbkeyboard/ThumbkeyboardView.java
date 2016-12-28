@@ -421,16 +421,15 @@ public class ThumbkeyboardView extends View {
             currentLayoutName(value(t));
         } else if("delete".equals(cmd)) {
             if("line".equals(value(t))) {
-                final String preline = readBackwardsUntil("\n", true);
-                final String postline = readForwardsUntil("\n", true);
-                final InputConnection ic = Ime.getCurrentInputConnection();
-                if(ic != null) //                                                  ,-- delete newline too
-                    if(preline.isEmpty() && postline.isEmpty())
+                if(deleteSurroundingUntil("\n", true, "\n", true, false, true).isEmpty()) {
+                    // we didn't actually delete anything
+                    InputConnection ic = Ime.getCurrentInputConnection();
+                    if(ic != null)
                         ic.deleteSurroundingText(1, 0); // line is empty, delete up to previous line
-                    else
-                        ic.deleteSurroundingText(
-                                preline  == null ? 0 : preline.length(),
-                                postline == null ? 0 : postline.length() + 1);
+                }
+            } else if("word".equals(value(t))) {
+                deleteSurroundingUntil(" ", true, " ", true, true, false);
+
             }
         } else if("debug".equals(cmd)) {
             Layout layout = currentLayout();
@@ -441,6 +440,30 @@ public class ThumbkeyboardView extends View {
 
         if (!"repeat".equals(cmd)) // avoid infinite recursion
             lastToken = t;
+    }
+
+    private boolean deleteSurroundingText(int before, int after) {
+        final InputConnection ic = Ime.getCurrentInputConnection();
+        if(ic != null) {
+            ic.deleteSurroundingText(before, after);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * This guy isn't great. You can't specify SPACE|ENTER. So, for example,
+     * a word boundary can only be " " and not " |\n|\t" which is very limiting.
+     * @return The string that was deleted
+     */
+    private String deleteSurroundingUntil(final String pre, boolean bof, final String post, boolean eof, boolean trimLeft, boolean trimRight) {
+        final String preline = readBackwardsUntil(pre, bof);
+        final String postline = readForwardsUntil(post, eof);
+        if(deleteSurroundingText(
+                preline == null ? 0 : preline.length()   + (trimLeft  ? 1 : 0),
+                postline == null ? 0 : postline.length() + (trimRight ? 1 : 0)))
+            return preline + postline;
+        return "";
     }
 
     String _currentLayoutName = "default";
