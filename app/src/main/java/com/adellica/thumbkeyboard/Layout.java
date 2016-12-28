@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * A Layout is a mapping from a set of Strokes (taps, swipes etc)
+ * to an action (eg "key S" or "repeat").
 * Created by klm on 12/26/16.
 */
 public class Layout {
