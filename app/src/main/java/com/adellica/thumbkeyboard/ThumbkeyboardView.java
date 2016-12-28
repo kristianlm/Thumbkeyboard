@@ -293,7 +293,8 @@ public class ThumbkeyboardView extends View {
         HashMap m = new HashMap<String, String>();
         m.put("10000-00000:00000-00000 00000-00000:00000-00000 00000-00000:00000-00000 ", "stroke write");
         m.put("00000-00000:00000-00000 10000-00000:00000-00000 00000-00000:00000-00000 ", "stroke record");
-        m.put("00000-00000:00000-00000 00000-00000:00000-00000 10000-00000:00000-00000 ", "dump actions");
+        m.put("00000-00000:00000-00000 00000-00000:00000-00000 10000-00000:00000-00000 ", "dump raw actions");
+        m.put("00000-00000:00000-00000 00000-00000:00000-00000 00000-10000:00000-00000 ", "dump layout");
         m.put("00000-00000:00000-10000 00000-00000:00000-00000 00000-00000:00000-00000 ", "layout default");
         m.put("00000-00000:00000-00000 00000-00000:10000-00000 00000-00000:00000-00000 ", "layout num");
         return new Layout("supert", m);
@@ -407,15 +408,12 @@ public class ThumbkeyboardView extends View {
                 Log.i(TAG, "Don't know how to handle " + t);
             }
         } else if("dump".equals(cmd)) {
-            try {
-                BufferedReader in = new BufferedReader(new InputStreamReader(getContext().getAssets().open(value(t))));
-                String line = null;
-                while((line = in.readLine()) != null) {
-                    handleInput(line + "\n");
-                }
-                in.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+            final String cmd2 = cmd(value(t));
+            Log.i(TAG, "dump: '" + value(t) + "' or   '" + value(value(t)) + "'");
+            if("raw".equals(cmd2)) {
+                dumpAsset(value(value(t)));
+            } else if("layout".equals(cmd2)) {
+                Log.e(TAG, "TODO: dump layout");
             }
         } else if("layout".equals(cmd)){
             currentLayoutName(value(t));
@@ -444,6 +442,25 @@ public class ThumbkeyboardView extends View {
 
         if (!"repeat".equals(cmd)) // avoid infinite recursion
             lastToken = t;
+    }
+
+    /**
+     * Dump filename (from asset folder) into current editing session.
+     * @param filename
+     */
+    private void dumpAsset(String filename) {
+        try {
+            Log.i(TAG, "dumping asset '" + filename + "' to edit session");
+            BufferedReader in = new BufferedReader(new InputStreamReader(getContext().getAssets().open(filename)));
+            String line;
+            while((line = in.readLine()) != null) {
+                handleInput(line + "\n");
+            }
+            in.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private boolean deleteSurroundingText(int before, int after) {
