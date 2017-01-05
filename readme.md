@@ -11,6 +11,8 @@ replace the standard QUERTY Touch-screen keyboards.
 - There are swipe gestures for pretty much all keyboard symbols
 - You can define your own layouts
 
+![screenshot](screenshot.gif)
+
 ## Configurable
 
 The layout is fully customizable, and you're welcome to
