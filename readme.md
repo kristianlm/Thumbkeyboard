@@ -2,7 +2,14 @@
 # Adellica's Chorded Keyboard
 
 This is a 12-button chorded keyboard for Android. The objective is to
-replace the standard QUERTY Touch-screen keyboards.
+replace the standard QUERTY Touch-screen keyboards. It is heavily
+inspired
+by [Chorded keyboards](https://en.wikipedia.org/wiki/Chorded_keyboard)
+and Alexander
+Burger's [PentiKeyboard](https://software-lab.de/penti.html) in
+particular. The keyboard is fully usable but not very
+user-friendly. The transparency feature may misfunction in certain
+apps.
 
 - With only 12 buttons, they can be large and you rarely miss
 - With only 12 buttons, you'll need to press multiple buttons
@@ -10,6 +17,8 @@ replace the standard QUERTY Touch-screen keyboards.
 - With fewer key misses, you (hopefully) don't need a dictionary
 - There are swipe gestures for pretty much all keyboard symbols
 - You can define your own layouts
+- It is probably very difficult to learn to use proficiently but
+  possibly worth the effort!
 
 ![screenshot](screenshot.gif)
 
