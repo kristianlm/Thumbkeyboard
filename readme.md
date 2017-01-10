@@ -103,7 +103,11 @@ focusing on Latin and programming input.
 
 # TODO
 
+- delete whitespace first before "delete word"
 - add \t and \n boundaries for "delete word"
+- emoji: find out how they work and support them
 - real borders: give each button/box a deadzone/margin so that enter
   doesn't need two swipes down to not conflict with swipe left.
 - a quick and easy way to update/share layouts/strokes
+- add a way to switch to other keyboard apps
+- add a non-seethrough mode
