@@ -533,12 +533,15 @@ public class ThumbkeyboardView extends View {
     private boolean hidden = false;
     private void hide() {
         // Ime.requestHideSelf(0); // <-- does a silly animation
-        Ime.setCandidatesViewShown(false);
+        hidden = true;
+        Ime.setCandidatesViewShown(!hidden);
     }
     private void show() {
         Log.i(TAG, "SHOWING");
-        Ime.setCandidatesViewShown(true);
+        hidden = false;
+        Ime.setCandidatesViewShown(!hidden);
     }
+    private boolean hidden() { return hidden ; }
 
     // used to indicate (when >= 0) whether we're sliding
     // the keyboard placement (anchor) up/down.
@@ -601,7 +604,7 @@ public class ThumbkeyboardView extends View {
                 }
                 break; }
             case MotionEvent.ACTION_MOVE: {
-                if(anchorFinger >= 0) {
+                if(!hidden() && anchorFinger >= 0) {
                     anchorY((int)event.getY(anchorFinger) - pixels(BS));
                     break;
                 }
