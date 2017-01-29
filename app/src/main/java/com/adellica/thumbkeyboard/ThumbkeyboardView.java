@@ -131,7 +131,7 @@ public class ThumbkeyboardView extends View {
             if(idle)
                 if(holding) fill.setColor(Color.argb(0xB0, 0x00, 0x80, 0xff));
                 else        fill.setColor(Color.argb(0x40, 0x00, 0xff, 0xff));
-            else            fill.setColor(Color.argb(0x30, 0x00, 0xff, 0xff));
+            else            fill.setColor(Color.argb(0x15, 0x00, 0xff, 0xff));
 
             final int S = pixels(BLOB_RADIUS - BLOB_BORDER);
             if(bid() == 1)
@@ -754,7 +754,10 @@ public class ThumbkeyboardView extends View {
                 if(token == null) token = strokeTry(i, stroke, tempStroke, tempStroke.lefts, 1, 0);
             }
             if(i == 2 && _write_stroke()) token = "✏"; // pencil icon
-            bs[i].draw(canvas, any, token == null ? "" : prettify(token));
+            final boolean show_labels = any || _superlayout() || _stroke_record() || _write_stroke();
+            bs[i].draw(canvas, any, show_labels
+                    ? (token == null ? "" : prettify(token))
+                    : "");
 
             if(i == 2 && token == null) {
                 if(_stroke_record()) {
@@ -771,7 +774,7 @@ public class ThumbkeyboardView extends View {
                     final Paint red = new Paint();
                     red.setStyle(Paint.Style.STROKE);
                     red.setStrokeWidth(pixels(3));
-                    red.setColor(Color.argb(0xe0, 0, 0xff, 0xff));
+                    red.setColor(Color.argb(0x10, 0, 0xff, 0xff));
                     canvas.drawCircle(bs[i].x(), bs[i].y(), pixels(BS / 4), red);
                 }
             }
