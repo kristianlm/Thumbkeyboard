@@ -129,8 +129,8 @@ public class ThumbkeyboardView extends View {
 
         public void draw(Canvas canvas, boolean idle, final String label) {
             if(idle)
-                if(holding) fill.setColor(Color.argb(0xB0, 0x00, 0x80, 0xff));
-                else        fill.setColor(Color.argb(0x40, 0x00, 0xff, 0xff));
+                if(holding) fill.setColor(Color.argb(0xB0, 0x00, 0x80, 0x80));
+                else        fill.setColor(Color.argb(0x90, 0x00, 0xa0, 0xa0));
             else            fill.setColor(Color.argb(0x15, 0x00, 0xff, 0xff));
 
             final int S = pixels(BLOB_RADIUS - BLOB_BORDER);
