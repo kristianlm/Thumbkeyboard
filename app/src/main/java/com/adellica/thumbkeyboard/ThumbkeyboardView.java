@@ -798,6 +798,8 @@ public class ThumbkeyboardView extends View {
             return key.length() == 1
                     ? (modShift() ? key.toUpperCase() : key.toLowerCase()) // eg "key S"
                     : key; // eg "key DEL"
+        } else if(token.startsWith("input ")) {
+            return token.substring(6);
         }
         return token; // eg "input å"
     }
