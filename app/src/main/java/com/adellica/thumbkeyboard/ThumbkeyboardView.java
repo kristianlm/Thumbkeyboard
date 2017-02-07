@@ -144,19 +144,20 @@ public class ThumbkeyboardView extends View {
             final int PBS = pixels(BS);
             final int y = Math.min(canvas.getWidth(), canvas.getHeight());
 
-            final Paint background = new Paint();
-            background.setColor(Color.argb(0, 0, 0, 0));
-
-            StaticLayout textLayout = new StaticLayout(label, p, PBS * 2,
-                    android.text.Layout.Alignment.ALIGN_CENTER, 1.8f, 0.0f, false);
             p.setTypeface(Typeface.MONOSPACE);
-            p.setTextSize(y / 36);
+            p.setAntiAlias(true);
+            p.setTextSize(y / 16);
 
             p.setStyle(Paint.Style.FILL);
-            p.setColor(Color.argb(0xC0, 0xff, 0x00, 0x00));
+            p.setColor(Color.argb(0xFF, 0x00, 0xff, 0xff));
             canvas.save();
-            canvas.translate(x() - PBS, y());
-            textLayout.draw(canvas);
+            canvas.translate(x(), y()); // anchor to center of rectangle
+
+            float txtWidth = p.measureText(label);
+            if(txtWidth > PBS * 2) { // text is too big for button!
+                p.setTextScaleX(0.9f / (txtWidth / (PBS*2))); // fit width
+            }
+            canvas.drawText(label, -(txtWidth * p.getTextScaleX())/2,0,p);
             canvas.restore();
         }
     }
