@@ -724,16 +724,6 @@ public class ThumbkeyboardView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        final Paint cp1 = new Paint(), cp2 = new Paint();
-        cp1.setColor(Color.argb(0x80, 0, 0, 0));
-        cp1.setPathEffect(new DashPathEffect(new float[]{7, 7}, 0));
-        cp1.setStyle(Paint.Style.STROKE);
-        cp1.setStrokeWidth(4);
-        cp2.setColor(Color.argb(0x80, 0xff, 0xff, 0xff));
-        cp2.setPathEffect(new DashPathEffect(new float[]{7, 7}, 7));
-        cp2.setStyle(Paint.Style.STROKE);
-        cp2.setStrokeWidth(4);
-
         Blob bs [] = blobs();
         boolean any = false; // <-- anybody being pressed?
         for (int i = 0 ; i < bs.length ; i++) {
