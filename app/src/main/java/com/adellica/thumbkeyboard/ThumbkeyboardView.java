@@ -30,7 +30,6 @@ public class ThumbkeyboardView extends View {
     private static final String TAG = "TKEY";
     public ThumbkeyboardIME Ime;
     private boolean showHelp = false;
-    private final int MAX_DELAY_DOUBLE_COMBO = 60; // ms
     private static final int BLOB_RADIUS = 40; // dpi
     private static final int BLOB_BORDER = 4; // dpi
 
