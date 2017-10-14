@@ -4,10 +4,8 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Typeface;
-import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -18,8 +16,12 @@ import android.view.View;
 import android.view.inputmethod.InputConnection;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,47 +33,16 @@ public class ThumbkeyboardView extends View {
     public ThumbkeyboardIME Ime;
     private boolean showHelp = false;
     private final int MAX_DELAY_DOUBLE_COMBO = 60; // ms
-    private static final int BLOB_RADIUS = 40; // dpi
+    private static final int BLOB_RADIUS = 32; // dpi
     private static final int BLOB_BORDER = 4; // dpi
 
     private Config config = new Config();
 
-    public static class Config {
-        Map<String, String> cmap = new HashMap<String, String>();
-
-        Config () {
-            cmap.put("color.label", "#FFff00ff");
-            cmap.put("color.background", "#5500ffff");
-            cmap.put("color.active", "9000a0a0");
-            cmap.put("color.holding", "B0ff8080");
-            cmap.put("label.show", "");
-        }
-
-        @Override
-        public String toString() {
-            String f = "";
-            for(final String key : cmap.keySet()) {
-                final String value = cmap.get(key);
-                f += "config " + key + " " + value + "\n";
-            }
-            return f;
-        }
-
-        public String get(final String key) { return cmap.get(key); }
-
-        public int colorBackgroundHolding() {return Color.parseColor(get("color.holding"));}
-        public void colorBackgroundHolding(String c) {cmap.put("color.holding", c);}
-
-        public int colorBackgroundNonIdle() {return Color.parseColor(get("color.active"));}
-        public void colorBackgroundNonIdle(String c) {cmap.put("color.active", c);}
-
-        public int colorBackgroundIdle() {return Color.parseColor(get("color.background"));}
-        public void colorBackgroundIdle(String c) {cmap.put("color.background", c);}
-
-        public int colorLabel() {return Color.parseColor(get("color.label"));}
-        public void colorLabel(String c) {cmap.put("color.label", c);}
-
-        public boolean showLabelsAlways() {return "".equals(cmap.get("label.show"));}
+    public static String configDir() {
+        return android.os.Environment.getExternalStorageDirectory()
+                + File.separator
+                + "thumb-keyboard"
+                + File.separator;
     }
 
     // utils
@@ -136,6 +107,8 @@ public class ThumbkeyboardView extends View {
         super(context, attrs);
         Log.i(TAG, "WDOIWAJDOWAUHDWADWAOIDJWAODHWAODJWAOIDJOWAIJDWAOIDJWAOIJDOWA");
         layouts = Layout.loadLayouts(getContext().getAssets());
+        Layout.ensureExists(getContext().getAssets(), "config");
+        evalFile(configDir() + "config");
     }
 
     class Blob {
@@ -320,7 +293,7 @@ public class ThumbkeyboardView extends View {
      * @param token
      * @return just the command part of a token
      */
-    private String cmd(String token) {
+    public static String cmd(String token) {
         int idx = token.indexOf(' ');
 
         if(idx >= 0)
@@ -335,7 +308,7 @@ public class ThumbkeyboardView extends View {
      * @param token
      * @return just the arguments/value part of a token
      */
-    private String value(String token) {
+    public static String value(String token) {
         int idx = token.indexOf(' ');
         if(idx >= 0)
             return token.substring(idx + 1);
@@ -344,6 +317,20 @@ public class ThumbkeyboardView extends View {
             return null;
     }
 
+    public void evalFile(final String filename) {
+        try {
+            final BufferedReader in = new BufferedReader(new FileReader(filename));
+            String line;
+            while((line = in.readLine()) != null) {
+                handleToken(line);
+            }
+            in.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     private String lastToken;
     private void handleToken(String t) {
@@ -416,8 +403,10 @@ public class ThumbkeyboardView extends View {
             for(String stroke : layout.keys()) {
                 Log.i(TAG, "??? " + stroke + layout.get(stroke));
             }
-        } else if("color".equals(cmd)) {
-            handleColor(value(t));
+        } else if("config".equals(cmd)) {
+            config.handle(value(t));
+        } if("color".equals(cmd)) {
+            config.handleColor(value(t));
         }
 
         if (!"repeat".equals(cmd)) // avoid infinite recursion
@@ -539,19 +528,6 @@ public class ThumbkeyboardView extends View {
             Ime.getCurrentInputConnection().commitText(input, 0);
 
         modifiersClear();
-    }
-
-    private void handleColor(String input) {
-        final String cmd = cmd(input);
-        final String color = value(input);
-        Log.i(TAG, "handleColor: " + input + " (0x  '" + color + "')");
-        if("background".equals(cmd)) {
-            config.colorBackgroundIdle(color);
-        } else if("label".equals(cmd)) {
-            config.colorLabel(color);
-        } else if("action".equals(cmd)) {
-            config.colorBackgroundNonIdle(color);
-        }
     }
 
     private int getMetaState() {

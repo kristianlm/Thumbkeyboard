@@ -13,7 +13,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,14 +59,8 @@ public class Layout {
         return result;
     }
 
-    public static String layoutnamedir() {
-        return android.os.Environment.getExternalStorageDirectory()
-                + File.separator
-                + "thumb-keyboard"
-                + File.separator;
-    }
     public static String layoutname2path(final String name) {
-        final String dir = layoutnamedir();
+        final String dir = ThumbkeyboardView.configDir();
         new File(dir).mkdirs();
         return dir + name + ".chords";
     }
@@ -130,35 +123,22 @@ public class Layout {
         }
     }
 
-    static public File[] ensureExists(AssetManager am, File[] files, String name) {
-        boolean found = false;
-        for (File f : files) {
-            if (name.equals(f.getName()))
-                found = true;
-        }
-        if (!found) {
-            if(copyFdToFile(am, name, layoutnamedir())) {
-                // add File to files
-                File[] tmp = Arrays.copyOf(files, files.length + 1);
-                tmp[files.length] = new File(name);
-                Log.i(TAG, "new files is " + Arrays.asList(tmp));
-                return tmp;
-            } else {
-                Log.e(TAG, "copying failed");
-            }
-        }
-        return files; // already present, files array
+    static public void ensureExists(AssetManager am, String name) {
+        final File file = new File(ThumbkeyboardView.configDir() + name);
+
+        if(file.exists()) return;
+        copyFdToFile(am, name, ThumbkeyboardView.configDir());
     }
 
     static public Map<String, Layout> loadLayouts(AssetManager am) {
         Map<String, Layout> layouts = new HashMap<String, Layout>();
 
-        final File directory = new File(layoutnamedir());
+        ensureExists(am, "default.chords");
+        ensureExists(am, "num.chords");
+
+        final File directory = new File(ThumbkeyboardView.configDir());
         File[] files = directory.listFiles();
         if(files == null) files = new File[] {};
-
-        files = ensureExists(am, files, "default.chords");
-        files = ensureExists(am, files, "num.chords");
 
         Log.d(TAG, "Loading config files " + Arrays.asList(files));
         for (int i = 0; i < files.length; i++)

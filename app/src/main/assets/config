@@ -1,0 +1,5 @@
+config color.holding #ffff00ff
+config color.action #8000ffff
+config color.label #80808080
+config color.background #8000ffff
+config color.active #8000ffff
