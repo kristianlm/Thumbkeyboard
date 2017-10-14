@@ -34,6 +34,45 @@ public class ThumbkeyboardView extends View {
     private static final int BLOB_RADIUS = 40; // dpi
     private static final int BLOB_BORDER = 4; // dpi
 
+    private Config config = new Config();
+
+    public static class Config {
+        Map<String, String> cmap = new HashMap<String, String>();
+
+        Config () {
+            cmap.put("color.label", "#FFff00ff");
+            cmap.put("color.background", "#5500ffff");
+            cmap.put("color.active", "9000a0a0");
+            cmap.put("color.holding", "B0ff8080");
+            cmap.put("label.show", "");
+        }
+
+        @Override
+        public String toString() {
+            String f = "";
+            for(final String key : cmap.keySet()) {
+                final String value = cmap.get(key);
+                f += "config " + key + " " + value + "\n";
+            }
+            return f;
+        }
+
+        public String get(final String key) { return cmap.get(key); }
+
+        public int colorBackgroundHolding() {return Color.parseColor(get("color.holding"));}
+        public void colorBackgroundHolding(String c) {cmap.put("color.holding", c);}
+
+        public int colorBackgroundNonIdle() {return Color.parseColor(get("color.active"));}
+        public void colorBackgroundNonIdle(String c) {cmap.put("color.active", c);}
+
+        public int colorBackgroundIdle() {return Color.parseColor(get("color.background"));}
+        public void colorBackgroundIdle(String c) {cmap.put("color.background", c);}
+
+        public int colorLabel() {return Color.parseColor(get("color.label"));}
+        public void colorLabel(String c) {cmap.put("color.label", c);}
+
+        public boolean showLabelsAlways() {return "".equals(cmap.get("label.show"));}
+    }
 
     // utils
     String readBackwardsUntil(String p, boolean eof) {
@@ -129,9 +168,9 @@ public class ThumbkeyboardView extends View {
 
         public void draw(Canvas canvas, boolean idle, final String label) {
             if(idle)
-                if(holding) fill.setColor(Color.argb(0xB0, 0x00, 0x80, 0x80));
-                else        fill.setColor(Color.argb(0x90, 0x00, 0xa0, 0xa0));
-            else            fill.setColor(Color.argb(0x15, 0x00, 0xff, 0xff));
+                if(holding) fill.setColor(config.colorBackgroundHolding());
+                else        fill.setColor(config.colorBackgroundNonIdle());
+            else            fill.setColor(config.colorBackgroundIdle());
 
             final int S = pixels(BLOB_RADIUS - BLOB_BORDER);
             if(bid() == 1)
@@ -149,7 +188,7 @@ public class ThumbkeyboardView extends View {
             p.setTextSize(y / 16);
 
             p.setStyle(Paint.Style.FILL);
-            p.setColor(Color.argb(0xFF, 0x00, 0xff, 0xff));
+            p.setColor(config.colorLabel());
             canvas.save();
             canvas.translate(x(), y()); // anchor to center of rectangle
 
@@ -377,6 +416,8 @@ public class ThumbkeyboardView extends View {
             for(String stroke : layout.keys()) {
                 Log.i(TAG, "??? " + stroke + layout.get(stroke));
             }
+        } else if("color".equals(cmd)) {
+            handleColor(value(t));
         }
 
         if (!"repeat".equals(cmd)) // avoid infinite recursion
@@ -498,6 +539,19 @@ public class ThumbkeyboardView extends View {
             Ime.getCurrentInputConnection().commitText(input, 0);
 
         modifiersClear();
+    }
+
+    private void handleColor(String input) {
+        final String cmd = cmd(input);
+        final String color = value(input);
+        Log.i(TAG, "handleColor: " + input + " (0x  '" + color + "')");
+        if("background".equals(cmd)) {
+            config.colorBackgroundIdle(color);
+        } else if("label".equals(cmd)) {
+            config.colorLabel(color);
+        } else if("action".equals(cmd)) {
+            config.colorBackgroundNonIdle(color);
+        }
     }
 
     private int getMetaState() {
@@ -745,7 +799,8 @@ public class ThumbkeyboardView extends View {
                 if(token == null) token = strokeTry(i, stroke, tempStroke, tempStroke.lefts, 1, 0);
             }
             if(i == 2 && _write_stroke()) token = "✏"; // pencil icon
-            final boolean show_labels = any || _superlayout() || _stroke_record() || _write_stroke();
+            final boolean show_labels_maybe = any || _superlayout() || _stroke_record() || _write_stroke();
+            final boolean show_labels = config.showLabelsAlways() ? true : show_labels_maybe;
             bs[i].draw(canvas, any, show_labels
                     ? (token == null ? "" : prettify(token))
                     : "");
