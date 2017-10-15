@@ -30,7 +30,8 @@ public class ThumbkeyboardView extends View {
     private static final String TAG = "TKEY";
     public ThumbkeyboardIME Ime;
     private boolean showHelp = false;
-    private static final int BLOB_RADIUS = 40; // dpi
+
+    private static final int BLOB_RADIUS = 32; // dpi
     private static final int BLOB_BORDER = 4; // dpi
 
 
@@ -130,7 +131,7 @@ public class ThumbkeyboardView extends View {
             if(idle)
                 if(holding) fill.setColor(Color.argb(0xB0, 0x00, 0x80, 0x80));
                 else        fill.setColor(Color.argb(0x90, 0x00, 0xa0, 0xa0));
-            else            fill.setColor(Color.argb(0x15, 0x00, 0xff, 0xff));
+            else            fill.setColor(Color.argb(0x24, 0x00, 0xff, 0xff));
 
             final int S = pixels(BLOB_RADIUS - BLOB_BORDER);
             if(bid() == 1)
