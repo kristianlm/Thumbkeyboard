@@ -6,11 +6,26 @@ package com.adellica.thumbkeyboard;
 import android.inputmethodservice.InputMethodService;
 import android.view.View;
 
-import com.adellica.thumbkeyboard2.R;
+import com.adellica.thumbkeyboard3.R;
 
 
 public class ThumbkeyboardIME extends InputMethodService {
    ThumbkeyboardView PV;
+
+    private static ThumbForth.Machine m = null;
+
+    public static ThumbForth.Machine m() {
+        if(m == null) {
+            m = new ThumbForth.Machine();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    ThumbForthServer.serve(m, 1234);
+                }
+            }).start();
+        }
+        return m;
+    }
 
    @Override public View onCreateInputView() {
       return null;

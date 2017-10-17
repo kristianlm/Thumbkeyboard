@@ -17,11 +17,16 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputConnection;
 
+import com.adellica.thumbkeyboard.ThumbForth.Obj;
+import com.adellica.thumbkeyboard.ThumbForth.Str;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.adellica.thumbkeyboard.ThumbkeyboardIME.*;
 
 /**
  * Created by klm on 9/27/16.
@@ -97,6 +102,22 @@ public class ThumbkeyboardView extends View {
         super(context, attrs);
         Log.i(TAG, "WDOIWAJDOWAUHDWADWAOIDJWAODHWAODJWAOIDJOWAIJDWAOIDJWAOIJDOWA");
         layouts = Layout.loadLayouts(getContext().getAssets());
+
+        m().dict.put("lword", new Obj() {
+            @Override
+            public void exe(ThumbForth.Machine m) {
+                m.push(new Str(readBackwardsUntil(" ", true)));
+            }
+            @Override public String toString() {return "_LWORD";}
+        });
+        m().dict.put("rword", new Obj() {
+            @Override
+            public void exe(ThumbForth.Machine m) {
+                m.push(new Str(readForwardsUntil(" ", true)));
+            }
+            @Override public String toString() {return "_RWORD";}
+        });
+
     }
 
     class Blob {
@@ -255,26 +276,12 @@ public class ThumbkeyboardView extends View {
     private void handlePattern(final String p) {
         if(p == null) return;
         // super-button (puts into superlayout)
-        if("00000-00000:10000-00000 00000-00000:00000-00000 00000-00000:00000-00000 ".equals(p)) {
-            _superlayout(!_superlayout());
-        } else if(_write_stroke()) {
-            _write_stroke(false);
-            final Layout layout = currentLayout();
-            final String token = layout.get(p);
-            handleInput("\n" + token); // spit out stroke action
-        } else if(_stroke_record()) {
-            _stroke_record(false);
-            final String line = readBackwardsUntil("\n", true) + readForwardsUntil("\n", true);
-            Log.d(TAG, "storing " + p + " as \"" + line + "\"");
-            currentLayout().put(p, line);
-        } else {
-            final Layout layout = _superlayout() ? superLayout() : currentLayout();
-            _superlayout(false);
-            final String token = layout.get(p);
-            Log.i(TAG, "handling: " + token);
-            if(token != null)
-                handleToken(token);
-        }
+        Obj o = m().dict.get("handle");
+        if(o == null) return;
+        m().push(new Str(p));
+        Log.i(TAG, "before exe: " + m().stack);
+        m().exe(o);
+        Log.i(TAG, "after  exe: " + m().stack + " executed " + o);
     }
 
     /**
