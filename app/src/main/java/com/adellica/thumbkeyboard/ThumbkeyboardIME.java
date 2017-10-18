@@ -12,11 +12,11 @@ import com.adellica.thumbkeyboard3.R;
 public class ThumbkeyboardIME extends InputMethodService {
    ThumbkeyboardView PV;
 
-    private static ThumbForth.Machine m = null;
+    private static ThumbJoy.Machine m = null;
 
-    public static ThumbForth.Machine m() {
+    public static ThumbJoy.Machine m() {
         if(m == null) {
-            m = new ThumbForth.Machine();
+            m = new ThumbJoy.Machine();
             new Thread(new Runnable() {
                 @Override
                 public void run() {

@@ -17,8 +17,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputConnection;
 
-import com.adellica.thumbkeyboard.ThumbForth.Obj;
-import com.adellica.thumbkeyboard.ThumbForth.Str;
+import com.adellica.thumbkeyboard.ThumbJoy.Obj;
+import com.adellica.thumbkeyboard.ThumbJoy.Str;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -105,14 +105,14 @@ public class ThumbkeyboardView extends View {
 
         m().dict.put("lword", new Obj() {
             @Override
-            public void exe(ThumbForth.Machine m) {
+            public void exe(ThumbJoy.Machine m) {
                 m.push(new Str(readBackwardsUntil(" ", true)));
             }
             @Override public String toString() {return "_LWORD";}
         });
         m().dict.put("rword", new Obj() {
             @Override
-            public void exe(ThumbForth.Machine m) {
+            public void exe(ThumbJoy.Machine m) {
                 m.push(new Str(readForwardsUntil(" ", true)));
             }
             @Override public String toString() {return "_RWORD";}

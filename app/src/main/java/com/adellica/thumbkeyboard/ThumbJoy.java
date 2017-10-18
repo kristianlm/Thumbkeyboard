@@ -9,7 +9,7 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.lang.Runnable;
 
-public class ThumbForth {
+public class ThumbJoy {
 
     public interface Code {
         Obj pop();
