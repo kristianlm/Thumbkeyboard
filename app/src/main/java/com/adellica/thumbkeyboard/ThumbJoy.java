@@ -1,5 +1,6 @@
 package com.adellica.thumbkeyboard;
 
+import java.util.Collections;
 import java.util.Stack;
 import java.util.List;
 import java.util.ArrayList;
@@ -83,31 +84,11 @@ public class ThumbJoy {
             ref.exe(m);
         }
     }
-    public static class Proc extends Datum<List<Obj>> {
+    public static class Lst extends Datum<List<Obj>> {
         // s here should be in reverese order!
-        public Proc(List<Obj> s) { super(s); }
+        public Lst(List<Obj> s) { super(s); }
         public String toString() {
             return value.toString();
-        }
-        public void exe(Machine m) {
-            final Code original = m.code();
-            final Stack<Obj> source = new Stack<Obj>();
-            for(int i = value.size()-1 ; i >= 0 ; i--) {
-                source.push(value.get(i));
-            }
-            m.code(new Code() {
-                @Override
-                public Obj pop() {
-                    if(source.isEmpty()) return null;
-                    return source.pop();
-                }
-                @Override
-                public void push(Obj o) {
-                    source.push(o);
-                }
-            });
-            m.code(original);
-            m.run();
         }
     }
 
@@ -117,7 +98,7 @@ public class ThumbJoy {
             return '@' + value.toString();
         }
         public void exe(Machine m) {
-            m.push(new Proc(value));
+            m.push(new Lst(value));
         }
     }
 
@@ -137,11 +118,22 @@ public class ThumbJoy {
         }
     }
 
+    public static class StackCode implements Code {
+        final Stack<Obj> stk;
+        public StackCode(Stack<Obj> stk) {this.stk = stk;}
+        public Obj pop() {
+            if(stk.isEmpty()) return null;
+            return stk.pop();
+        }
+        public void push(Obj obj) {stk.push(obj);}
+    }
+
+    
+
     public static class Machine {
         public Stack<Obj> stack = new Stack<Obj>();
         Map<String, Obj> dict = new HashMap<String, Obj>();
         private Code code;
-
 
         public void push(Obj o) { stack.push(o); }
 
@@ -154,12 +146,12 @@ public class ThumbJoy {
         }
 
         public Code code() { return code; }
-        public void code(Code code) { this.code = code; }
-        public void code(InputStream is) { this.code = new InputCode(is); }
-
-        public void run() {
+        public void run(InputStream is) { run(new InputCode(is)); }
+        public void run(Code code) {
+            this.code = code;
             while (true) {
                 try {
+                    System.out.println("popping");
                     Obj op = code.pop();
                     if (op == null) break;
                     op.exe(this);
@@ -213,6 +205,21 @@ public class ThumbJoy {
                 }
                 public String toString() { return "_EXE"; }
             });
+            dict.put("i", new Obj() {
+                public void exe(Machine m) {
+                    final Lst code = m.pop(Lst.class);
+                    m.run(new StackCode(l2s(code)));
+                }
+                public String toString() { return "_EXE"; }
+            });
+            dict.put("map", new Obj() {
+                public void exe(Machine m) {
+                    final Lst code = m.pop(Lst.class);
+                    final Lst lst  = m.pop(Lst.class);
+                    m.run(new StackCode(l2s(code)));
+                }
+                public String toString() { return "_EXE"; }
+            });
             dict.put("save", new Obj() {
                 public void exe(Machine m) {
                     final Obj value = m.pop(Obj.class);
@@ -230,6 +237,16 @@ public class ThumbJoy {
         }
 
     }
+
+    public static Stack<Obj> l2s(Lst source) {
+        final Stack<Obj> source = new Stack<Obj>();
+        final List<Obj> lst = source.value;
+        for(int i = lst.size()-1 ; i >= 0 ; i--) {
+            source.push(lst.get(i));
+        }
+        return source;
+    }
+    
     public static void main(String[] args) {
         final Machine m = new Machine();
 
@@ -239,10 +256,7 @@ public class ThumbJoy {
             }
         });
 
-        m.code(pis);
-
-        final Code code = m.code();
-
+        m.run(pis);
     }
 
     public static class Reader {
