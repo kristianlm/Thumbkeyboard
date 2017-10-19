@@ -1,26 +1,28 @@
 package com.adellica.thumbkeyboard;
 
-import java.util.Collections;
-import java.util.Stack;
-import java.util.List;
-import java.util.ArrayList;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Map;
 import java.util.HashMap;
-import java.io.InputStream;
-import java.io.IOException;
-import java.lang.Runnable;
+
+import static com.adellica.thumbkeyboard.ThumbJoy.Pair.cons;
+import static com.adellica.thumbkeyboard.ThumbJoy.Pair.list;
 
 public class ThumbJoy {
     public interface Env {
         public Object get(Object key);
     }
-    public interface JoyMachine {
-        public Pair eval(Pair stk);
+    public interface Applicable {
+        public IPair exe(IPair stk, Machine m);
     }
     
     public static class TFE extends RuntimeException {
         public TFE() {}
         public TFE(String m) {super(m);}
+        public String toString() {
+            return this.getClass().getSimpleName() + " " + (getMessage()==null?"":getMessage());
+        }
     }
     public static class EmptyStackPopped extends TFE {}
     public static class TypeMismatch extends TFE {
@@ -33,13 +35,31 @@ public class ThumbJoy {
             super(name + " not found in dict (d for list)");
         }
     }
+    public interface IPair {
+        public Object car();
+        public IPair cdr();
+        public <T> T car(Class<T> t);
+    }
+    public static class Pair implements IPair {
+        private final Object __car;
+        private final IPair __cdr;
+        public Pair(Object car, IPair cdr) { __car=car; __cdr=cdr;}
+        public Object car() { return __car; }
+        public IPair cdr() { return __cdr; }
 
-    public static class Pair implements JoyMachine {
-        public final Object car;
-        public final Pair cdr;
-        public static Pair nil = new Pair(null, null);
-        public Pair(Object car, Pair cdr) { this.car=car; this.cdr=cdr;}
-        public static Pair cons(Object car, Pair cdr) { return new Pair(car, cdr); }
+        @SuppressWarnings("unchecked")
+        public <T> T car(Class<T> t) {
+            if(t.isInstance(__car)) return (T)__car;
+            throw new TypeMismatch(t, __car);
+        }
+            
+        public static final Pair nil = new Pair(null, null) {
+                public <T> T car(Class<T> t) { throw new EmptyStackPopped(); }
+                public Object car() { throw new EmptyStackPopped(); }
+                public Pair cdr() { throw new EmptyStackPopped(); }
+            };
+
+        public static Pair cons(Object car, IPair cdr) { return new Pair(car, cdr); }
         public static Pair list(Object... args) {
             Pair p = Pair.nil;
             for(int i = args.length - 1; i >= 0 ; i--) {
@@ -47,25 +67,15 @@ public class ThumbJoy {
             }
             return p;
         }
-
         public String toString() {
-            if(this == Pair.nil) return "[]";
+            if(this == Pair.nil) return "[ ]";
             String f = "[";
-            Pair p = this;
+            IPair p = this;
             while(p != nil) {
-                f += " " + p.car;
-                p = p.cdr;
+                f += " " + p.car();
+                p = p.cdr();
             }
             return f + " ]";
-        }
-        
-        public Pair eval(Pair stk) {
-            Pair p = this;
-            while(p != Pair.nil) {
-                stk = run(p.car, stk);
-                p = p.cdr;
-            }            
-            return stk;
         }
     }
 
@@ -78,106 +88,119 @@ public class ThumbJoy {
             return value.equals(((Datum)o).value);
         }
     }
-    public static class Word extends Datum<String> {
-        public Word(String s) { super(s); }
-        public String toString() { return value.toString(); }
-    }
     public static class Keyword extends Datum<String> {
         public Keyword(String s) { super(s); }
         public String toString() { return ":" + value; }
     }
-
-    public static class Reader {
-        public static boolean isWs(int c) {
-            switch(c) {
-                case ' ': case '\t':
-                case '\r': case '\n': return true;
-                default: return false;
-            }
+    public static class Word extends Datum<String> implements Applicable {
+        final Env e;
+        public Word(String s, Env e) { super(s); this.e = e;}
+        public String toString() { return value; }
+        public IPair exe(IPair stk, Machine m) {
+            Object o = m.dict.get(this.value);
+            if(o == null) throw new InvalidReference(this.toString());
+            return m.eval(o, stk);
         }
-        // dummy token for ')'
-        private static Object CLOSE_PAREN = new Object() {};
-        // read a list of instructions (  :a :b drop )
-        public static Pair readCodeBlock(InputStream is) {
-            Pair lst = Pair.nil;
-            while(true) {
-                Object o = read(is);
-                if(o == null) break;
-                if(o == CLOSE_PAREN) break;
-                lst = Pair.cons(o, lst);
-            }
-            return lst;
-        }
+    }
 
-        public static Object read(InputStream is) {
-            int c;
-            try {
-                while((c = is.read()) >= 0) {
-                    if(isWs(c)) continue;
-                    switch(c) {
-                        case ':': return new Keyword(readUntilWS(is, ""));
-                        case '?': return new Boolean("t".equals(readUntilWS(is, "")));
-                        case ')': return CLOSE_PAREN;
-                        case '(': return readCodeBlock(is);
-                        default:  return new Word(readUntilWS(is, String.format("%c", c)));
+    public abstract static class ApplicableCore implements Applicable {
+        final String name;
+        protected ApplicableCore(String name, Machine m) {
+            this.name = name;
+            m.dict.put(name, this);
+        }
+        public String toString() { return "_" + name; }
+    }
+    
+    public static class Machine {
+        public Map<Object, Object> dict = new HashMap<Object, Object>();
+
+        @SuppressWarnings("unchecked")
+        public <T> T get(String key, Class<T> t) {
+            final Object ref = dict.get(key);
+            if(t.isInstance(ref)) return (T)ref;
+            throw new TypeMismatch(t, ref);
+        }
+        public Machine() {
+            new ApplicableCore("conc", this) {
+                    public IPair exe(IPair stk, Machine m) {
+                        Object e0 = stk.car();
+                        Object e1 = stk.cdr().car();
+                        return cons(e0.toString() + e1, stk.cdr().cdr());
                     }
+                };
+            new ApplicableCore("drop", this) {
+                    public IPair exe(IPair stk, Machine m) {
+                        return stk.cdr();
+                    }
+                };
+            new ApplicableCore("dup", this) {
+                    public IPair exe(IPair stk, Machine m) {
+                        return cons(stk.car(), stk);
+                    }
+                };
+            new ApplicableCore("d", this) {
+                public IPair exe(IPair stk, Machine m) {
+                    return cons(dict, stk);
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
+            };
+            new ApplicableCore("dd", this) {
+                public IPair exe(IPair stk, Machine m) {
+                    Object o = dict.get(".");
+                    if(o == null) throw new InvalidReference(".");
+                    Machine.this.eval(o, list(dict));
+                    return stk;
+                }
+            };
+            new ApplicableCore("i", this) {
+                public IPair exe(IPair stk, Machine m) {
+                    IPair p = stk.car(Pair.class);
+                    stk = stk.cdr();
+                    while (p != Pair.nil) {
+                        stk = m.eval(p.car(), stk);
+                        p = p.cdr();
+                    }
+                    return stk;
+                }
+            };
+            new ApplicableCore("set", this) {
+                @Override
+                public IPair exe(IPair stk, Machine m) {
+                    final Keyword name = stk.cdr().car(Keyword.class);
+                    final Object content = stk.car();
+                    dict.put(name.value, content);
+                    return stk.cdr().cdr();
+                }
+            };
+            new ApplicableCore("get", this) {
+                @Override
+                public IPair exe(IPair stk, Machine m) {
+                    final Keyword name = stk.car(Keyword.class);
+                    return cons(dict.get(name.value), stk.cdr());
+                }
+            };
+            new ApplicableCore("println", this) {
+                @Override
+                public IPair exe(IPair stk, Machine m) {
+                    final Object ref = m.get("out", ThreadLocal.class).get();
+                    if(!(ref instanceof OutputStream)) throw new TypeMismatch(OutputStream.class, ref);
+                    try {
+                        ((OutputStream)ref).write((stk.car().toString() + "\n").getBytes());
+                    } catch (final IOException e) {
+                        throw new TFE() {
+                            public String getMessage() { return "io error " + e; }
+                        };
+                    }
+                    return stk.cdr();
+                }
+            };
+            dict.put("out", new ThreadLocal<Object>());
+            dict.put("in", new ThreadLocal<Object>());
+        }
+        public IPair eval(Object o, IPair stk) {
+            if (o instanceof Applicable) return ((Applicable) o).exe(stk, this);
+            return cons(o, stk); // defaults to "self evaluation"
         }
 
-        public static String readUntilWS (InputStream is, String init) throws IOException {
-            int c;
-            while((c = is.read()) >= 0) {
-                if(isWs(c)) break;
-                init += String.format("%c", c);
-            }
-            return init;
-        }
-    }
-
-    /**
-     show user prompt only on ENTER keys for less noise
-     */
-    public static class InputStreamEnterCallback extends InputStream {
-        final InputStream source;
-        final Runnable callback;
-        public InputStreamEnterCallback(InputStream source, Runnable callback) {
-            this.source = source;
-            this.callback = callback;
-        }
-        private boolean showPrompt = true;
-        public int read() throws IOException {
-            if(showPrompt) {
-                callback.run();
-                showPrompt = false;
-            }
-            final int c = source.read();
-            if(c == '\n') showPrompt = true;
-            return c;
-        }
-        public void close() throws IOException {
-            source.close();
-        }
-    }
-
-    public static Pair run(Object o, Pair stk) {
-        if(o instanceof JoyMachine) return ((JoyMachine)o).eval(stk);
-        return Pair.cons(o, stk);
-    }
-
-    public final static JoyMachine _PLUS = new JoyMachine() {
-            public Pair eval(Pair stk) {
-                Integer i0 = (Integer)stk.car;
-                Integer i1 = (Integer)stk.cdr.car;
-                return Pair.cons(i0 + i1, stk.cdr.cdr);
-            }
-        };
-
-    public static void main(String[] args) {
-        System.out.println("hello " + Pair.nil);
-        System.out.println(run(Pair.list(2, 3, _PLUS), Pair.nil));
     }
 }

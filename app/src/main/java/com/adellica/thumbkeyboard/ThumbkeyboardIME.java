@@ -20,7 +20,7 @@ public class ThumbkeyboardIME extends InputMethodService {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    ThumbForthServer.serve(m, 1234);
+                    ThumbReader.serve(m, 1234);
                 }
             }).start();
         }

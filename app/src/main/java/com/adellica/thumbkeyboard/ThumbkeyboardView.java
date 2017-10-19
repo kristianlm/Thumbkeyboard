@@ -15,8 +15,9 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputConnection;
 
-import com.adellica.thumbkeyboard.ThumbJoy.Obj;
-import com.adellica.thumbkeyboard.ThumbJoy.Str;
+import com.adellica.thumbkeyboard.ThumbJoy.Applicable;
+import com.adellica.thumbkeyboard.ThumbJoy.Machine;
+import com.adellica.thumbkeyboard.ThumbJoy.Pair;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -101,19 +102,17 @@ public class ThumbkeyboardView extends View {
         Log.i(TAG, "WDOIWAJDOWAUHDWADWAOIDJWAODHWAODJWAOIDJOWAIJDWAOIDJWAOIJDOWA");
         layouts = Layout.loadLayouts(getContext().getAssets());
 
-        m().dict.put("lword", new Obj() {
-            @Override
-            public void exe(ThumbJoy.Machine m) {
-                m.push(new Str(readBackwardsUntil(" ", true)));
+        m().dict.put("lword", new Applicable() {
+            public ThumbJoy.IPair exe(ThumbJoy.IPair stk, Machine m) {
+                return Pair.cons(readBackwardsUntil(" ", true), stk);
             }
-            @Override public String toString() {return "_LWORD";}
+            public String toString() {return "_LWORD";}
         });
-        m().dict.put("rword", new Obj() {
-            @Override
-            public void exe(ThumbJoy.Machine m) {
-                m.push(new Str(readForwardsUntil(" ", true)));
+        m().dict.put("rword", new Applicable() {
+            public ThumbJoy.IPair exe(ThumbJoy.IPair stk, Machine m) {
+                return Pair.cons(readForwardsUntil(" ", true), stk);
             }
-            @Override public String toString() {return "_RWORD";}
+            public String toString() {return "_RWORD";}
         });
 
     }
@@ -274,12 +273,10 @@ public class ThumbkeyboardView extends View {
     private void handlePattern(final String p) {
         if(p == null) return;
         // super-button (puts into superlayout)
-        Obj o = m().dict.get("handle");
+        Object o = m().dict.get("handle");
         if(o == null) return;
-        m().push(new Str(p));
-        Log.i(TAG, "before exe: " + m().stack);
-        m().exe(o);
-        Log.i(TAG, "after  exe: " + m().stack + " executed " + o);
+        Pair result = m().eval(o, Pair.list(p));
+        Log.i(TAG, "after  exe: " + result + " executed " + o);
     }
 
     /**
