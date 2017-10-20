@@ -41,7 +41,6 @@ public class ThumbJoy {
         <T> T car(Class<T> t);
     }
     abstract public static class APair implements IPair, Applicable {
-
         @SuppressWarnings("unchecked")
         public <T> T car(Class<T> t) {
             if(t.isInstance(car())) return (T)car();
@@ -57,12 +56,14 @@ public class ThumbJoy {
             }
             return f + " ]";
         }
-
         @Override
         public IPair exe(Machine m, IPair stk, Stack code) {
-            //MutablePair recode = new MutablePair(this);
-
-            return m.run(this, stk);
+            Stack source = new Stack(this);
+            while(!source.isEmpty()) {
+                final Object read = source.pop();
+                stk = m.eval(read, stk, source);
+            }
+            return stk;
         }
     }
     public static class Pair extends APair implements Applicable {
@@ -88,14 +89,11 @@ public class ThumbJoy {
             return p;
         }
     }
+    // because we can only return one IPair, better keep this mutable :-(
     public static class Stack {
         IPair p;
-        public Stack(IPair p) {
-            this.p = p;
-        }
-        public boolean isEmpty() {
-            return p == Pair.nil;
-        }
+        public Stack(IPair p) { this.p = p; }
+        public boolean isEmpty() { return p == Pair.nil; }
         public Object pop() {
             Object o = p.car();
             p = p.cdr();
@@ -106,11 +104,7 @@ public class ThumbJoy {
     abstract public static class Datum<T> {
         final T value;
         public Datum(T value) { this.value = value; }
-        // public boolean equals(Object o) {
-        //     if(o == null) return false;
-        //     if(!(this.getClass().equals(o.getClass()))) return false;
-        //     return value.equals(((Datum)o).value);
-        // }
+        abstract public String toString();
     }
     public static class Keyword extends Datum<String> {
         public Keyword(String s) { super(s); }
@@ -136,7 +130,6 @@ public class ThumbJoy {
     }
     
     public static class Machine {
-        //public IPair stk = Pair.nil;
         public Map<Object, Object> dict = new HashMap<Object, Object>();
         public Map<String, Object> macros = new HashMap<String, Object>();
 
@@ -172,10 +165,7 @@ public class ThumbJoy {
             };
             new ApplicableCore("'", this) {
                 public IPair exe(Machine m, IPair stk, Stack code) {
-                    if(code.isEmpty())
-                        throw new RuntimeException("QUOTE: unexpected eof");
-
-                    //System.out.println("QUOTing " + m.next(Object.class));
+                    if(code.isEmpty()) throw new RuntimeException("QUOTE: unexpected eof");
                     return cons(code.pop(), stk);
                 }
             };
@@ -186,13 +176,6 @@ public class ThumbJoy {
                     final Object content = stk.car();
                     dict.put(name.value, content);
                     return stk.cdr().cdr();
-                }
-            };
-            new ApplicableCore("get", this) {
-                @Override
-                public IPair exe(Machine m, IPair stk, Stack code) {
-                    final Keyword name = stk.car(Keyword.class);
-                    return cons(dict.get(name.value), stk.cdr());
                 }
             };
             new ApplicableCore("println", this) {
@@ -223,7 +206,7 @@ public class ThumbJoy {
             };
         }
 
-        public boolean isTrue(Object o) {
+        public static boolean isTrue(Object o) {
             if(o instanceof Keyword) {
                 Keyword k = (Keyword)o;
                 if("t".equals(k.value)) return true;
@@ -234,19 +217,6 @@ public class ThumbJoy {
         public IPair eval(final Object o, IPair stk, Stack mp) {
             if (o instanceof Applicable) return ((Applicable) o).exe(this, stk, mp);
             return cons(o, stk); // defaults to "self evaluation"
-        }
-        public IPair run(IPair _source, IPair stk) {
-            Stack mp = new Stack(_source);
-            while(!mp.isEmpty()) {
-                try {
-                    final Object read = mp.pop();
-                    stk = eval(read, stk, mp);
-                } catch (ThumbJoy.TFE e) {
-                    //e.printStackTrace();
-                    System.out.println("error: " + e);
-                }
-            }
-            return stk;
         }
     }
 }
