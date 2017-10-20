@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.inputmethod.InputConnection;
 
 import com.adellica.thumbkeyboard.ThumbJoy.Applicable;
+import com.adellica.thumbkeyboard.ThumbJoy.IPair;
 import com.adellica.thumbkeyboard.ThumbJoy.Machine;
 import com.adellica.thumbkeyboard.ThumbJoy.Pair;
 
@@ -103,13 +104,13 @@ public class ThumbkeyboardView extends View {
         layouts = Layout.loadLayouts(getContext().getAssets());
 
         m().dict.put("lword", new Applicable() {
-            public ThumbJoy.IPair exe(ThumbJoy.IPair stk, Machine m) {
+            public IPair exe(IPair stk, Machine m) {
                 return Pair.cons(readBackwardsUntil(" ", true), stk);
             }
             public String toString() {return "_LWORD";}
         });
         m().dict.put("rword", new Applicable() {
-            public ThumbJoy.IPair exe(ThumbJoy.IPair stk, Machine m) {
+            public IPair exe(IPair stk, Machine m) {
                 return Pair.cons(readForwardsUntil(" ", true), stk);
             }
             public String toString() {return "_RWORD";}
@@ -275,7 +276,7 @@ public class ThumbkeyboardView extends View {
         // super-button (puts into superlayout)
         Object o = m().dict.get("handle");
         if(o == null) return;
-        Pair result = m().eval(o, Pair.list(p));
+        IPair result = m().eval(o, Pair.list(p));
         Log.i(TAG, "after  exe: " + result + " executed " + o);
     }
 

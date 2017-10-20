@@ -1,20 +1,20 @@
 package com.adellica.thumbkeyboard;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 import java.util.HashMap;
 
 import static com.adellica.thumbkeyboard.ThumbJoy.Pair.cons;
 import static com.adellica.thumbkeyboard.ThumbJoy.Pair.list;
+import static com.adellica.thumbkeyboard.ThumbReader.QUOTE;
 
 public class ThumbJoy {
     public interface Env {
-        public Object get(Object key);
+        Object get(Object key);
     }
     public interface Applicable {
-        public IPair exe(IPair stk, Machine m);
+        IPair exe(IPair stk, Machine m);
     }
     
     public static class TFE extends RuntimeException {
@@ -36,11 +36,11 @@ public class ThumbJoy {
         }
     }
     public interface IPair {
-        public Object car();
-        public IPair cdr();
-        public <T> T car(Class<T> t);
+        Object car();
+        IPair cdr();
+        <T> T car(Class<T> t);
     }
-    public static class Pair implements IPair {
+    public static class Pair implements IPair, Applicable {
         private final Object __car;
         private final IPair __cdr;
         public Pair(Object car, IPair cdr) { __car=car; __cdr=cdr;}
@@ -57,18 +57,19 @@ public class ThumbJoy {
                 public <T> T car(Class<T> t) { throw new EmptyStackPopped(); }
                 public Object car() { throw new EmptyStackPopped(); }
                 public Pair cdr() { throw new EmptyStackPopped(); }
-            };
+                public IPair exe(IPair stk, Machine m) {return this;}
+        };
 
         public static Pair cons(Object car, IPair cdr) { return new Pair(car, cdr); }
         public static Pair list(Object... args) {
-            Pair p = Pair.nil;
+            Pair p = nil;
             for(int i = args.length - 1; i >= 0 ; i--) {
                 p = cons(args[i], p);
             }
             return p;
         }
         public String toString() {
-            if(this == Pair.nil) return "[ ]";
+            if(this == nil) return "[ ]";
             String f = "[";
             IPair p = this;
             while(p != nil) {
@@ -76,6 +77,24 @@ public class ThumbJoy {
                 p = p.cdr();
             }
             return f + " ]";
+        }
+
+        @Override
+        public IPair exe(IPair stk, Machine m) {
+            System.out.println("EXECUTING PAIR");
+            IPair p = this;
+            while (p != nil) {
+                if(p.car() == QUOTE) {
+                    System.out.println("quoting cdr " + p.cdr());
+                    stk = cons(p.cdr().car(), stk);
+                    System.out.println("quoting after  " + stk);
+                    p = p.cdr().cdr();
+                    continue;
+                }
+                stk = m.eval(p.car(), stk);
+                p = p.cdr();
+            }
+            return stk;
         }
     }
 
@@ -93,8 +112,7 @@ public class ThumbJoy {
         public String toString() { return ":" + value; }
     }
     public static class Word extends Datum<String> implements Applicable {
-        final Env e;
-        public Word(String s, Env e) { super(s); this.e = e;}
+        public Word(String s) { super(s);}
         public String toString() { return value; }
         public IPair exe(IPair stk, Machine m) {
             Object o = m.dict.get(this.value);
@@ -146,27 +164,21 @@ public class ThumbJoy {
             };
             new ApplicableCore("dd", this) {
                 public IPair exe(IPair stk, Machine m) {
-                    Object o = dict.get(".");
-                    if(o == null) throw new InvalidReference(".");
+                    Object o = dict.get("println");
+                    if(o == null) throw new InvalidReference("println");
                     Machine.this.eval(o, list(dict));
                     return stk;
                 }
             };
             new ApplicableCore("i", this) {
                 public IPair exe(IPair stk, Machine m) {
-                    IPair p = stk.car(Pair.class);
-                    stk = stk.cdr();
-                    while (p != Pair.nil) {
-                        stk = m.eval(p.car(), stk);
-                        p = p.cdr();
-                    }
-                    return stk;
+                    return m.eval(stk.car(), stk.cdr());
                 }
             };
             new ApplicableCore("set", this) {
                 @Override
                 public IPair exe(IPair stk, Machine m) {
-                    final Keyword name = stk.cdr().car(Keyword.class);
+                    final Word name = stk.cdr().car(Word.class);
                     final Object content = stk.car();
                     dict.put(name.value, content);
                     return stk.cdr().cdr();
@@ -182,10 +194,10 @@ public class ThumbJoy {
             new ApplicableCore("println", this) {
                 @Override
                 public IPair exe(IPair stk, Machine m) {
-                    final Object ref = m.get("out", ThreadLocal.class).get();
-                    if(!(ref instanceof OutputStream)) throw new TypeMismatch(OutputStream.class, ref);
+                    OutputStream os = m.get("out", OutputStream.class);
                     try {
-                        ((OutputStream)ref).write((stk.car().toString() + "\n").getBytes());
+                        os.write((stk.car().toString() + "\n").getBytes());
+                        os.flush();
                     } catch (final IOException e) {
                         throw new TFE() {
                             public String getMessage() { return "io error " + e; }
@@ -194,8 +206,6 @@ public class ThumbJoy {
                     return stk.cdr();
                 }
             };
-            dict.put("out", new ThreadLocal<Object>());
-            dict.put("in", new ThreadLocal<Object>());
         }
         public IPair eval(Object o, IPair stk) {
             if (o instanceof Applicable) return ((Applicable) o).exe(stk, this);
