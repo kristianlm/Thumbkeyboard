@@ -150,6 +150,14 @@ public class ThumbJoy {
                         return cons(stk.car(), stk);
                     }
                 };
+            new ApplicableCore("swap", this) {
+                public IPair exe(Machine m, IPair stk, Stack code) {
+                    IPair p = stk;
+                    Object e0 = p.car(); p = p.cdr();
+                    Object e1 = p.car(); p = p.cdr();
+                    return cons(e1, cons(e0, p));
+                }
+            };
             new ApplicableCore("dd", this) {
                 public IPair exe(Machine m, IPair stk, Stack code) {
                     Object o = dict.get("println");
