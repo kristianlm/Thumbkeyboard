@@ -210,6 +210,25 @@ public class ThumbJoy {
                     return stk.cdr();
                 }
             };
+            new ApplicableCore("ifte", this) {
+                @Override
+                public IPair exe(Machine m, IPair stk, Stack code) {
+                    IPair p = stk;
+                    final Object e = p.car(); p = p.cdr();
+                    final Object t = p.car(); p = p.cdr();
+                    final Object i = p.car(); p = p.cdr();
+                    if(isTrue(i)) return m.eval(t, p, code);
+                    else return m.eval(e, p, code);
+                }
+            };
+        }
+
+        public boolean isTrue(Object o) {
+            if(o instanceof Keyword) {
+                Keyword k = (Keyword)o;
+                if("t".equals(k.value)) return true;
+            }
+            return false;
         }
 
         public IPair eval(final Object o, IPair stk, Stack mp) {
