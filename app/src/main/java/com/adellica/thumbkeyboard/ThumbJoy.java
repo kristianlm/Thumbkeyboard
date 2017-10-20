@@ -11,7 +11,10 @@ import static com.adellica.thumbkeyboard.ThumbJoy.Pair.list;
 
 public class ThumbJoy {
     public interface Applicable {
-        IPair exe(IPair stk, Machine m, MutablePair code);
+        // m mutable (environment)
+        // stk immutable (return result)
+        // code mutable (pop next token)
+        IPair exe(Machine m, IPair stk, Stack code);
     }
 
     public static class TFE extends RuntimeException {
@@ -56,7 +59,7 @@ public class ThumbJoy {
         }
 
         @Override
-        public IPair exe(IPair stk, Machine m, MutablePair code) {
+        public IPair exe(Machine m, IPair stk, Stack code) {
             //MutablePair recode = new MutablePair(this);
 
             return m.run(this, stk);
@@ -73,7 +76,7 @@ public class ThumbJoy {
                 public <T> T car(Class<T> t) { throw new EmptyStackPopped(); }
                 public Object car() { throw new EmptyStackPopped(); }
                 public Pair cdr() { throw new EmptyStackPopped(); }
-                public IPair exe(IPair stk, Machine m, MutablePair code) {return this;}
+                public IPair exe(Machine m, IPair stk, Stack code) {return this;}
         };
 
         public static Pair cons(Object car, IPair cdr) { return new Pair(car, cdr); }
@@ -85,9 +88,9 @@ public class ThumbJoy {
             return p;
         }
     }
-    public static class MutablePair {
+    public static class Stack {
         IPair p;
-        public MutablePair(IPair p) {
+        public Stack(IPair p) {
             this.p = p;
         }
         public boolean isEmpty() {
@@ -116,7 +119,7 @@ public class ThumbJoy {
     public static class Word extends Datum<String> implements Applicable {
         public Word(String s) { super(s);}
         public String toString() { return value; }
-        public IPair exe(IPair stk, Machine m, MutablePair code) {
+        public IPair exe(Machine m, IPair stk, Stack code) {
             Object o = m.dict.get(this.value);
             if(o == null) throw new InvalidReference(this.toString());
             return m.eval(o, stk, code);
@@ -145,17 +148,17 @@ public class ThumbJoy {
         }
         public Machine() {
             new ApplicableCore("drop", this) {
-                    public IPair exe(IPair stk, Machine m, MutablePair code) {
+                    public IPair exe(Machine m, IPair stk, Stack code) {
                         return stk.cdr();
                     }
                 };
             new ApplicableCore("dup", this) {
-                    public IPair exe(IPair stk, Machine m, MutablePair code) {
+                    public IPair exe(Machine m, IPair stk, Stack code) {
                         return cons(stk.car(), stk);
                     }
                 };
             new ApplicableCore("dd", this) {
-                public IPair exe(IPair stk, Machine m, MutablePair code) {
+                public IPair exe(Machine m, IPair stk, Stack code) {
                     Object o = dict.get("println");
                     if(o == null) throw new InvalidReference("println");
                     Machine.this.eval(o, list(dict), code);
@@ -163,12 +166,12 @@ public class ThumbJoy {
                 }
             };
             new ApplicableCore("i", this) {
-                public IPair exe(IPair stk, Machine m, MutablePair code) {
+                public IPair exe(Machine m, IPair stk, Stack code) {
                     return m.eval(stk.car(), stk.cdr(), code);
                 }
             };
             new ApplicableCore("'", this) {
-                public IPair exe(IPair stk, Machine m, MutablePair code) {
+                public IPair exe(Machine m, IPair stk, Stack code) {
                     if(code.isEmpty())
                         throw new RuntimeException("QUOTE: unexpected eof");
 
@@ -178,7 +181,7 @@ public class ThumbJoy {
             };
             new ApplicableCore("set", this) {
                 @Override
-                public IPair exe(IPair stk, Machine m, MutablePair code) {
+                public IPair exe(Machine m, IPair stk, Stack code) {
                     final Word name = stk.cdr().car(Word.class);
                     final Object content = stk.car();
                     dict.put(name.value, content);
@@ -187,14 +190,14 @@ public class ThumbJoy {
             };
             new ApplicableCore("get", this) {
                 @Override
-                public IPair exe(IPair stk, Machine m, MutablePair code) {
+                public IPair exe(Machine m, IPair stk, Stack code) {
                     final Keyword name = stk.car(Keyword.class);
                     return cons(dict.get(name.value), stk.cdr());
                 }
             };
             new ApplicableCore("println", this) {
                 @Override
-                public IPair exe(IPair stk, Machine m, MutablePair code) {
+                public IPair exe(Machine m, IPair stk, Stack code) {
                     OutputStream os = m.get("out", OutputStream.class);
                     try {
                         os.write((stk.car().toString() + "\n").getBytes());
@@ -209,12 +212,12 @@ public class ThumbJoy {
             };
         }
 
-        public IPair eval(final Object o, IPair stk, MutablePair mp) {
-            if (o instanceof Applicable) return ((Applicable) o).exe(stk, this, mp);
+        public IPair eval(final Object o, IPair stk, Stack mp) {
+            if (o instanceof Applicable) return ((Applicable) o).exe(this, stk, mp);
             return cons(o, stk); // defaults to "self evaluation"
         }
         public IPair run(IPair _source, IPair stk) {
-            MutablePair mp = new MutablePair(_source);
+            Stack mp = new Stack(_source);
             while(!mp.isEmpty()) {
                 try {
                     final Object read = mp.pop();

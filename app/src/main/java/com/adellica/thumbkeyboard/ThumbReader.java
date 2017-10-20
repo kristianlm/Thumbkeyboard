@@ -36,7 +36,7 @@ public class ThumbReader {
     public static class Quoted implements Applicable {
         final Object obj;
         public Quoted(Object obj) { this.obj = obj; }
-        @Override public IPair exe(IPair stk, Machine m, ThumbJoy.MutablePair code) { return cons(obj, stk); }
+        @Override public IPair exe(Machine m, IPair stk, ThumbJoy.Stack code) { return cons(obj, stk); }
         @Override public String toString() { return "“" + obj.toString(); }
     }
 
@@ -85,7 +85,7 @@ public class ThumbReader {
         }
         @Override public String toString() { return "<"+car()+"...>"; }
         @Override
-        public IPair exe(IPair stk, Machine m, ThumbJoy.MutablePair code) { return stk; }
+        public IPair exe(Machine m, IPair stk, ThumbJoy.Stack code) { return stk; }
     }
 
     public Pair reverse(IPair pair) {
@@ -201,7 +201,7 @@ public class ThumbReader {
 
         ThumbReader reader = new ThumbReader(pis);
         IPair source = new IPairReader(reader);
-        ThumbJoy.MutablePair mp = new ThumbJoy.MutablePair(source);
+        ThumbJoy.Stack mp = new ThumbJoy.Stack(source);
 
         while(!mp.isEmpty()) {
             try {
