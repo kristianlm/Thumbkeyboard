@@ -16,9 +16,12 @@ import android.view.View;
 import android.view.inputmethod.InputConnection;
 
 import com.adellica.thumbkeyboard.ThumbJoy.Applicable;
+import com.adellica.thumbkeyboard.ThumbJoy.ApplicableCore;
 import com.adellica.thumbkeyboard.ThumbJoy.IPair;
+import com.adellica.thumbkeyboard.ThumbJoy.Keyword;
 import com.adellica.thumbkeyboard.ThumbJoy.Machine;
 import com.adellica.thumbkeyboard.ThumbJoy.Pair;
+import com.adellica.thumbkeyboard.ThumbJoy.Str;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -26,6 +29,8 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.adellica.thumbkeyboard.ThumbJoy.Machine.M;
+import static com.adellica.thumbkeyboard.ThumbJoy.Pair.cons;
 import static com.adellica.thumbkeyboard.ThumbkeyboardIME.*;
 
 /**
@@ -103,19 +108,19 @@ public class ThumbkeyboardView extends View {
         Log.i(TAG, "WDOIWAJDOWAUHDWADWAOIDJWAODHWAODJWAOIDJOWAIJDWAOIDJWAOIJDOWA");
         layouts = Layout.loadLayouts(getContext().getAssets());
 
-        m().dict.put("lword", new Applicable() {
+        new ApplicableCore("lword", m().dict) {
+            public Machine exe(Machine m) {return M(cons(new Str(readBackwardsUntil(" ", true)), m.stk), m);}
+        };
+        new ApplicableCore("rword", m().dict) {
+            public Machine exe(Machine m) {return M(cons(new Str(readForwardsUntil(" ", true)), m.stk), m);}
+        };
+        new ApplicableCore("insert", m().dict) {
             public Machine exe(Machine m) {
-                return Pair.cons(readBackwardsUntil(" ", true), stk);
+                final String input = m.stk.car(Str.class).value;
+                Ime.getCurrentInputConnection().commitText(input, 0);
+                return M(m.stk.cdr(), m);
             }
-            public String toString() {return "_LWORD";}
-        });
-        m().dict.put("rword", new Applicable() {
-            public Machine exe(Machine m) {
-                return Pair.cons(readForwardsUntil(" ", true), stk);
-            }
-            public String toString() {return "_RWORD";}
-        });
-
+        };
     }
 
     class Blob {
@@ -276,8 +281,12 @@ public class ThumbkeyboardView extends View {
         // super-button (puts into superlayout)
         Object o = m().dict.get("handle");
         if(o == null) return;
-        IPair result = m().eval(o, Pair.list(p));
-        Log.i(TAG, "after  exe: " + result + " executed " + o);
+        try {
+            Machine result = M(Pair.list(p), m()).eval(o);
+            Log.i(TAG, " [ handle ] => " + result.stk);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
     }
 
     /**

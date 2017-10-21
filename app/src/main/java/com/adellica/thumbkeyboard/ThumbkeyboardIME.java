@@ -6,17 +6,19 @@ package com.adellica.thumbkeyboard;
 import android.inputmethodservice.InputMethodService;
 import android.view.View;
 
+import com.adellica.thumbkeyboard.ThumbJoy.Machine;
+import com.adellica.thumbkeyboard.ThumbJoy.Pair;
 import com.adellica.thumbkeyboard3.R;
 
 
 public class ThumbkeyboardIME extends InputMethodService {
    ThumbkeyboardView PV;
 
-    private static ThumbJoy.Machine m = null;
+    private static Machine m = null;
 
-    public static ThumbJoy.Machine m() {
+    public static Machine m() {
         if(m == null) {
-            m = new ThumbJoy.Machine();
+            m = new Machine(Pair.nil, Pair.nil, Machine.dictDefault());
             new Thread(new Runnable() {
                 @Override
                 public void run() {

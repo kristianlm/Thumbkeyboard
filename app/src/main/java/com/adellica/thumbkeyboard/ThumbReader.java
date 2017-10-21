@@ -1,6 +1,7 @@
 package com.adellica.thumbkeyboard;
 
-
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.ServerSocket;
@@ -15,6 +16,8 @@ import com.adellica.thumbkeyboard.ThumbJoy.Applicable;
 import com.adellica.thumbkeyboard.ThumbJoy.IPair;
 import com.adellica.thumbkeyboard.ThumbJoy.Pair;
 import com.adellica.thumbkeyboard.ThumbJoy.Keyword;
+import com.adellica.thumbkeyboard.ThumbJoy.Str;
+import com.adellica.thumbkeyboard.ThumbJoy.TFE;
 import com.adellica.thumbkeyboard.ThumbJoy.Word;
 import com.adellica.thumbkeyboard.ThumbJoy.Machine;
 
@@ -23,6 +26,8 @@ import static com.adellica.thumbkeyboard.ThumbJoy.Pair.cons;
 
 
 public class ThumbReader {
+
+    public static class InvalidEscapeSequence extends TFE {public InvalidEscapeSequence(String s){super(s);}};
 
     public static boolean isWs(int c) {
         switch(c) {
@@ -89,27 +94,27 @@ public class ThumbReader {
         public Machine exe(Machine m) { return m; }
     }
 
-    public Pair reverse(IPair pair) {
-        Pair result = Pair.nil;
-        while(pair != Pair.nil) {
-            result = cons(pair.car(), result);
-            pair = pair.cdr();
-        }
-        return result;
-    }
-
     public Object read() {
         int c;
         try {
             while((c = is.read()) >= 0) {
                 if(isWs(c)) continue;
                 switch(c) {
-                case ':': return new Keyword(readUntilWS(""));
-                case '?': return new Boolean("t".equals(readUntilWS("")));
+                case '"': return readString(-1);
+                case ':': return new Keyword(readUntilWS(-1));
+                case '?': return new Boolean("t".equals(readUntilWS(-1)));
+                //case '@': return new Macro(readUntilWS(""));
                 case ']': return CLOSE_PAREN;
                 case '[': return readQuotedList();
+                case '0':case'1':case'2':case'3':case'4':case'5':case'6':case'7':case'8':case'9':
+                        final String num = readUntilWS(c);
+                        try {
+                            return new Long(num);
+                        } catch (NumberFormatException e) {
+                            return new Double(num);
+                        }
                 default:
-                    final String name = readUntilWS(String.format("%c", c));
+                    final String name = readUntilWS(c);
                     //final Object macro = m.dict.get(name);
                     //if("'".equals(name))
                     //  return QUOTE;
@@ -153,13 +158,86 @@ public class ThumbReader {
         return new Quoted(p);
     }
 
-    public String readUntilWS (String init) throws IOException {
+    // stolen from https://stackoverflow.com/questions/220547/printable-char-in-java
+    public static boolean isPrintableChar( int c ) {
+        Character.UnicodeBlock block = Character.UnicodeBlock.of( c );
+        return (!Character.isISOControl(c)) &&
+                block != null &&
+                block != Character.UnicodeBlock.SPECIALS;
+    }
+
+    public static String writeString(String s) {
+        ByteArrayOutputStream bao = new ByteArrayOutputStream();
+        ByteArrayInputStream bai = new ByteArrayInputStream(s.getBytes());
+        int c;
+        try {
+            while((c = bai.read()) >= 0) {
+                switch(c) {
+                    case 0x07: bao.write('\\'); c = 'a' ; break;
+                    case 0x08: bao.write('\\'); c = 'b' ; break;
+                    case 0x0C: bao.write('\\'); c = 'f' ; break;
+                    case 0x0A: bao.write('\\'); c = 'n' ; break;
+                    case 0x0D: bao.write('\\'); c = 'r' ; break;
+                    case 0x09: bao.write('\\'); c = 't' ; break;
+                    case 0x0B: bao.write('\\'); c = 'v' ; break;
+                    case 0x5C: bao.write('\\'); c = '\\' ; break;
+                    case 0x27: bao.write('\\'); c = '\''; break;
+                    case 0x22: bao.write('\\'); c = '"' ; break;
+                    case 0x3F: bao.write('\\'); c = '?' ; break;
+                    default:
+                }
+                if(isPrintableChar(c)) {
+                    bao.write(c);
+                } else {
+                    bao.write(String.format("\\x%02x", c).getBytes());
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return bao.toString();
+    }
+
+    public Str readString(int init) throws IOException {
+        ByteArrayOutputStream bao = new ByteArrayOutputStream();
+        if(init >= 0) bao.write(init);
+        int c;
+        while((c = is.read()) >= 0) {
+            if(c == '"') break;
+            if(c == '\\') {
+                switch (c = is.read()) { // list taken from https://en.wikipedia.org/wiki/Escape_sequences_in_C
+                    case 'a' : c = 0x07; break;
+                    case 'b' : c = 0x08; break;
+                    case 'f' : c = 0x0C; break;
+                    case 'n' : c = 0x0A; break;
+                    case 'r' : c = 0x0D; break;
+                    case 't' : c = 0x09; break;
+                    case 'v' : c = 0x0B; break;
+                    case '\\' : c = 0x5C; break;
+                    case '\'' : c = 0x27; break;
+                    case '"' : c = 0x22; break;
+                    case '?' : c = 0x3F; break;
+                    case 'x': throw new RuntimeException("TODO");
+                    case 'u': throw new RuntimeException("TODO");
+                    case 'U': throw new RuntimeException("TODO");
+                    default:
+                        throw new InvalidEscapeSequence(String.valueOf((char)c));
+                }
+            }
+            bao.write(c);
+        }
+        return new Str(bao.toString());
+    }
+
+    public String readUntilWS (int init) throws IOException {
+        ByteArrayOutputStream bao = new ByteArrayOutputStream();
+        if(init >= 0) bao.write(init);
         int c;
         while((c = is.read()) >= 0) {
             if(isWs(c)) break;
-            init += String.format("%c", c);
+            bao.write(c);
         }
-        return init;
+        return bao.toString();
     }
 
 
@@ -196,7 +274,7 @@ public class ThumbReader {
 
         InputStream pis = new InputStreamEnterCallback(is, new Runnable() {
             public void run() {
-                ps.print(box.m.stk + " ");
+                ps.print(Pair.reverse(box.m.stk) + " ");
             }
         });
 
@@ -212,8 +290,8 @@ public class ThumbReader {
                 final Object read = box.m.code.car(); // read
                 box.m = M(box.m.stk, box.m.code.cdr(), box.m); // pop code
                 box.m = box.m.eval(read); // eval
-            } catch (ThumbJoy.TFE e) {
-                System.out.println("error: " + e);
+            } catch (TFE e) {
+                ps.println("error: " + e);
             } catch (Throwable e) {
                 e.printStackTrace(ps);
             }

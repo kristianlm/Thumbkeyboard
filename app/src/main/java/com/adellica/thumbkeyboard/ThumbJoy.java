@@ -86,12 +86,24 @@ public class ThumbJoy {
             }
             return p;
         }
+        public static Pair reverse(IPair pair) {
+            Pair result = nil;
+            while(pair != nil) {
+                result = cons(pair.car(), result);
+                pair = pair.cdr();
+            }
+            return result;
+        }
     }
 
     abstract public static class Datum<T> {
         final T value;
         public Datum(T value) { this.value = value; }
         abstract public String toString();
+    }
+    public static class Str extends Datum<String> {
+        public Str(String s) { super(s); }
+        public String toString() { return "\"" + ThumbReader.writeString(value) + "\""; }
     }
     public static class Keyword extends Datum<String> {
         public Keyword(String s) { super(s); }
@@ -113,7 +125,7 @@ public class ThumbJoy {
             this.name = name;
             dict.put(name, this);
         }
-        public String toString() { return "_" + name; }
+        public String toString() { return "\u001b[34m‹" + name + "›\u001b[0m"; }
     }
     
     public static class Machine {
@@ -158,7 +170,7 @@ public class ThumbJoy {
         }
 
         public static Map<String, Object> dictDefault() {
-            return dictMath(dictStack(new HashMap<String, Object>()));
+            return dictStr(dictMath(dictCore(new HashMap<String, Object>())));
         }
 
         private static Map<String, Object> dictMath(Map<String, Object> dict) {
@@ -205,7 +217,18 @@ public class ThumbJoy {
             return dict;
         }
 
-        public static Map<String, Object> dictStack(Map<String, Object> dict) {
+        public static Map<String, Object> dictStr(Map<String, Object> dict) {
+            new ApplicableCore("concat", dict) {
+                public Machine exe(Machine m) {
+                    IPair p = m.stk;
+                    Str s0 = p.car(Str.class); p = p.cdr();
+                    Str s1 = p.car(Str.class); p = p.cdr();
+                    return M(cons(new Str(s1.value + s0.value), p), m);
+                }
+            };
+            return dict;
+        }
+        public static Map<String, Object> dictCore(Map<String, Object> dict) {
 
             new ApplicableCore("drop", dict) {
                 public Machine exe(Machine m) {
