@@ -115,24 +115,7 @@ public class ThumbReader {
                         }
                 default:
                     final String name = readUntilWS(c);
-                    //final Object macro = m.dict.get(name);
-                    //if("'".equals(name))
-                    //  return QUOTE;
-                    //else if("def".equals(name)) {
-                        // final Object res = (new Quoted(reverse(m.eval(
-                        //         list(
-                        //                 QUOTE, QUOTE,
-                        //                 new Word("read"),
-                        //                 new Word("read"),
-                        //                 QUOTE, new Word("set")//, new Keyword("test")
-                        //         ),
-                        //         Pair.nil))));
-                        // System.out.println("def produced: " + res);
-                        // return res;
-                    //}
-                    //if(macro == null)
-                        return new Word(name);
-                    //return
+                    return new Word(name);
                 }
             }
         } catch (IOException e) {

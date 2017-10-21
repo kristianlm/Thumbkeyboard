@@ -15,13 +15,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputConnection;
 
-import com.adellica.thumbkeyboard.ThumbJoy.Applicable;
-import com.adellica.thumbkeyboard.ThumbJoy.ApplicableCore;
-import com.adellica.thumbkeyboard.ThumbJoy.IPair;
-import com.adellica.thumbkeyboard.ThumbJoy.Keyword;
 import com.adellica.thumbkeyboard.ThumbJoy.Machine;
 import com.adellica.thumbkeyboard.ThumbJoy.Pair;
-import com.adellica.thumbkeyboard.ThumbJoy.Str;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -30,7 +25,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.adellica.thumbkeyboard.ThumbJoy.Machine.M;
-import static com.adellica.thumbkeyboard.ThumbJoy.Pair.cons;
 import static com.adellica.thumbkeyboard.ThumbkeyboardIME.*;
 
 /**
@@ -44,34 +38,6 @@ public class ThumbkeyboardView extends View {
     private static final int BLOB_RADIUS = 32; // dpi
     private static final int BLOB_BORDER = 4; // dpi
 
-
-    // utils
-    String readBackwardsUntil(String p, boolean eof) {
-        final InputConnection ic = Ime.getCurrentInputConnection();
-        if(ic == null) return null;
-        int size = 32;
-        String c = null;
-        while(size < 4096) {
-            c = ic.getTextBeforeCursor(size, 0).toString();
-            int idx = c.lastIndexOf(p);
-            if(idx >= 0) { return c.substring(idx + 1); }
-            size *= 2;
-        }
-        return eof ? c : null;
-    }
-    String readForwardsUntil(String p, boolean eof) {
-        final InputConnection ic = Ime.getCurrentInputConnection();
-        if(ic == null) return null;
-        int size = 32;
-        String c = null;
-        while(size < 4096) {
-            c = ic.getTextAfterCursor(size, 0).toString();
-            int idx = c.indexOf(p);
-            if(idx >= 0) { return c.substring(0, idx); }
-            size *= 2;
-        }
-        return eof ? c : null;
-    }
 
     private static class MutableDouble {
         public double value;
@@ -108,19 +74,6 @@ public class ThumbkeyboardView extends View {
         Log.i(TAG, "WDOIWAJDOWAUHDWADWAOIDJWAODHWAODJWAOIDJOWAIJDWAOIDJWAOIJDOWA");
         layouts = Layout.loadLayouts(getContext().getAssets());
 
-        new ApplicableCore("lword", m().dict) {
-            public Machine exe(Machine m) {return M(cons(new Str(readBackwardsUntil(" ", true)), m.stk), m);}
-        };
-        new ApplicableCore("rword", m().dict) {
-            public Machine exe(Machine m) {return M(cons(new Str(readForwardsUntil(" ", true)), m.stk), m);}
-        };
-        new ApplicableCore("insert", m().dict) {
-            public Machine exe(Machine m) {
-                final String input = m.stk.car(Str.class).value;
-                Ime.getCurrentInputConnection().commitText(input, 0);
-                return M(m.stk.cdr(), m);
-            }
-        };
     }
 
     class Blob {
@@ -245,297 +198,6 @@ public class ThumbkeyboardView extends View {
         return touch2blob(x, y, null);
     }
 
-    /**
-     * The superlayout is read-only
-     * @return
-     */
-    public Layout superLayout() {
-        HashMap m = new HashMap<String, String>();
-        m.put("10000-00000:00000-00000 00000-00000:00000-00000 00000-00000:00000-00000 ", "stroke write");
-        m.put("00000-00000:00000-00000 10000-00000:00000-00000 00000-00000:00000-00000 ", "stroke record");
-        m.put("00000-00000:00000-00000 00000-00000:00000-00000 10000-00000:00000-00000 ", "dump raw actions");
-        m.put("00000-00000:00000-00000 00000-00000:00000-00000 00000-10000:00000-00000 ", "dump layout");
-        m.put("00000-00000:00000-10000 00000-00000:00000-00000 00000-00000:00000-00000 ", "layout default");
-        m.put("00000-00000:00000-00000 00000-00000:10000-00000 00000-00000:00000-00000 ", "layout num");
-        m.put("00000-00000:00000-00000 00000-00000:00000-10000 00000-00000:00000-00000 ", "layout term");
-        m.put("00000-00000:00000-00000 00000-00000:00000-00000 00000-00000:10000-00000 ", "layout user1");
-        m.put("00000-00000:00000-00000 00000-00000:00000-00000 00000-00000:00000-10000 ", "layout user2");
-        return new Layout("supert", m);
-    }
-
-    boolean __write_stroke = false;
-    boolean __stroke_record = false;
-    boolean __superlayout = false;
-
-    void _write_stroke(boolean setting) { __write_stroke = setting; postInvalidate(); };
-    boolean _write_stroke() { return __write_stroke; };
-
-    void _stroke_record(boolean setting) { __stroke_record = setting; postInvalidate(); };
-    boolean _stroke_record() { return __stroke_record; };
-
-    void _superlayout(boolean setting) { __superlayout = setting; postInvalidate(); };
-    boolean _superlayout() { return __superlayout; };
-
-    private void handlePattern(final String p) {
-        if(p == null) return;
-        // super-button (puts into superlayout)
-        Object o = m().dict.get("handle");
-        if(o == null) return;
-        try {
-            Machine result = M(Pair.list(p), m()).eval(o);
-            Log.i(TAG, " [ handle ] => " + result.stk);
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * @param token
-     * @return just the command part of a token
-     */
-    private String cmd(String token) {
-        int idx = token.indexOf(' ');
-
-        if(idx >= 0)
-            return token.substring(0, idx);
-        else
-            // no space means we've got an unparamterized command
-            return token;
-    }
-
-    /**
-     *
-     * @param token
-     * @return just the arguments/value part of a token
-     */
-    private String value(String token) {
-        int idx = token.indexOf(' ');
-        if(idx >= 0)
-            return token.substring(idx + 1);
-        else
-            // no space means we've got an unparameterized command
-            return null;
-    }
-
-
-    private String lastToken;
-    private void handleToken(String t) {
-        String cmd = cmd(t);
-
-        if("shift".equals(cmd)) {
-            handleShift(value(t));
-        } else if("ctrl".equals(cmd)) {
-            handleCtrl(value(t));
-        } else if("alt".equals(cmd)) {
-            handleAlt(value(t));
-        } else if("meta".equals(cmd)) {
-            handleMeta(value(t));
-        } else if ("help".equals(cmd)) {
-            showHelp = !showHelp;
-            postInvalidate();
-        } else if("repeat".equals(cmd)) {
-            if(lastToken != null) {
-                Log.d(TAG, "repeating with " + lastToken);
-                if (!"repeat".equals(cmd(lastToken))) {
-                    handleToken(lastToken);
-                } else
-                    Log.e(TAG, "error! trying to repeat the repeat command!");
-            }
-        } else if ("key".equals(cmd)) {
-            handleKey(value(t));
-        } else if ("input".equals(cmd)) {
-            handleInput(value(t));
-        } else if ("stroke".equals(cmd)) {
-            if ("write".equals(value(t))) {
-                _write_stroke(true);
-            } else if ("read".equals(value(t))) {
-                String line = readBackwardsUntil("\n", true) + readForwardsUntil("\n", true);
-                Log.i(TAG, "<<< " + line);
-                String[] pair = Stroke.parse(line);
-                currentLayout().put(pair[0], pair[1]);
-            } else if ("record".equals(value(t))) {
-                _stroke_record(true);
-            } else {
-                Log.i(TAG, "Don't know how to handle " + t);
-            }
-        } else if("dump".equals(cmd)) {
-            final String cmd2 = cmd(value(t));
-            Log.i(TAG, "dump: '" + value(t) + "' or   '" + value(value(t)) + "'");
-            if("raw".equals(cmd2)) {
-                dumpAsset(value(value(t)));
-            } else if("layout".equals(cmd2)) {
-                Log.e(TAG, "TODO: dump layout");
-            }
-        } else if("layout".equals(cmd)){
-            currentLayoutName(value(t));
-        } else if("delete".equals(cmd)) {
-            if("line".equals(value(t))) {
-                if(deleteSurroundingUntil("\n", true, "\n", true, false, true).isEmpty()) {
-                    // we didn't actually delete anything
-                    InputConnection ic = Ime.getCurrentInputConnection();
-                    if(ic != null)
-                        ic.deleteSurroundingText(1, 0); // line is empty, delete up to previous line
-                }
-            } else if("word".equals(value(t))) {
-                // what a mess:
-                if(readBackwardsUntil(" ", true).isEmpty()) //     ,------,--- delete ending space
-                    deleteSurroundingUntil(" ", true, " ", true, false, true);
-                else //                                            ,------,--- delete starting space
-                    deleteSurroundingUntil(" ", true, " ", true, true, false);
-
-            }
-        } else if("debug".equals(cmd)) {
-            Layout layout = currentLayout();
-            for(String stroke : layout.keys()) {
-                Log.i(TAG, "??? " + stroke + layout.get(stroke));
-            }
-        }
-
-        if (!"repeat".equals(cmd)) // avoid infinite recursion
-            lastToken = t;
-    }
-
-    /**
-     * Dump filename (from asset folder) into current editing session.
-     * @param filename
-     */
-    private void dumpAsset(String filename) {
-        try {
-            Log.i(TAG, "dumping asset '" + filename + "' to edit session");
-            BufferedReader in = new BufferedReader(new InputStreamReader(getContext().getAssets().open(filename)));
-            String line;
-            while((line = in.readLine()) != null) {
-                handleInput(line + "\n");
-            }
-            in.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    private boolean deleteSurroundingText(int before, int after) {
-        final InputConnection ic = Ime.getCurrentInputConnection();
-        if(ic != null) {
-            ic.deleteSurroundingText(before, after);
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * This guy isn't great. You can't specify SPACE|ENTER. So, for example,
-     * a word boundary can only be " " and not " |\n|\t" which is very limiting.
-     * @return The string that was deleted
-     */
-    private String deleteSurroundingUntil(final String pre, boolean bof, final String post, boolean eof, boolean trimLeft, boolean trimRight) {
-        final String preline = readBackwardsUntil(pre, bof);
-        final String postline = readForwardsUntil(post, eof);
-        if(deleteSurroundingText(
-                preline == null ? 0 : preline.length()   + (trimLeft  ? 1 : 0),
-                postline == null ? 0 : postline.length() + (trimRight ? 1 : 0)))
-            return preline + postline;
-        return "";
-    }
-
-    String _currentLayoutName = "default";
-    public String currentLayoutName() { return _currentLayoutName; }
-    public void currentLayoutName(String name) {
-        Log.i(TAG, "current layout is now \"" + name + "\" ( was \"" + _currentLayoutName + "\")");
-        _currentLayoutName = name;
-        postInvalidate();
-    }
-
-    // never return null because that would force nullpointer-checks
-    // on every other line in this file.
-    private Layout currentLayout() {
-        final Layout l = layouts.get(currentLayoutName());
-        // layout name not found, create it!
-        if(l == null) {
-            Layout layout = new Layout(currentLayoutName());
-            layouts.put(currentLayoutName(), layout);
-            return layout;
-        } else
-            return l;
-    }
-
-    private void handleShift(String param) {
-        if(param == null || "".equals(param))
-            modShift(!modShift());
-        else {
-            boolean old = modShift();
-            modShift(true);
-            handleToken("key " + param);
-            modShift(old);
-        }
-    }
-
-    private void handleCtrl(String param) {
-        if(param == null || "".equals(param))
-            modCtrl(!modCtrl());
-        else {
-            boolean old = modCtrl();
-            modCtrl(true);
-            handleToken("key " + param);
-            modCtrl(old);
-        }
-    }
-
-    private void handleAlt(String param) {
-        if(param == null || "".equals(param))
-            modAlt(!modAlt());
-        else {
-            boolean old = modAlt();
-            modAlt(true);
-            handleToken("key " + param);
-            modAlt(old);
-        }
-    }
-
-    private void handleMeta(String param) {
-        if(param == null || "".equals(param))
-            modMeta(!modMeta());
-        else {
-            boolean old = modMeta();
-            modMeta(true);
-            handleToken("key " + param);
-            modMeta(old);
-        }
-    }
-
-    private void handleInput(String input) {
-        if(modShift())
-            Ime.getCurrentInputConnection().commitText(input.toUpperCase(), 0);
-        else
-            Ime.getCurrentInputConnection().commitText(input, 0);
-
-        modifiersClear();
-    }
-
-    private int getMetaState() {
-        int meta = 0;
-        if (modShift()) meta |= KeyEvent.META_SHIFT_ON | KeyEvent.META_SHIFT_LEFT_ON;
-        if (modCtrl())  meta |= KeyEvent.META_CTRL_ON  | KeyEvent.META_CTRL_LEFT_ON;
-        if (modAlt())   meta |= KeyEvent.META_ALT_ON   | KeyEvent.META_ALT_LEFT_ON;
-        if (modMeta())  meta |= KeyEvent.META_META_ON  | KeyEvent.META_META_LEFT_ON;
-        return meta;
-    }
-
-    private void handleKey(String key) {
-
-        final int keycode = ThumboardKeycodes.string2keycode(key);
-        int meta = getMetaState();
-        if (keycode != 0) {
-            long now = System.currentTimeMillis();
-            final InputConnection ic = Ime.getCurrentInputConnection();
-            if(ic != null) {
-                ic.sendKeyEvent(new KeyEvent(now, now, KeyEvent.ACTION_DOWN, keycode, 0, meta));
-                ic.sendKeyEvent(new KeyEvent(now, now, KeyEvent.ACTION_UP,   keycode, 0, meta));
-            } else Log.e(TAG, "obs: current input connection is null");
-        }
-
-        modifiersClear();
-    }
 
     boolean holding = false;
     Blob [] fingerTouches = new Blob [ 4 ]; // who'se got 4 thumbs anyway?
@@ -660,7 +322,7 @@ public class ThumbkeyboardView extends View {
                         Log.i(TAG, "#   " + p);
                     }
                     flushStroke();
-                    handlePattern(pattern);
+                    Ime.handleStroke(stroke);
                     postInvalidate();
                 }
                 anchorFinger = -1;
@@ -687,11 +349,6 @@ public class ThumbkeyboardView extends View {
         return (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dpi, r.getDisplayMetrics());
     }
 
-
-    public Layout shownLayout() {
-        if(_superlayout()) return superLayout();
-        else return currentLayout();
-    }
 
     /**
      * Tricky business! Going from Blob index to the Blob index
@@ -726,10 +383,11 @@ public class ThumbkeyboardView extends View {
         int j = Blobdelta(bid, dx, dy);
         if(j >= 0 && blobs()[j].holding) {
             i[j]++;
-            return shownLayout().get(stroke.toString());
+            // TODO return shownLayout().get(stroke.toString());
         }
         return null;
     }
+    public Layout shownLayout() { return new Layout("foo");}
 
     Stroke tempStroke = new Stroke(blobs().length);
     @Override
@@ -756,30 +414,19 @@ public class ThumbkeyboardView extends View {
                 if(token == null) token = strokeTry(i, stroke, tempStroke, tempStroke.rights, -1, 0);
                 if(token == null) token = strokeTry(i, stroke, tempStroke, tempStroke.lefts, 1, 0);
             }
-            if(i == 2 && _write_stroke()) token = "✏"; // pencil icon
-            final boolean show_labels = any || _superlayout() || _stroke_record() || _write_stroke();
+            //if(i == 2 && _write_stroke()) token = "✏"; // pencil icon
+            final boolean show_labels = any ;//|| _superlayout() || _stroke_record() || _write_stroke();
             bs[i].draw(canvas, any, show_labels
                     ? (token == null ? "" : prettify(token))
                     : "");
 
             if(i == 2 && token == null) {
-                if(_stroke_record()) {
-                    final Paint red = new Paint();
-                    red.setStyle(Paint.Style.FILL);
-                    red.setColor(Color.argb(0xe0, 0xff, 0, 0));
-                    canvas.drawCircle(bs[i].x(), bs[i].y(), pixels(BS / 4), red);
-                } else if(_superlayout()) {
-                    final Paint red = new Paint();
-                    red.setStyle(Paint.Style.FILL);
-                    red.setColor(Color.argb(0xe0, 0, 0xff, 0xff));
-                    canvas.drawCircle(bs[i].x(), bs[i].y(), pixels(BS / 4), red);
-                } else {
                     final Paint red = new Paint();
                     red.setStyle(Paint.Style.STROKE);
                     red.setStrokeWidth(pixels(3));
                     red.setColor(Color.argb(0x10, 0, 0xff, 0xff));
                     canvas.drawCircle(bs[i].x(), bs[i].y(), pixels(BS / 4), red);
-                }
+
             }
         }
 
