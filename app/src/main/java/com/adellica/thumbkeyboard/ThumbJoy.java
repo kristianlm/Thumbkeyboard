@@ -117,9 +117,6 @@ public class ThumbJoy {
     }
 
     public static class Machine {
-        static {
-            JoyLibrary.init();
-        }
         public final Map<String, Object> dict;
         public final IPair stk;
         public final IPair code;
@@ -155,9 +152,9 @@ public class ThumbJoy {
 
         public static Map<String, Object> dictDefault() {
             Map<String, Object> dict = new HashMap<String, Object>();
-            JoyLibrary.fillDict(dict, JoyLibrary.Core.class);
-            JoyLibrary.fillDict(dict, JoyLibrary.Math.class);
-            JoyLibrary.fillDict(dict, JoyLibrary.Strings.class);
+            JoyLibrary.fillDict(dict, new JoyLibrary.Core());
+            JoyLibrary.fillDict(dict, new JoyLibrary.Math());
+            JoyLibrary.fillDict(dict, new JoyLibrary.Strings());
             return dict;
         }
 

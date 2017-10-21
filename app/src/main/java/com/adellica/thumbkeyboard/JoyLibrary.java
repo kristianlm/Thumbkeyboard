@@ -1,5 +1,7 @@
 package com.adellica.thumbkeyboard;
 
+import android.util.Log;
+
 import com.adellica.thumbkeyboard.ThumbJoy.Applicable;
 import com.adellica.thumbkeyboard.ThumbJoy.IPair;
 import com.adellica.thumbkeyboard.ThumbJoy.Machine;
@@ -30,25 +32,30 @@ public class JoyLibrary {
         public NamedApplicable(String name) {this.name=name;}
         @Override public String toString() {return "\u001b[34m‹" + name + "›\u001b[0m";}
     }
-    public static void init(Class<? extends JoyLibrary> library){
-        for(Field field : library.getFields()) {
+    public static void init(JoyLibrary library) {
+        for(Field field : library.getClass().getFields()) {
             try {
-                NamedApplicable na = ((NamedApplicable)field.get(null));
+                Log.d("KJL", "===================== " + field);
+                final Object o = field.get(library);
+                if(!(o instanceof NamedApplicable)) continue;
+                NamedApplicable na = ((NamedApplicable)o);
                 if(na.name == null) na.name = field.getName();
             } catch (IllegalAccessException e) {e.printStackTrace();}
         }
     }
-    public static void init() {
-        init(Core.class);
-        init(Math.class);
-        init(Strings.class);
-    }
 
-    public static void fillDict(Map<String, Object> dict, Class<? extends JoyLibrary> lib) {
-        init();
-        for(Field field : lib.getFields()) {
+    public static void fillDict(Map<String, Object> dict, JoyLibrary lib) {
+        init(lib);
+        for(Field field : lib.getClass().getFields()) {
             try {
-                NamedApplicable na = (NamedApplicable)field.get(null);
+                Object o = field.get(lib);
+                if(o == null) {
+                    Log.d("HJK", "error: " + lib + " field " + field + " get is null");
+                    o = field.get(null);
+                    Log.d("HJK", "retry " + lib + " field " + field);
+                }
+                if(!(o instanceof NamedApplicable)) continue;
+                NamedApplicable na = (NamedApplicable)o;
                 dict.put(na.name, na);
             } catch (IllegalAccessException e) {
                 e.printStackTrace();

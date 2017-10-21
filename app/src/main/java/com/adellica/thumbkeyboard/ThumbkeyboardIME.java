@@ -11,9 +11,6 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
-import android.view.inputmethod.InputMethodSubtype;
-
-import com.adellica.thumbkeyboard.ThumbJoy.ApplicableCore;
 import com.adellica.thumbkeyboard.ThumbJoy.IPair;
 import com.adellica.thumbkeyboard.ThumbJoy.Keyword;
 import com.adellica.thumbkeyboard.ThumbJoy.Machine;
@@ -31,6 +28,7 @@ public class ThumbkeyboardIME extends InputMethodService {
     ThumbkeyboardView PV;
 
     private static Machine m = null;
+    private final JoyLibrary mylib = new JoyIME();
 
     public static Machine m() {
         if(m == null) {
@@ -44,43 +42,7 @@ public class ThumbkeyboardIME extends InputMethodService {
         }
         return m;
     }
-
-    @Override
-    public void onStart(Intent intent, int startId) {
-        super.onStart(intent, startId);
-    }
-
     public ThumbkeyboardIME() {
-
-        ApplicableCore lword = new ApplicableCore("lword", m().dict) {
-            public Machine exe(Machine m) {return M(cons(new Str(readBackwardsUntil(" ", true)), m.stk), m);}
-        };
-        ApplicableCore rword = new ApplicableCore("rword", m().dict) {
-            public Machine exe(Machine m) {return M(cons(new Str(readForwardsUntil(" ", true)), m.stk), m);}
-        };
-        m().dict.put("word", Pair.list(lword, rword, new Word("concat")));
-
-        new ApplicableCore("insert", m().dict) {
-            public Machine exe(Machine m) {
-                final String input = m.stk.car(Str.class).value;
-                getCurrentInputConnection().commitText(input, 0);
-                return M(m.stk.cdr(), m);
-            }
-        };
-        new ApplicableCore("press", m().dict) {
-            public Machine exe(Machine m) {
-                IPair p = m.stk;
-                final Keyword o = p.car(Keyword.class); p = p.cdr();
-                press(ThumboardKeycodes.string2keycode(o.value), 0);
-                return M(p, m);
-            }
-        };
-        new ApplicableCore("app", m().dict) {
-            @Override
-            public Machine exe(Machine m) {
-                return M(cons(null, m.stk), m);
-            }
-        };
     }
 
     @Override public View onCreateInputView() {
@@ -113,8 +75,11 @@ public class ThumbkeyboardIME extends InputMethodService {
 
     @Override
     public void onStartInput(EditorInfo attribute, boolean restarting) {
+
+        JoyLibrary.fillDict(m().dict, mylib);
+
         Log.d(TAG, "onStartInput " + attribute + " (restarting " + restarting + ")");
-        super.onStartInput(attribute, restarting);
+        //super.onStartInput(attribute, restarting);
     }
 
     @Override
@@ -208,5 +173,38 @@ public class ThumbkeyboardIME extends InputMethodService {
 
     public void handleStroke(Stroke stroke) {
 
+    }
+
+    public class JoyIME extends JoyLibrary {
+
+        public NamedApplicable lword = new NamedApplicable("lword") {
+            public Machine exe(Machine m) {return M(cons(new Str(readBackwardsUntil(" ", true)), m.stk), m);}
+        };
+        public NamedApplicable rword = new NamedApplicable("rword") {
+            public Machine exe(Machine m) {return M(cons(new Str(readForwardsUntil(" ", true)), m.stk), m);}
+        };
+
+        public IPair word = Pair.list(lword, rword, new Word("concat"));
+        public NamedApplicable insert = new NamedApplicable() {
+            public Machine exe(Machine m) {
+                final String input = m.stk.car(Str.class).value;
+                getCurrentInputConnection().commitText(input, 0);
+                return M(m.stk.cdr(), m);
+            }
+        };
+        public NamedApplicable press = new NamedApplicable() {
+            public Machine exe(Machine m) {
+                IPair p = m.stk;
+                final Keyword o = p.car(Keyword.class); p = p.cdr();
+                press(ThumboardKeycodes.string2keycode(o.value), 0);
+                return M(p, m);
+            }
+        };
+        public NamedApplicable app = new NamedApplicable() {
+            @Override
+            public Machine exe(Machine m) {
+                return M(cons(null, m.stk), m);
+            }
+        };
     }
 }
