@@ -213,8 +213,8 @@ public class ThumbkeyboardIME extends InputMethodService {
         public NamedApplicable press = new NamedApplicable() {
             public Machine exe(Machine m) {
                 IPair p = m.stk;
-                final Keyword o = p.car(Keyword.class); p = p.cdr();
-                press(ThumboardKeycodes.fromString(o.value));
+                final Keypress o = p.car(Keypress.class); p = p.cdr();
+                press(o);
                 return M(p, m);
             }
         };
