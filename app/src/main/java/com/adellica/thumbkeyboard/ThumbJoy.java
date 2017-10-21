@@ -2,19 +2,17 @@ package com.adellica.thumbkeyboard;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
+import static com.adellica.thumbkeyboard.ThumbJoy.Machine.M;
 import static com.adellica.thumbkeyboard.ThumbJoy.Pair.cons;
 import static com.adellica.thumbkeyboard.ThumbJoy.Pair.list;
 
 
 public class ThumbJoy {
     public interface Applicable {
-        // m mutable (environment)
-        // stk immutable (return result)
-        // code mutable (pop next token)
-        IPair exe(Machine m, IPair stk, Stack code);
+        Machine exe(Machine m);
     }
 
     public static class TFE extends RuntimeException {
@@ -57,13 +55,13 @@ public class ThumbJoy {
             return f + " ]";
         }
         @Override
-        public IPair exe(Machine m, IPair stk, Stack code) {
-            Stack source = new Stack(this);
-            while(!source.isEmpty()) {
-                final Object read = source.pop();
-                stk = m.eval(read, stk, source);
+        public Machine exe(Machine m) {
+            Machine mm = M(m.stk, this, m);
+            while(mm.code != Pair.nil) {
+                final Object read = mm.code.car();
+                mm = M(mm.stk, mm.code.cdr(), mm).eval(read);
             }
-            return stk;
+            return M(mm.stk, m.code, m);
         }
     }
     public static class Pair extends APair implements Applicable {
@@ -77,7 +75,7 @@ public class ThumbJoy {
                 public <T> T car(Class<T> t) { throw new EmptyStackPopped(); }
                 public Object car() { throw new EmptyStackPopped(); }
                 public Pair cdr() { throw new EmptyStackPopped(); }
-                public IPair exe(Machine m, IPair stk, Stack code) {return this;}
+                public Machine exe(Machine m) {return m;}
         };
 
         public static Pair cons(Object car, IPair cdr) { return new Pair(car, cdr); }
@@ -87,17 +85,6 @@ public class ThumbJoy {
                 p = cons(args[i], p);
             }
             return p;
-        }
-    }
-    // because we can only return one IPair, better keep this mutable :-(
-    public static class Stack {
-        IPair p;
-        public Stack(IPair p) { this.p = p; }
-        public boolean isEmpty() { return p == Pair.nil; }
-        public Object pop() {
-            Object o = p.car();
-            p = p.cdr();
-            return o;
         }
     }
 
@@ -113,25 +100,26 @@ public class ThumbJoy {
     public static class Word extends Datum<String> implements Applicable {
         public Word(String s) { super(s);}
         public String toString() { return value; }
-        public IPair exe(Machine m, IPair stk, Stack code) {
+        public Machine exe(Machine m) {
             Object o = m.dict.get(this.value);
             if(o == null) throw new InvalidReference(this.toString());
-            return m.eval(o, stk, code);
+            return m.eval(o);
         }
     }
 
     public abstract static class ApplicableCore implements Applicable {
         final String name;
-        protected ApplicableCore(String name, Machine m) {
+        protected ApplicableCore(String name, Map<String, Object> dict) {
             this.name = name;
-            m.dict.put(name, this);
+            dict.put(name, this);
         }
         public String toString() { return "_" + name; }
     }
     
     public static class Machine {
-        public Map<Object, Object> dict = new HashMap<Object, Object>();
-        public Map<String, Object> macros = new HashMap<String, Object>();
+        public final Map<String, Object> dict;
+        public final IPair stk;
+        public final IPair code;
 
         @SuppressWarnings("unchecked")
         public <T> T get(String key, Class<T> t) {
@@ -139,79 +127,26 @@ public class ThumbJoy {
             if(t.isInstance(ref)) return (T)ref;
             throw new TypeMismatch(t, ref);
         }
-        public Machine() {
-            new ApplicableCore("drop", this) {
-                    public IPair exe(Machine m, IPair stk, Stack code) {
-                        return stk.cdr();
-                    }
-                };
-            new ApplicableCore("dup", this) {
-                    public IPair exe(Machine m, IPair stk, Stack code) {
-                        return cons(stk.car(), stk);
-                    }
-                };
-            new ApplicableCore("swap", this) {
-                public IPair exe(Machine m, IPair stk, Stack code) {
-                    IPair p = stk;
-                    Object e0 = p.car(); p = p.cdr();
-                    Object e1 = p.car(); p = p.cdr();
-                    return cons(e1, cons(e0, p));
-                }
-            };
-            new ApplicableCore("dd", this) {
-                public IPair exe(Machine m, IPair stk, Stack code) {
-                    Object o = dict.get("println");
-                    if(o == null) throw new InvalidReference("println");
-                    Machine.this.eval(o, list(dict), code);
-                    return stk;
-                }
-            };
-            new ApplicableCore("i", this) {
-                public IPair exe(Machine m, IPair stk, Stack code) {
-                    return m.eval(stk.car(), stk.cdr(), code);
-                }
-            };
-            new ApplicableCore("'", this) {
-                public IPair exe(Machine m, IPair stk, Stack code) {
-                    if(code.isEmpty()) throw new RuntimeException("QUOTE: unexpected eof");
-                    return cons(code.pop(), stk);
-                }
-            };
-            new ApplicableCore("set", this) {
-                @Override
-                public IPair exe(Machine m, IPair stk, Stack code) {
-                    final Word name = stk.cdr().car(Word.class);
-                    final Object content = stk.car();
-                    dict.put(name.value, content);
-                    return stk.cdr().cdr();
-                }
-            };
-            new ApplicableCore("println", this) {
-                @Override
-                public IPair exe(Machine m, IPair stk, Stack code) {
-                    OutputStream os = m.get("out", OutputStream.class);
-                    try {
-                        os.write((stk.car().toString() + "\n").getBytes());
-                        os.flush();
-                    } catch (final IOException e) {
-                        throw new TFE() {
-                            public String getMessage() { return "io error " + e; }
-                        };
-                    }
-                    return stk.cdr();
-                }
-            };
-            new ApplicableCore("ifte", this) {
-                @Override
-                public IPair exe(Machine m, IPair stk, Stack code) {
-                    IPair p = stk;
-                    final Object e = p.car(); p = p.cdr();
-                    final Object t = p.car(); p = p.cdr();
-                    final Object i = p.car(); p = p.cdr();
-                    if(isTrue(i)) return m.eval(t, p, code);
-                    else return m.eval(e, p, code);
-                }
-            };
+        public static Machine M(IPair stk, IPair code, Map<String, Object> dict) {
+            return new Machine(stk, code, dict);
+        }
+        public static Machine M(IPair stk, IPair code, Machine m) {
+            return new Machine(stk, code, m.dict);
+        }
+        public static Machine M(IPair stk, Machine m) {
+            return new Machine(stk, m.code, m.dict);
+        }
+
+        public Machine(IPair stk, IPair code, Map<String, Object> dict) {
+
+            this.stk = stk;
+            this.code = code;
+            this.dict = dict;
+        }
+
+        @Override
+        public String toString() {
+            return " << " + stk + "\n    " + code + "\n    " + dict + " >>";
         }
 
         public static boolean isTrue(Object o) {
@@ -222,9 +157,141 @@ public class ThumbJoy {
             return false;
         }
 
-        public IPair eval(final Object o, IPair stk, Stack mp) {
-            if (o instanceof Applicable) return ((Applicable) o).exe(this, stk, mp);
-            return cons(o, stk); // defaults to "self evaluation"
+        public static Map<String, Object> dictDefault() {
+            return dictMath(dictStack(new HashMap<String, Object>()));
+        }
+
+        private static Map<String, Object> dictMath(Map<String, Object> dict) {
+            new ApplicableCore("+", dict) {
+                public Machine exe(Machine m) {
+                    IPair p = m.stk;
+                    final Long n = p.car(Long.class); p = p.cdr();
+                    final Long d = p.car(Long.class); p = p.cdr();
+                    return M(cons(new Long(n.longValue() + d.longValue()), p), m);
+                }
+            };
+            new ApplicableCore("-", dict) {
+                public Machine exe(Machine m) {
+                    IPair p = m.stk;
+                    final Long n = p.car(Long.class); p = p.cdr();
+                    final Long d = p.car(Long.class); p = p.cdr();
+                    return M(cons(new Long(d.longValue() - n.longValue()), p), m);
+                }
+            };
+            new ApplicableCore("*", dict) {
+                public Machine exe(Machine m) {
+                    IPair p = m.stk;
+                    final Long n = p.car(Long.class); p = p.cdr();
+                    final Long d = p.car(Long.class); p = p.cdr();
+                    return M(cons(new Long(d.longValue() * n.longValue()), p), m);
+                }
+            };
+            new ApplicableCore("/", dict) {
+                public Machine exe(Machine m) {
+                    IPair p = m.stk;
+                    final Long n = p.car(Long.class); p = p.cdr();
+                    final Long d = p.car(Long.class); p = p.cdr();
+                    return M(cons(new Long(d.longValue() / n.longValue()), p), m);
+                }
+            };
+            new ApplicableCore("%", dict) {
+                public Machine exe(Machine m) {
+                    IPair p = m.stk;
+                    final Long n = p.car(Long.class); p = p.cdr();
+                    final Long d = p.car(Long.class); p = p.cdr();
+                    return M(cons(new Long(d.longValue() % n.longValue()), p), m);
+                }
+            };
+            return dict;
+        }
+
+        public static Map<String, Object> dictStack(Map<String, Object> dict) {
+
+            new ApplicableCore("drop", dict) {
+                public Machine exe(Machine m) {
+                    return M(m.stk.cdr(), m);
+                }
+            };
+            new ApplicableCore("dup", dict) {
+                public Machine exe(Machine m) {
+                    return M(cons(m.stk.car(), m.stk), m);
+                }
+            };
+            new ApplicableCore("swap", dict) {
+                public Machine exe(Machine m) {
+                    IPair p = m.stk;
+                    Object e0 = p.car(); p = p.cdr();
+                    Object e1 = p.car(); p = p.cdr();
+                    return M(cons(e1, cons(e0, p)), m);
+                }
+            };
+            new ApplicableCore("dd", dict) {
+                public Machine exe(Machine m) {
+                    Object o = m.dict.get("println");
+                    if(o == null) throw new InvalidReference("println");
+                    M(list(m.dict), m).eval(o);
+                    return m;
+                }
+            };
+            new ApplicableCore("i", dict) {
+                public Machine exe(Machine m) {
+                    Machine mm = M(m.stk.cdr(), m);
+                    return mm.eval(m.stk.car());
+                }
+            };
+            new ApplicableCore("'", dict) {
+                public Machine exe(Machine m) {
+                    if(m.code == Pair.nil) throw new RuntimeException("QUOTE: unexpected eof");
+                    return M(cons(m.code.car(), m.stk), m.code.cdr(), m);
+                }
+            };
+            new ApplicableCore("type", dict) {
+                public Machine exe(Machine m) {
+                    return M(cons(m.stk.car().getClass(), m.stk.cdr()), m);
+                }
+            };
+            new ApplicableCore("set", dict) {
+                @Override
+                public Machine exe(Machine m) {
+                    final Word name = m.stk.cdr().car(Word.class);
+                    final Object content = m.stk.car();
+                    m.dict.put(name.value, content);
+                    return M(m.stk.cdr().cdr(), m);
+                }
+            };
+            new ApplicableCore("println", dict) {
+                @Override
+                public Machine exe(Machine m) {
+                    OutputStream os = m.get("out", OutputStream.class);
+                    try {
+                        os.write((m.stk.car().toString() + "\n").getBytes());
+                        os.flush();
+                    } catch (final IOException e) {
+                        throw new TFE() {
+                            public String getMessage() { return "io error " + e; }
+                        };
+                    }
+                    return M(m.stk.cdr(), m);
+                }
+            };
+            new ApplicableCore("ifte", dict) {
+                @Override
+                public Machine exe(Machine m) {
+                    IPair p = m.stk;
+                    final Object e = p.car(); p = p.cdr();
+                    final Object t = p.car(); p = p.cdr();
+                    final Object i = p.car(); p = p.cdr();
+                    if(isTrue(i)) return m.eval(t);
+                    else return m.eval(e);
+                }
+            };
+            return dict;
+        }
+
+
+        public Machine eval(final Object o) {
+            if (o instanceof Applicable) return ((Applicable) o).exe(this);
+            return M(cons(o, stk), this); // defaults to "self evaluation"
         }
     }
 }

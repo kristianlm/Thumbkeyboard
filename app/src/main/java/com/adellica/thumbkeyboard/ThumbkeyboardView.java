@@ -104,13 +104,13 @@ public class ThumbkeyboardView extends View {
         layouts = Layout.loadLayouts(getContext().getAssets());
 
         m().dict.put("lword", new Applicable() {
-            public IPair exe(Machine m, IPair stk, ThumbJoy.Stack code) {
+            public Machine exe(Machine m) {
                 return Pair.cons(readBackwardsUntil(" ", true), stk);
             }
             public String toString() {return "_LWORD";}
         });
         m().dict.put("rword", new Applicable() {
-            public IPair exe(Machine m, IPair stk, ThumbJoy.Stack code) {
+            public Machine exe(Machine m) {
                 return Pair.cons(readForwardsUntil(" ", true), stk);
             }
             public String toString() {return "_RWORD";}

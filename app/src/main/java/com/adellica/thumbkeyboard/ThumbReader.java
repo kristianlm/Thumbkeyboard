@@ -18,6 +18,7 @@ import com.adellica.thumbkeyboard.ThumbJoy.Keyword;
 import com.adellica.thumbkeyboard.ThumbJoy.Word;
 import com.adellica.thumbkeyboard.ThumbJoy.Machine;
 
+import static com.adellica.thumbkeyboard.ThumbJoy.Machine.M;
 import static com.adellica.thumbkeyboard.ThumbJoy.Pair.cons;
 
 
@@ -36,7 +37,7 @@ public class ThumbReader {
     public static class Quoted implements Applicable {
         final Object obj;
         public Quoted(Object obj) { this.obj = obj; }
-        @Override public IPair exe(Machine m, IPair stk, ThumbJoy.Stack code) { return cons(obj, stk); }
+        @Override public Machine exe(Machine m) { return M(cons(obj, m.stk), m); }
         @Override public String toString() { return "“" + obj.toString(); }
     }
 
@@ -85,7 +86,7 @@ public class ThumbReader {
         }
         @Override public String toString() { return "<"+car()+"...>"; }
         @Override
-        public IPair exe(Machine m, IPair stk, ThumbJoy.Stack code) { return stk; }
+        public Machine exe(Machine m) { return m; }
     }
 
     public Pair reverse(IPair pair) {
@@ -187,31 +188,36 @@ public class ThumbReader {
         }
     }
 
-    public static class IPairBox { public IPair stk = Pair.nil; }
-    public static void repl(final Machine m, InputStream is, OutputStream out2) {
-        final PrintStream out = new PrintStream(out2);
-        final IPairBox box = new IPairBox();
-        InputStream pis = new InputStreamEnterCallback(is, new Runnable() {
-                public void run() {
-                    out.print(box.stk + " ");
-                }
-            });
+    public static class MachineBox { public Machine m ; }
+    public static void repl(Machine _m, InputStream is, OutputStream os) {
 
-        m.dict.put("out", out); // obs: overwrites all clients
+        final PrintStream ps = new PrintStream(os);
+        final MachineBox box = new MachineBox();
+
+        InputStream pis = new InputStreamEnterCallback(is, new Runnable() {
+            public void run() {
+                ps.print(box.m.stk + " ");
+            }
+        });
 
         ThumbReader reader = new ThumbReader(pis);
         IPair source = new IPairReader(reader);
-        ThumbJoy.Stack mp = new ThumbJoy.Stack(source);
+        box.m = M(_m.stk, source, _m);
 
-        while(!mp.isEmpty()) {
+        // steal all threads' output for easy
+        box.m.dict.put("out", os);
+
+        while(box.m.code != Pair.nil) {
             try {
-                final Object read = mp.pop();
-                box.stk = m.eval(read, box.stk, mp);
+                final Object read = box.m.code.car(); // read
+                box.m = M(box.m.stk, box.m.code.cdr(), box.m); // pop code
+                box.m = box.m.eval(read); // eval
             } catch (ThumbJoy.TFE e) {
-                //e.printStackTrace();
                 System.out.println("error: " + e);
+            } catch (Throwable e) {
+                e.printStackTrace(ps);
             }
-        }//        m.run(source, Pair.nil);
+        }
     }
 
     public static void serve(final ThumbJoy.Machine m, int port) {
@@ -240,7 +246,7 @@ public class ThumbReader {
     public static void main(String [] args) {
         final int port = 2345;
         System.out.println("\u001b[32mThumbReader\u001b[0m REPL on port " + port);
-        final Machine m = new Machine();
+        final Machine m = M(Pair.nil, Pair.nil, Machine.dictDefault());
 
         new Thread(new Runnable() {
             @Override
