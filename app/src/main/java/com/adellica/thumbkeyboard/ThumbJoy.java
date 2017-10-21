@@ -30,6 +30,10 @@ public class ThumbJoy {
             super(name + " not found in dict (d for list)");
         }
     }
+    public static class InvalidToken extends TFE {
+        public InvalidToken(String s) { super(s); }
+    }
+
     public interface IPair {
         Object car();
         IPair cdr();

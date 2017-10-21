@@ -11,6 +11,9 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
+
+import com.adellica.thumbkeyboard.ThumbJoy.Applicable;
+import com.adellica.thumbkeyboard.ThumbJoy.Datum;
 import com.adellica.thumbkeyboard.ThumbJoy.IPair;
 import com.adellica.thumbkeyboard.ThumbJoy.Keyword;
 import com.adellica.thumbkeyboard.ThumbJoy.Machine;
@@ -19,8 +22,10 @@ import com.adellica.thumbkeyboard.ThumbJoy.Str;
 import com.adellica.thumbkeyboard.ThumbJoy.Word;
 import com.adellica.thumbkeyboard3.R;
 
+import static android.R.attr.keycode;
 import static com.adellica.thumbkeyboard.ThumbJoy.Machine.M;
 import static com.adellica.thumbkeyboard.ThumbJoy.Pair.cons;
+import static com.adellica.thumbkeyboard.ThumboardKeycodes.init;
 
 
 public class ThumbkeyboardIME extends InputMethodService {
@@ -43,6 +48,7 @@ public class ThumbkeyboardIME extends InputMethodService {
         return m;
     }
     public ThumbkeyboardIME() {
+        JoyLibrary.fillDict(m().dict, mylib);
     }
 
     @Override public View onCreateInputView() {
@@ -76,10 +82,11 @@ public class ThumbkeyboardIME extends InputMethodService {
     @Override
     public void onStartInput(EditorInfo attribute, boolean restarting) {
 
-        JoyLibrary.fillDict(m().dict, mylib);
 
         Log.d(TAG, "onStartInput " + attribute + " (restarting " + restarting + ")");
-        //super.onStartInput(attribute, restarting);
+        super.onStartInput(attribute, restarting);
+
+        ThumboardKeycodes.init();
     }
 
     @Override
@@ -130,12 +137,12 @@ public class ThumbkeyboardIME extends InputMethodService {
 
 
 //    public static int getMetaState( ) {
-//        int meta = 0;
-//        if (modShift()) meta |= KeyEvent.META_SHIFT_ON | KeyEvent.META_SHIFT_LEFT_ON;
-//        if (modCtrl())  meta |= KeyEvent.META_CTRL_ON  | KeyEvent.META_CTRL_LEFT_ON;
-//        if (modAlt())   meta |= KeyEvent.META_ALT_ON   | KeyEvent.META_ALT_LEFT_ON;
-//        if (modMeta())  meta |= KeyEvent.META_META_ON  | KeyEvent.META_META_LEFT_ON;
-//        return meta;
+//        int win = 0;
+//        if (modShift()) win |= KeyEvent.META_SHIFT_ON | KeyEvent.META_SHIFT_LEFT_ON;
+//        if (modCtrl())  win |= KeyEvent.META_CTRL_ON  | KeyEvent.META_CTRL_LEFT_ON;
+//        if (modAlt())   win |= KeyEvent.META_ALT_ON   | KeyEvent.META_ALT_LEFT_ON;
+//        if (modMeta())  win |= KeyEvent.META_META_ON  | KeyEvent.META_META_LEFT_ON;
+//        return win;
 //    }
 
     private boolean deleteSurroundingText(int before, int after) {
@@ -162,29 +169,40 @@ public class ThumbkeyboardIME extends InputMethodService {
         return "";
     }
 
-    void press(final int keycode, final int meta) {
+    void press(final Keypress keypress) {
         final long now = System.currentTimeMillis();
         final InputConnection ic = getCurrentInputConnection();
         if(ic != null) {
-            ic.sendKeyEvent(new KeyEvent(now, now, KeyEvent.ACTION_DOWN, keycode, 0, meta));
-            ic.sendKeyEvent(new KeyEvent(now, now, KeyEvent.ACTION_UP,   keycode, 0, meta));
+            ic.sendKeyEvent(new KeyEvent(now, now, KeyEvent.ACTION_DOWN, keypress.keycode, 0, keypress.getMetaState()));
+            ic.sendKeyEvent(new KeyEvent(now, now, KeyEvent.ACTION_UP,   keypress.keycode, 0, keypress.getMetaState()));
         } else Log.e(TAG, "obs: current input connection is null");
     }
 
     public void handleStroke(Stroke stroke) {
-
+        Object o = m().dict.get("handle");
+        if(o instanceof Applicable) {
+            M(cons(new StrokeWrapper(stroke.toString()), m().stk), Pair.nil, m()).eval(o);
+        } else {
+            Log.d(TAG, "“handle” is undefined in Machine, try [ ' handle [ println ] set ] i");
+        }
     }
 
+    public static class StrokeWrapper extends Datum<String> {
+        public StrokeWrapper(String value) {super(value);}
+        @Override public String toString() {return "@" + value;}
+    }
+
+    @SuppressWarnings("unused") // used by reflection
     public class JoyIME extends JoyLibrary {
 
-        public NamedApplicable lword = new NamedApplicable("lword") {
+        public NamedApplicable lword = new NamedApplicable() {
             public Machine exe(Machine m) {return M(cons(new Str(readBackwardsUntil(" ", true)), m.stk), m);}
         };
-        public NamedApplicable rword = new NamedApplicable("rword") {
+        public NamedApplicable rword = new NamedApplicable() {
             public Machine exe(Machine m) {return M(cons(new Str(readForwardsUntil(" ", true)), m.stk), m);}
         };
 
-        public IPair word = Pair.list(lword, rword, new Word("concat"));
+        public IPair word = Pair.list(lword, rword, Strings.concat);
         public NamedApplicable insert = new NamedApplicable() {
             public Machine exe(Machine m) {
                 final String input = m.stk.car(Str.class).value;
@@ -196,7 +214,7 @@ public class ThumbkeyboardIME extends InputMethodService {
             public Machine exe(Machine m) {
                 IPair p = m.stk;
                 final Keyword o = p.car(Keyword.class); p = p.cdr();
-                press(ThumboardKeycodes.string2keycode(o.value), 0);
+                press(ThumboardKeycodes.fromString(o.value));
                 return M(p, m);
             }
         };

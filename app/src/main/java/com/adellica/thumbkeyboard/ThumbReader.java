@@ -101,12 +101,13 @@ public class ThumbReader {
                 if(isWs(c)) continue;
                 switch(c) {
                 case '"': return readString(-1);
-                case ':': return new Keyword(readUntilWS(-1));
-                case '?': return new Boolean("t".equals(readUntilWS(-1)));
-                //case '@': return new Macro(readUntilWS(""));
+                case ':': return Keypress.fromString(readUntilWS(-1));
+                case '?': throw new ReservedToken(c);
+                case '@': throw new ReservedToken(c);
                 case ']': return CLOSE_PAREN;
                 case '[': return readQuotedList();
-                case '0':case'1':case'2':case'3':case'4':case'5':case'6':case'7':case'8':case'9':
+                case '0':case'1':case'2':case'3':case'4':
+                case '5':case'6':case'7':case'8':case'9':
                         final String num = readUntilWS(c);
                         try {
                             return new Long(num);
@@ -115,6 +116,8 @@ public class ThumbReader {
                         }
                 default:
                     final String name = readUntilWS(c);
+                    if("true".equals(name)) return Boolean.TRUE;
+                    if("false".equals(name)) return Boolean.FALSE;
                     return new Word(name);
                 }
             }
@@ -316,5 +319,9 @@ public class ThumbReader {
             }
             }).start();
         repl(m, System.in, System.out);
+    }
+
+    private class ReservedToken extends TFE {
+        public ReservedToken(int c) { super("reserved for future use " + String.valueOf((char)c));  }
     }
 }

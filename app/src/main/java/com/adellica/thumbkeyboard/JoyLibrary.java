@@ -1,7 +1,5 @@
 package com.adellica.thumbkeyboard;
 
-import android.util.Log;
-
 import com.adellica.thumbkeyboard.ThumbJoy.Applicable;
 import com.adellica.thumbkeyboard.ThumbJoy.IPair;
 import com.adellica.thumbkeyboard.ThumbJoy.Machine;
@@ -35,7 +33,6 @@ public class JoyLibrary {
     public static void init(JoyLibrary library) {
         for(Field field : library.getClass().getFields()) {
             try {
-                Log.d("KJL", "===================== " + field);
                 final Object o = field.get(library);
                 if(!(o instanceof NamedApplicable)) continue;
                 NamedApplicable na = ((NamedApplicable)o);
@@ -49,11 +46,6 @@ public class JoyLibrary {
         for(Field field : lib.getClass().getFields()) {
             try {
                 Object o = field.get(lib);
-                if(o == null) {
-                    Log.d("HJK", "error: " + lib + " field " + field + " get is null");
-                    o = field.get(null);
-                    Log.d("HJK", "retry " + lib + " field " + field);
-                }
                 if(!(o instanceof NamedApplicable)) continue;
                 NamedApplicable na = (NamedApplicable)o;
                 dict.put(na.name, na);
