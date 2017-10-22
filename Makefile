@@ -2,16 +2,24 @@
 SOURCEPATH=app/src/main/java/
 CLASSPATH=app/build/intermediates/classes/debug/
 PACPATH=com/adellica/thumbkeyboard
-JAVAS=${SOURCEPATH}/${PACPATH}/ThumbJoy.java ${SOURCEPATH}/${PACPATH}/ThumbReader.java ${SOURCEPATH}/${PACPATH}/JoyLibrary.java
-CLASSS=${CLASSPATH}/${PACPATH}/ThumbJoy.class ${CLASSPATH}/${PACPATH}/ThumbReader.class ${CLASSPATH}/${PACPATH}/JoyLibrary.class
+MYFILES=${SOURCEPATH}/${PACPATH}
+MYCLS=${CLASSPATH}/${PACPATH}
+
+JAVAS=${MYFILES}/ThumbJoy.java \
+      ${MYFILES}/ThumbReader.java \
+      ${MYFILES}/JoyLibrary.java \
+      ${MYFILES}/Keypress.java \
+      ${MYFILES}/ThumboardKeycodes.java
+
+CLASSS=${MYCLS}/ThumbJoy.class \
+       ${MYCLS}/ThumbReader.class \
+       ${MYCLS}/JoyLibrary.class \
+       ${MYCLS}/Keypress.class
 
 compile: ${CLASSS}
 
 run: compile
 	java -cp ${CLASSPATH} com.adellica.thumbkeyboard.ThumbReader
-
-${CLASSPATH}/${PACPATH}/ThumbJoy.class: ${JAVAS}
-	javac -sourcepath ${SOURCEPATH} -d ${CLASSPATH} ${SOURCEPATH}/${PACPATH}/ThumbJoy.java
 
 ${CLASSPATH}/${PACPATH}/ThumbReader.class: ${JAVAS}
 	javac -sourcepath ${SOURCEPATH} -d ${CLASSPATH} ${SOURCEPATH}/${PACPATH}/ThumbReader.java
