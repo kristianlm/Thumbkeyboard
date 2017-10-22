@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import static com.adellica.thumbkeyboard.ThumbJoy.Machine.M;
 import static com.adellica.thumbkeyboard.ThumbJoy.isTrue;
@@ -22,6 +24,7 @@ import static com.adellica.thumbkeyboard.ThumbJoy.Pair.list;
  * all fields are static and of type {@link NamedApplicable}
  */
 
+@SuppressWarnings("unused")
 public class JoyLibrary {
 
     public abstract static class NamedApplicable implements Applicable {
@@ -41,14 +44,16 @@ public class JoyLibrary {
         }
     }
 
-    public static void fillDict(Map<String, Object> dict, JoyLibrary lib) {
-        init(lib);
-        for(Field field : lib.getClass().getFields()) {
+    public void fillDict(Map<String, Object> dict) {
+        init(this);
+        for(Field field : this.getClass().getFields()) {
             try {
-                Object o = field.get(lib);
-                if(!(o instanceof NamedApplicable)) continue;
-                NamedApplicable na = (NamedApplicable)o;
-                dict.put(na.name, na);
+                String name = field.getName();
+                Object o = field.get(this);
+                if(o instanceof NamedApplicable) {
+                    name = ((NamedApplicable)o).name;
+                }
+                dict.put(name, o);
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
@@ -75,11 +80,9 @@ public class JoyLibrary {
                 return M(cons(e1, cons(e0, p)), m);
             }
         };
-        public static Applicable dd = new NamedApplicable("dd") {
+        public static Applicable d = new NamedApplicable() {
             public Machine exe(Machine m) {
-                Object o = m.dict.get("println");
-                if(o == null) throw new ThumbJoy.InvalidReference("println");
-                M(list(m.dict), m).eval(o);
+                M(list(new TreeMap(m.dict)), m).eval(p); // TreeMap for sorting
                 return m;
             }
         };
@@ -117,7 +120,7 @@ public class JoyLibrary {
                 return M(m.stk.cdr().cdr(), m);
             }
         };
-        public static Applicable println = new NamedApplicable() {
+        public static Applicable p = new NamedApplicable() { // println
             @Override
             public Machine exe(Machine m) {
                 OutputStream os = m.get("out", OutputStream.class);

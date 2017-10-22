@@ -33,7 +33,6 @@ public class ThumbkeyboardIME extends InputMethodService {
     ThumbkeyboardView PV;
 
     private static Machine m = null;
-    private final JoyLibrary mylib = new JoyIME();
 
     public static Machine m() {
         if(m == null) {
@@ -48,7 +47,8 @@ public class ThumbkeyboardIME extends InputMethodService {
         return m;
     }
     public ThumbkeyboardIME() {
-        JoyLibrary.fillDict(m().dict, mylib);
+        new JoyIME().fillDict(m().dict);
+        new Keypress.Keypresses().fillDict(m().dict);
     }
 
     @Override public View onCreateInputView() {
@@ -183,7 +183,7 @@ public class ThumbkeyboardIME extends InputMethodService {
         if(o instanceof Applicable) {
             M(cons(new StrokeWrapper(stroke.toString()), m().stk), Pair.nil, m()).eval(o);
         } else {
-            Log.d(TAG, "“handle” is undefined in Machine, try [ ' handle [ println ] set ] i");
+            Log.d(TAG, "“handle” is undefined in Machine, try [ ' handle [ p ] set ] i");
         }
     }
 

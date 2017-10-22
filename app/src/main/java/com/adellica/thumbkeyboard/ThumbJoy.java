@@ -156,9 +156,10 @@ public class ThumbJoy {
 
         public static Map<String, Object> dictDefault() {
             Map<String, Object> dict = new HashMap<String, Object>();
-            JoyLibrary.fillDict(dict, new JoyLibrary.Core());
-            JoyLibrary.fillDict(dict, new JoyLibrary.Math());
-            JoyLibrary.fillDict(dict, new JoyLibrary.Strings());
+            new JoyLibrary.Core().fillDict(dict);
+            new JoyLibrary.Math().fillDict(dict);
+            new JoyLibrary.Strings().fillDict(dict);
+            new Keypress.Keypresses().fillDict(dict);
             return dict;
         }
 

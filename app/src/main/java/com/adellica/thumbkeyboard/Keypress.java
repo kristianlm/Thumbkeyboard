@@ -1,10 +1,14 @@
 package com.adellica.thumbkeyboard;
 
 
+import com.adellica.thumbkeyboard.JoyLibrary.NamedApplicable;
 import com.adellica.thumbkeyboard.ThumbJoy.InvalidToken;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.adellica.thumbkeyboard.ThumbJoy.Machine.M;
+import static com.adellica.thumbkeyboard.ThumbJoy.Pair.cons;
 
 public class Keypress {
     final boolean ctrl, alt, shift, win;
@@ -25,11 +29,11 @@ public class Keypress {
     public static final int META_META_LEFT_ON = 131072;
     public static final int META_META_RIGHT_ON = 262144;
 
-    public Keypress(int keycode, boolean shift, boolean ctrl, boolean alt, boolean meta) {
+    public Keypress(int keycode, boolean shift, boolean ctrl, boolean alt, boolean win) {
         this.ctrl = ctrl;
         this.alt = alt;
         this.shift = shift;
-        this.win = meta;
+        this.win = win;
         this.keycode = keycode;
     }
 
@@ -66,27 +70,27 @@ public class Keypress {
         return s + description.toLowerCase();
     }
 
-    public static Keypress fromString(String inn) {
+    public static Keypress fromString(String in) {
         boolean s = false, c = false, a = false, w = false;
-        String in = inn;
+        Integer keycode = null;
         while(in.length() >= 2) {
-            final Integer keycode = ThumboardKeycodes.fromString(in.toUpperCase());
-            if("-".equals(in.substring(1, 2))) {
+            if(ThumboardKeycodes.fromString(in.toUpperCase()) != null) {
+                break; // in is good as it is, eg "DEL"
+            } else if("-".equals(in.substring(1, 2))) {
                 switch(in.charAt(0)) {
                     case 'C': c = true; break;
                     case 'S': s = true; break;
                     case 'M': a = true; break;
-                    case 's': w = true; break;
-                    default: throw new InvalidToken(in.substring(0, 1) + " in " + inn);
+                    case 's': w = true; break; // emacs uses s for "super"
+                    case 'W': w = true; break;
+                    default: throw new InvalidToken(in.substring(0, 1) + " in " + in);
                 }
                 in = in.substring(2);
-            } else if( keycode != null) {
-                break;
             } else {
-                throw new InvalidToken("missing “-” in " + in + " of " + inn);
+                throw new InvalidToken("key “"+in+"” unknown");
             }
         }
-        if(in.length() != 1) throw new InvalidToken("unexpected end of sequence in " + inn);
+        //if(keycode == null) throw new InvalidToken("unexpected end of sequence in " + inn);
         if(specials.get(in) != null) {
             s = true;
             in = ThumboardKeycodes.toString(specials.get(in));
@@ -96,9 +100,10 @@ public class Keypress {
         if(kp == null) {
             kp = ThumboardKeycodes.fromString(in.toUpperCase());
         } else {
-            s = true; // found "A" without capitalizing, must be shift
+            if(in.length() == 1)
+            s = true; // found single-letter description "A" without capitalizing, hold shift
         }
-        if(kp == null) throw new InvalidToken("key not found in db " + in + " in " + inn);
+        if(kp == null) throw new InvalidToken("key “"+in+"” unknown");
         return new Keypress(kp, s, c, a, w);
     }
 
@@ -130,5 +135,68 @@ public class Keypress {
         pr(">", "PERIOD");
         pr("<", "COMMA");
         pr("~", "APOSTROPHE");
+    }
+
+    abstract public static class ModifierSetter extends NamedApplicable {
+        public ModifierSetter(String name) {super(name);}
+        @Override
+        public ThumbJoy.Machine exe(ThumbJoy.Machine m) {
+                Keypress kp = m.stk.car(Keypress.class);
+                return M(cons(new Keypress(kp.keycode, shift(kp.shift), ctrl(kp.ctrl), alt(kp.alt), win(kp.win)), m.stk.cdr()), m);
+        }
+        public boolean shift(boolean shift) {return shift; }
+        public boolean ctrl(boolean ctrl) { return ctrl; }
+        public boolean alt(boolean alt) { return alt; }
+        public boolean win(boolean win) { return  win; }
+    }
+    abstract public static class ModifierGetter extends NamedApplicable {
+        @Override
+        public ThumbJoy.Machine exe(ThumbJoy.Machine m) {
+            Keypress kp = m.stk.car(Keypress.class);
+            return M(cons(get(kp), m.stk.cdr()), m);
+        }
+        abstract public boolean get(Keypress kp);
+    }
+
+    @SuppressWarnings("unused")
+    public static class Keypresses extends JoyLibrary {
+        public static final NamedApplicable shift_ = new ModifierSetter("shift!") {
+            public boolean shift(boolean val) {return true;}
+        };
+        public static final NamedApplicable ctrl_ = new ModifierSetter("ctrl!") {
+            public boolean ctrl(boolean val) {return true;}
+        };
+        public static final NamedApplicable alt_ = new ModifierSetter("alt!") {
+            public boolean alt(boolean val) {return true;}
+        };
+        public static final NamedApplicable win_ = new ModifierSetter("win!") {
+            public boolean win(boolean val) {return true;}
+        };
+
+        public static final NamedApplicable shift_toggle = new ModifierSetter("!shift") {
+            public boolean shift(boolean val) {return !val;}
+        };
+        public static final NamedApplicable ctrl_toggle = new ModifierSetter("!ctrl") {
+            public boolean ctrl(boolean val) {return !val;}
+        };
+        public static final NamedApplicable alt_toggle = new ModifierSetter("!alt") {
+            public boolean alt(boolean val) {return !val;}
+        };
+        public static final NamedApplicable win_toggle = new ModifierSetter("!win") {
+            public boolean win(boolean val) {return !val;}
+        };
+
+        public static final NamedApplicable shift = new ModifierGetter() {
+            public boolean get(Keypress kp) { return kp.shift;}
+        };
+        public static final NamedApplicable ctrl = new ModifierGetter() {
+            public boolean get(Keypress kp) { return kp.ctrl;}
+        };
+        public static final NamedApplicable alt = new ModifierGetter() {
+            public boolean get(Keypress kp) { return kp.alt;}
+        };
+        public static final NamedApplicable win = new ModifierGetter() {
+            public boolean get(Keypress kp) { return kp.win;}
+        };
     }
 }
