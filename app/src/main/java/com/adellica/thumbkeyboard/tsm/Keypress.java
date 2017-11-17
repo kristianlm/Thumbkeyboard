@@ -11,20 +11,6 @@ public class Keypress {
     public final boolean ctrl, alt, shift, win;
     public final int keycode;
 
-    public static final int META_ALT_ON = 2;
-    public static final int META_ALT_LEFT_ON = 16;
-    public static final int META_ALT_RIGHT_ON = 32;
-    public static final int META_SHIFT_ON = 1;
-    public static final int META_SHIFT_LEFT_ON = 64;
-    public static final int META_SHIFT_RIGHT_ON = 128;
-    public static final int META_SYM_ON = 4;
-    public static final int META_FUNCTION_ON = 8;
-    public static final int META_CTRL_ON = 4096;
-    public static final int META_CTRL_LEFT_ON = 8192;
-    public static final int META_CTRL_RIGHT_ON = 16384;
-    public static final int META_META_ON = 65536;
-    public static final int META_META_LEFT_ON = 131072;
-    public static final int META_META_RIGHT_ON = 262144;
 
     public Keypress(int keycode, boolean shift, boolean ctrl, boolean alt, boolean win) {
         this.ctrl = ctrl;
@@ -34,14 +20,6 @@ public class Keypress {
         this.keycode = keycode;
     }
 
-    public int getMetaState() {
-        int mask = 0;
-        if (shift) mask |= META_SHIFT_ON | META_SHIFT_LEFT_ON;
-        if (ctrl)  mask |= META_CTRL_ON  | META_CTRL_LEFT_ON;
-        if (alt)   mask |= META_ALT_ON   | META_ALT_LEFT_ON;
-        if (win)   mask |= META_META_ON  | META_META_LEFT_ON;
-        return mask;
-    }
 
     @Override
     public String toString() {
