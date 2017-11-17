@@ -4,7 +4,7 @@ android {
     compileSdkVersion 16
     buildToolsVersion '25.0.0'
     defaultConfig {
-        applicationId "com.adellica.thumbkeyboard2"
+        applicationId "com.adellica.thumbkeyboard3"
         minSdkVersion 16
         versionCode 1
         versionName "1.0"
