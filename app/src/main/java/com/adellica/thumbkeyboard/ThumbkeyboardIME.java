@@ -28,7 +28,6 @@ import static android.view.KeyEvent.META_SHIFT_ON;
 
 public class ThumbkeyboardIME extends InputMethodService {
     private static final String TAG = "TSM";
-    ThumbkeyboardView PV;
 
     // only one machine and one server per app instance
     public static Machine m = new Machine();
@@ -92,7 +91,7 @@ public class ThumbkeyboardIME extends InputMethodService {
     }
 
     @Override public View onCreateCandidatesView() {  // http://stackoverflow.com/a/20319466/1160216
-        PV = (ThumbkeyboardView)getLayoutInflater().inflate(R.layout.input, null);
+        final ThumbkeyboardView PV = new ThumbkeyboardView(getApplicationContext(), null);
         PV.Ime = this;
         return PV;
     }
