@@ -66,7 +66,9 @@ public class ThumbkeyboardIME extends InputMethodService {
         }
 
 
-        return null;
+        ThumbkeyboardView tv = new ThumbkeyboardView(getApplicationContext(), null);
+        tv.Ime = this;
+        return tv;
     }
 
 
@@ -88,12 +90,6 @@ public class ThumbkeyboardIME extends InputMethodService {
 
     private void handleStr(Str input, InputConnection ic) {
         ic.commitText(input.value, 0);
-    }
-
-    @Override public View onCreateCandidatesView() {  // http://stackoverflow.com/a/20319466/1160216
-        final ThumbkeyboardView PV = new ThumbkeyboardView(getApplicationContext(), null);
-        PV.Ime = this;
-        return PV;
     }
 
     @Override public void onStartInputView(android.view.inputmethod.EditorInfo info, boolean restarting) {

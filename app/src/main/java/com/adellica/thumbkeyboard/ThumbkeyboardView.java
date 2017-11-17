@@ -47,6 +47,13 @@ public class ThumbkeyboardView extends View {
                 + File.separator;
     }
 
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        if(getLayoutParams() != null)
+            getLayoutParams().height = pixels(BLOB_RADIUS * 2/*diameter*/ * 3/*rows*/);
+    }
+
     // utils
     String readBackwardsUntil(String p, boolean eof) {
         final InputConnection ic = Ime.getCurrentInputConnection();
