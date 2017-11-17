@@ -116,6 +116,12 @@ public class ThumbkeyboardIME extends InputMethodService {
             }
         });
 
+        m.dict.put("log", new NamedApplicable("log") {
+            @Override
+            public void exe(Machine m) {
+                Log.i(TAG, m.stk.pop(Str.class).value);
+            }
+        });
         if(server == null) {
             server = new Thread(new Runnable() {
                 @Override
