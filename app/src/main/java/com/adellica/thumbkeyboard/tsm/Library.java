@@ -7,6 +7,9 @@ import com.adellica.thumbkeyboard.tsm.Machine.Word;
 import com.adellica.thumbkeyboard.tsm.stack.IPair;
 import com.adellica.thumbkeyboard.tsm.stack.Stack;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
@@ -95,6 +98,27 @@ public class Library {
         public static Applicable e = new NamedApplicable() {
             public void exe(Machine m) {
                 m.eval(m.stk.pop());
+            }
+        };
+        public static Applicable load = new NamedApplicable() {
+            @Override
+            public void exe(Machine m) {
+                String filename = m.stk.pop(Str.class).value;
+                File file = new File(filename);
+                for(String sp : m.searchPaths) {
+                    if(file.exists()) break;
+                    file = new File(sp + filename);
+                }
+
+                try {
+                    Reader reader = new Reader(new FileInputStream(file));
+                    Object read;
+                    while((read = reader.read()) != null) {
+                        m.eval(read);
+                    }
+                } catch (FileNotFoundException e1) {
+                    e1.printStackTrace();
+                }
             }
         };
         public static Applicable QUOTE = new NamedApplicable("quote") {

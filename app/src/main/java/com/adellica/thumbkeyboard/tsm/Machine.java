@@ -3,7 +3,9 @@ package com.adellica.thumbkeyboard.tsm;
 import com.adellica.thumbkeyboard.tsm.stack.Pair;
 import com.adellica.thumbkeyboard.tsm.stack.Stack;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -60,6 +62,8 @@ public class Machine {
 
     public final Map<String, Object> dict;
     public final Stack stk;
+    public final List<String> searchPaths = new ArrayList<String>(); // used by "load"
+
 
     @SuppressWarnings("unchecked")
     public <T> T get(String key, Class<T> t) {
