@@ -39,6 +39,7 @@ public class ThumbkeyboardView extends View {
     private static final int BLOB_BORDER = 4; // dpi
 
     private Config config = new Config();
+    public boolean overlay = false;
 
     public static String configDir() {
         return android.os.Environment.getExternalStorageDirectory()
@@ -50,8 +51,13 @@ public class ThumbkeyboardView extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        if(getLayoutParams() != null)
-            getLayoutParams().height = pixels(BLOB_RADIUS * 2/*diameter*/ * 3/*rows*/);
+        if(!overlay) {
+            // having a height while being overlay causes it to raise other content.
+            // when we don't have a height we can be overlayd properly because our height is the full screen
+            // or something like that. I don't really get this stuff but I don't think you're supposed to.
+            if (getLayoutParams() != null)
+                getLayoutParams().height = pixels(BLOB_RADIUS * 2/*diameter*/ * 3/*rows*/);
+        }
     }
 
     // utils
