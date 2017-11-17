@@ -1,4 +1,5 @@
-
+  [KeyEvent]: https://developer.android.com/reference/android/view/KeyEvent.html
+  
 # Adellica's Chorded Keyboard
 
 This is a 12-button chorded keyboard for Android. The objective is to
@@ -96,10 +97,63 @@ it's error prone.
 Since I'll hopefully be able to use with this `emacs` on `Termux`,
 I'll need lots of key combinations, like `M-f` and `C-M->`.
 
-## What's missing
+I don't know how non-Latin input would work with this, however. I'm
+currently focusing on Latin and programming input.
 
-I don't know how non-Latin input would work with this. I'm currently
-focusing on Latin and programming input.
+# Interpreter 
+
+There's a very simple stack-based interpreter meant to allow flexible
+configuration of your keyboard and layout. It's called Thumb Stack
+Machine (TSM).
+
+> Note: Clojure's syntax-highlighting works quite well for this language.
+
+You can run the TSM interpreter without Android like this:
+
+```clojure
+➤ rlwrap java -cp app/build/intermediates/classes/debug/ com.adellica.thumbkeyboard.tsm.Reader
+Thumb StackMachine (REPL on port 2345)
+[ ] 2 3 +
+[ 5 ]
+```
+
+## Keypresses
+
+TSM has special support for `keypresses`. These borrow from the Emacs
+syntax, and have some operators:
+
+```clojure
+➤ rlwrap java -cp app/build/intermediates/classes/debug/ com.adellica.thumbkeyboard.tsm.Reader
+Thumb StackMachine (REPL on port 2345)
+[ ] :C-a ;; this means the keypress "holding control while pressing a"
+[ :C-a ] drop
+[ ] :x ;; a single-letter means a keypress of that key (here, "pressing x")
+[ :x ] shift? ;; is keypress on top of stack holding shift modifier?
+[ false ] drop
+[ ] :X ;; single-letters are case-sensitive!
+[ :X ] shift?
+[ true ] drop
+[ ] :X false shift! ;; removing shift modifier makes it lowercase (convenience)
+[ :x ] drop
+[ ] :1
+[ :1 ] dup
+[ :1 :1 ] shift?
+[ :1 false ] not ;; negate!
+[ :1 true ] shift! ;; set shift modifier to true on keypress in stack position 2
+[ :! ] drop ;; makes sence? holding shift and pressing 1 yields ! (US layout only)
+[ ] :@ ;; let's try the other way
+[ :@ ] false shift! ;; how does this keypress look like without holding shift?
+[ :2 ] drop ;; it looks like :2 (again, it's always US layout)
+[ ] :C-M-x ;; would be the keypress for control-alt-x
+[ :C-M-x ] alt?
+[ true ] drop ;; as expected, we're holding alt (meta) when pressing C-M-x.
+[ ] :enter ;; non-single-letter inputs are supported (named keys)
+[ :enter ] true shift! ;; they are not case-sensitive
+[ :S-enter ] ;; and are always printed in lower-case (explicit shift (S) modifier)
+```
+
+Many of Android's [KeyEvent]s are supported (remove the `KEYCODE_`
+prefix), but some have been renamed (`FORWARD_DEL` => `:delete`).
 
 # TODO
 

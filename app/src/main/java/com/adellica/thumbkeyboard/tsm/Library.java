@@ -1,0 +1,250 @@
+package com.adellica.thumbkeyboard.tsm;
+
+import com.adellica.thumbkeyboard.tsm.Machine.Applicable;
+import com.adellica.thumbkeyboard.tsm.Machine.Str;
+import com.adellica.thumbkeyboard.tsm.Machine.TFE;
+import com.adellica.thumbkeyboard.tsm.Machine.Word;
+import com.adellica.thumbkeyboard.tsm.stack.IPair;
+import com.adellica.thumbkeyboard.tsm.stack.Stack;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.lang.reflect.Field;
+import java.util.Map;
+import java.util.TreeMap;
+
+import static com.adellica.thumbkeyboard.tsm.stack.Pair.cons;
+import static com.adellica.thumbkeyboard.tsm.stack.Pair.nil;
+import static com.adellica.thumbkeyboard.tsm.stack.Pair.reverse;
+
+
+/**
+ * a JoyLibrary is just a class where
+ * all fields are static and of type {@link NamedApplicable}
+ */
+
+@SuppressWarnings("unused")
+public class Library {
+
+    public abstract static class NamedApplicable implements Applicable {
+        public String name = null;
+        public NamedApplicable() {}
+        public NamedApplicable(String name) {this.name=name;}
+        @Override public String toString() {return "\u001b[34m‹" + name + "›\u001b[0m";}
+    }
+    public static void init(Library library) {
+        for(Field field : library.getClass().getFields()) {
+            try {
+                final Object o = field.get(library);
+                if(!(o instanceof NamedApplicable)) continue;
+                NamedApplicable na = ((NamedApplicable)o);
+                if(na.name == null) na.name = field.getName();
+            } catch (IllegalAccessException e) {e.printStackTrace();}
+        }
+    }
+
+    public void fillDict(Map<String, Object> dict) {
+        init(this);
+        for(Field field : this.getClass().getFields()) {
+            try {
+                String name = field.getName();
+                Object o = field.get(this);
+                if(o instanceof NamedApplicable) {
+                    name = ((NamedApplicable)o).name;
+                }
+                dict.put(name, o);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static class Core extends Library {
+        public static Applicable help = new NamedApplicable() {
+            public void exe(Machine m) {
+                m.stk.push("d for dictoionary, ' to quote, [] to postpone evaluation, ; for comments\n example: [ 2 3 + ] e \n example: 'greet [ \"hello there!\" p ] set greet");
+                m.eval(p);
+            }
+        };
+        public static Applicable drop = new NamedApplicable() {
+            public void exe(Machine m) {
+                m.stk.pop();
+            }
+        };
+        public static Applicable dup = new NamedApplicable() {
+            public void exe(Machine m) {
+                Object o = m.stk.pop();
+                m.stk.push(o);
+                m.stk.push(o);
+            }
+        };
+        public static Applicable swap = new NamedApplicable() {
+            public void exe(Machine m) {
+                Object o1 = m.stk.pop();
+                Object o2 = m.stk.pop();
+                m.stk.push(o1);
+                m.stk.push(o2);
+            }
+        };
+        public static Applicable d = new NamedApplicable() {
+            public void exe(Machine m) {
+                m.stk.push(new TreeMap(m.dict));
+                m.eval(p); // use internal p for print
+            }
+        };
+        public static Applicable e = new NamedApplicable() {
+            public void exe(Machine m) {
+                m.eval(m.stk.pop());
+            }
+        };
+        public static Applicable QUOTE = new NamedApplicable("quote") {
+            public void exe(Machine m) {
+                m.stk.push(new Machine.Quoted(m.stk.pop()));
+            }
+        };
+        public static Applicable type = new NamedApplicable() {
+            public void exe(Machine m) {
+                m.stk.push(m.stk.pop().getClass());
+            }
+        };
+        public static Applicable get = new NamedApplicable() {
+            @Override
+            public void exe(Machine m) {
+                final Word name = m.stk.pop(Word.class);
+                final Object o = m.get(name.value, Object.class);
+                m.stk.push(o);
+            }
+        };
+        public static Applicable set = new NamedApplicable() {
+            @Override
+            public void exe(Machine m) {
+                final Object content = m.stk.pop();
+                final Word name = m.stk.pop(Word.class);
+                m.dict.put(name.value, content);
+            }
+        };
+        public static Applicable p = new NamedApplicable() { // println
+            @Override
+            public void exe(Machine m) {
+                OutputStream os = m.get("out", OutputStream.class);
+                try {
+                    os.write((m.stk.pop().toString() + "\n").getBytes());
+                    os.flush();
+                } catch (final IOException e) {
+                    throw new TFE() {
+                        public String getMessage() { return "io error " + e; }
+                    };
+                }
+            }
+        };
+        public static Applicable not = new NamedApplicable() {
+            @Override
+            public void exe(Machine m) {
+                final Boolean b = m.stk.pop(Boolean.class);
+                m.stk.push(b.equals(Boolean.FALSE));
+            }
+        };
+        public static Applicable ifte = new NamedApplicable("ifte") {
+            @Override
+            public void exe(Machine m) {
+                final Object e = m.stk.pop();
+                final Object t = m.stk.pop();
+                final Boolean i = m.stk.pop(Boolean.class);
+                Object which = e;
+                if(i.booleanValue()) which = t;
+                m.eval(which);
+            }
+        };
+        public static Applicable repeat = new NamedApplicable() {
+            @Override
+            public void exe(Machine m) {
+                int i = m.stk.pop(Integer.class);
+                final Object body = m.stk.pop();
+                while(i > 0) {
+                    i--;
+                    m.eval(body);
+                }
+            }
+        };
+        public static Applicable map = new NamedApplicable() {
+            @Override
+            public void exe(Machine m) {
+                final Object proc = m.stk.pop();
+                IPair lst = m.stk.pop(IPair.class);
+                Machine mm = new Machine();
+                Stack result = new Stack(nil);
+                while(lst != nil) {
+                    mm.stk.push(lst.car());
+                    mm.eval(proc);
+                    result.push(mm.stk.pop());
+                    lst = lst.cdr();
+                }
+                m.stk.push(result);
+            }
+        };
+        public static Applicable cons = new NamedApplicable() {
+            @Override
+            public void exe(Machine m) {
+                final Object o = m.stk.pop();
+                final IPair lst = m.stk.pop(IPair.class);
+                m.stk.push(cons(o, lst));
+            }
+        };
+        public static Applicable reverse = new NamedApplicable() {
+            @Override
+            public void exe(Machine m) {
+                final IPair o = m.stk.pop(IPair.class);
+                m.stk.push(reverse(o));
+            }
+        };
+    }
+
+    public static class Math extends Library {
+
+        public static final Applicable PLUS = new NamedApplicable("+") {
+            public void exe(Machine m) {
+                final Integer n = m.stk.pop(Integer.class);
+                final Integer d = m.stk.pop(Integer.class);
+                m.stk.push(n.intValue() + d.intValue());
+            }
+        };
+        public static final Applicable MINUS = new NamedApplicable("-") {
+            public void exe(Machine m) {
+                final Integer n = m.stk.pop(Integer.class);
+                final Integer d = m.stk.pop(Integer.class);
+                m.stk.push(n.intValue() - d.intValue());
+            }
+        };
+        public static final Applicable MULTIPLY = new NamedApplicable("*") {
+            public void exe(Machine m) {
+                final Integer n = m.stk.pop(Integer.class);
+                final Integer d = m.stk.pop(Integer.class);
+                m.stk.push(n.intValue() * d.intValue());
+            }
+        };
+        public static final Applicable DIVIDE = new NamedApplicable("/") {
+            public void exe(Machine m) {
+                final Integer n = m.stk.pop(Integer.class);
+                final Integer d = m.stk.pop(Integer.class);
+                m.stk.push(n.intValue() / d.intValue());
+            }
+        };
+        public static final Applicable MODULUS = new NamedApplicable("%") {
+            public void exe(Machine m) {
+                final Integer n = m.stk.pop(Integer.class);
+                final Integer d = m.stk.pop(Integer.class);
+                m.stk.push(n.intValue() % d.intValue());
+            }
+        };
+    }
+
+    public static class Strings extends Library {
+        public static final Applicable concat = new NamedApplicable() {
+            public void exe(Machine m) {
+                Str s0 = m.stk.pop(Str.class);
+                Str s1 = m.stk.pop(Str.class);
+                m.stk.push(new Str(s1.value + s0.value));
+            }
+        };
+    }
+}

@@ -15,6 +15,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputConnection;
 
+import com.adellica.thumbkeyboard.tsm.Keycodes;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -541,7 +543,7 @@ public class ThumbkeyboardView extends View {
 
     private void handleKey(String key) {
 
-        final int keycode = ThumboardKeycodes.string2keycode(key);
+        final int keycode = Keycodes.fromString(key);
         int meta = getMetaState();
         if (keycode != 0) {
             long now = System.currentTimeMillis();
