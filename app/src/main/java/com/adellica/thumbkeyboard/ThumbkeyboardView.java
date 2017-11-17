@@ -35,7 +35,7 @@ public class ThumbkeyboardView extends View {
     public ThumbkeyboardIME Ime;
     private boolean showHelp = false;
     private final int MAX_DELAY_DOUBLE_COMBO = 60; // ms
-    private static final int BLOB_RADIUS = 32; // dpi
+    private static final int BLOB_RADIUS = 38; // dpi
     private static final int BLOB_BORDER = 4; // dpi
 
     private Config config = new Config();
