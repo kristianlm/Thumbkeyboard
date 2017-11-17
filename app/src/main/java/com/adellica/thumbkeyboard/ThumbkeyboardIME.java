@@ -17,7 +17,7 @@ public class ThumbkeyboardIME extends InputMethodService {
    }
 
    @Override public View onCreateCandidatesView() {  // http://stackoverflow.com/a/20319466/1160216
-      PV = (ThumbkeyboardView)getLayoutInflater().inflate(R.layout.input, null);
+      PV = new ThumbkeyboardView(getApplicationContext(), null);
       PV.Ime = this;
       return PV;
    }
