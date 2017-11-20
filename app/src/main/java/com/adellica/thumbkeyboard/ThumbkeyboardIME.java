@@ -104,7 +104,7 @@ public class ThumbkeyboardIME extends InputMethodService {
                 final Object o = m.stk.pop();
                 if (o instanceof Keypress) handleKeypress((Keypress) o, ic);
                 else if (o instanceof Str) handleStr((Str) o, ic);
-                else throw new Machine.TypeMismatch(Keypress.class, o.getClass());
+                else throw new Machine.TypeMismatch(Keypress.class, o);
             }
         });
 
