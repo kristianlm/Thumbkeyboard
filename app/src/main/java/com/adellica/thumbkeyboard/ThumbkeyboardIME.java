@@ -15,6 +15,10 @@ import com.adellica.thumbkeyboard.tsm.Library.NamedApplicable;
 import com.adellica.thumbkeyboard.tsm.Machine;
 import com.adellica.thumbkeyboard.tsm.Machine.Str;
 import com.adellica.thumbkeyboard.tsm.Reader;
+import com.adellica.thumbkeyboard.tsm.stack.IPair;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static android.view.KeyEvent.META_ALT_LEFT_ON;
 import static android.view.KeyEvent.META_ALT_ON;
@@ -31,6 +35,7 @@ public class ThumbkeyboardIME extends InputMethodService {
 
     private final Handler mHandler = new Handler();
 
+    private final Map<String, Object> layout = new HashMap<String, Object>();
     // only one machine and one server per app instance
     public static Machine m = new Machine();
     public static Thread server = null;
@@ -182,5 +187,19 @@ public class ThumbkeyboardIME extends InputMethodService {
     @Override public void onFinishInput() {
         setCandidatesViewShown(false);
         super.onFinishInput();
+    }
+
+    public void handleStroke(Stroke stroke) {
+        final Object op = layout.get(stroke.toString());
+        Log.i(TAG, "handleStroke: " + op);
+        m.dict.put("last", stroke);
+        m.dict.put("last.op", op);
+        m.stk.push(op);
+        try {
+            m.eval(m.dict.get("press"));
+        } catch (Throwable e) {
+            Log.i(TAG, "failed handling stroke:" + stroke);
+            e.printStackTrace();
+        }
     }
 }

@@ -279,29 +279,10 @@ public class ThumbkeyboardView extends View {
     void _superlayout(boolean setting) { __superlayout = setting; postInvalidate(); };
     boolean _superlayout() { return __superlayout; };
 
-    private void handlePattern(final String p) {
-        if(p == null) return;
-        // super-button (puts into superlayout)
-        if("00000-00000:10000-00000 00000-00000:00000-00000 00000-00000:00000-00000 ".equals(p)) {
-            _superlayout(!_superlayout());
-        } else if(_write_stroke()) {
-            _write_stroke(false);
-            final Layout layout = currentLayout();
-            final String token = layout.get(p);
-            handleInput("\n" + token); // spit out stroke action
-        } else if(_stroke_record()) {
-            _stroke_record(false);
-            final String line = readBackwardsUntil("\n", true) + readForwardsUntil("\n", true);
-            Log.d(TAG, "storing " + p + " as \"" + line + "\"");
-            currentLayout().put(p, line);
-        } else {
-            final Layout layout = _superlayout() ? superLayout() : currentLayout();
-            _superlayout(false);
-            final String token = layout.get(p);
-            Log.i(TAG, "handling: " + token);
-            if(token != null)
-                handleToken(token);
-        }
+    private void handlePattern(final Stroke stroke) {
+        final Stroke t = new Stroke(stroke.lefts.length);
+        t.copyFrom(stroke);
+        Ime.handleStroke(t);
     }
 
     /**
@@ -688,12 +669,9 @@ public class ThumbkeyboardView extends View {
                     if (blobs()[btn].tapping)
                         stroke.taps[btn]++;
                     String pattern = stroke.toString();
-                    Log.i(TAG, "xxx " + pattern);
-                    for (String p : pattern.split(" ")) {
-                        Log.i(TAG, "#   " + p);
-                    }
+                    Log.i(TAG, "" + pattern);
+                    handlePattern(stroke);
                     flushStroke();
-                    handlePattern(pattern);
                     postInvalidate();
                 }
                 anchorFinger = -1;
