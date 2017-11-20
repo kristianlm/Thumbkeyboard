@@ -121,6 +121,24 @@ public class ThumbkeyboardIME extends InputMethodService {
             }
         });
 
+        m.dict.put(">>stroke", new NamedApplicable(">stroke") {
+            @Override
+            public void exe(Machine m) {
+                IPair pStroke = m.stk.pop(IPair.class);
+                m.stk.push(Stroke.fromPair(pStroke));
+            }
+        });
+
+        m.dict.put("bind!", new NamedApplicable("bind!") {
+            @Override
+            public void exe(Machine m) {
+                Object proc = m.stk.pop();
+                IPair istroke = m.stk.pop(IPair.class);
+                Stroke stroke = Stroke.fromPair(istroke);
+                layout.put(stroke.toString(), proc);
+            }
+        });
+
         m.dict.put("log", new NamedApplicable("log") {
             @Override
             public void exe(Machine m) {
