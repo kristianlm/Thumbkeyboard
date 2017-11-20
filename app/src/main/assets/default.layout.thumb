@@ -1,0 +1,435 @@
+;; -*- clojure -*-
+;; layout file for Thumbkeyboard
+;;
+;; it's all executable code below. you can run code directly from your
+;; keyboard with:
+;;
+;; [ . .  |  . x
+;;   . .  |  . .
+;;   . .  |  . x ] (see binding below)
+;;
+;; you could try editing this in clojure-mode as it fits relatively
+;; nicely.
+
+;; ==================== might this be a good idea? ====================
+;;; toggle shift ;; => [ shift not shift! ]
+;;; ' toggle [  ] set!
+;;; read dup ' not swap sym->str "!" append
+
+;; bindings for "reflection"
+[ . .  |  . x
+  . .  |  . .
+  . .  |  . x ] [ read exe ] bind!
+
+;; some important ones
+
+[ x .  |  . x
+  . .  |  . .
+  . .  |  . . ] [ shift not shift! ] bind!
+
+[ . .  |  . x
+  x .  |  . .
+  . .  |  . . ] [ ctrl not ctrl! ] bind!
+
+[ . .  |  . x
+  . .  |  . .
+  x .  |  . . ] [ meta not meta! ] bind!
+
+[ . .  |  . x
+  . .  |  . .
+  . .  |  . . ] [ repress ] bind!
+
+[ . .  |  . .
+  . .  |  . x
+  . .  |  . . ] :SPACE bind!
+
+;; letters
+
+[ x .  |  . .
+  . .  |  . .
+  . .  |  . . ] :a bind!
+
+[ . .  |  . .
+  . .  |  x .
+  . x  |  . . ] :b bind!
+
+[ . .  |  . .
+  x .  |  . x
+  . .  |  . . ] :c bind!
+
+[ . .  |  . .
+  . .  |  . .
+  . x  |  x . ] :d bind!
+
+[ . .  |  . .
+  . x  |  . .
+  . .  |  . . ] :e bind!
+
+[ . .  |  . .
+  . .  |  x .
+  x .  |  . . ] :f bind!
+
+[ . .  |  . .
+  . x  |  . .
+  . .  |  . x ] :g bind!
+
+[ . .  |  . .
+  . .  |  . .
+  . x  |  . . ] :h bind!
+
+[ . .  |  . .
+  x .  |  . .
+  . .  |  . . ] :i bind!
+
+[ . .  |  . .
+  . x  |  . .
+  . .  |  x . ] :j bind!
+
+[ . .  |  . .
+  . .  |  . .
+  . x  |  . x ] :k bind!
+
+[ . .  |  . .
+  . .  |  . .
+  x .  |  . x ] :l bind!
+
+[ . .  |  . .
+  x .  |  x .
+  . .  |  . . ] :m bind!
+
+[ . .  |  . .
+  . .  |  . .
+  . .  |  . x ] :n bind!
+
+[ . .  |  . .
+  . .  |  . .
+  x .  |  . . ] :o bind!
+
+[ . .  |  . .
+  . x  |  . x
+  . .  |  . . ] :p bind!
+
+[ . .  |  . .
+  . .  |  . x
+  x .  |  . . ] :q bind!
+
+[ . .  |  . .
+  . x  |  x .
+  . .  |  . . ] :r bind!
+
+[ . .  |  . .
+  . .  |  x .
+  . .  |  . . ] :s bind!
+
+[ . .  |  . .
+  . .  |  . .
+  . .  |  x . ] :t bind!
+
+[ . .  |  . .
+  . .  |  . .
+  x .  |  x . ] :u bind!
+
+[ . .  |  . .
+  . .  |  . x
+  . x  |  . . ] :v bind!
+
+[ . .  |  . .
+  x .  |  . .
+  . .  |  x . ] :w bind!
+
+[ . .  |  v .
+  . .  |  o .
+  . .  |  . . ] :x bind!
+
+[ . .  |  . .
+  x .  |  . .
+  . .  |  . x ] :y bind!
+
+[ . .  |  . .
+  . .  |  v .
+  . .  |  o . ] :z bind!
+
+;; no
+
+[ . .  |  x .
+  . x  |  . .
+  . .  |  . . ] "æ" bind!
+
+[ . .  |  x .
+  . .  |  . .
+  x .  |  . . ] "ø" bind!
+
+[ x .  |  x .
+  . .  |  . .
+  . .  |  . . ] "å" bind!
+
+;; numbers
+
+[ . .  |  v <
+  . .  |  v ^
+  . .  |  > ^ ] :0 bind!
+
+[ . .  |  . v
+  . .  |  . v
+  . .  |  . o ] :1 bind!
+
+[ . .  |  > v
+  . .  |  . v
+  . .  |  > <o ] :2 bind!
+
+[ . .  |  > v
+  . .  |  > <v
+  . .  |  o  < ] :3 bind!
+
+[ . .  |  > v
+  . .  |  . v
+  . .  |  o < ] :3 bind!
+
+[ . .  |  v  v
+  . .  |  > ^v
+  . .  |  .  v ] :4 bind!
+
+[ . .  |  v <
+  . .  |  > v
+  . .  |  o < ] :5 bind!
+
+[ . .  |  v <
+  . .  |  v <
+  . .  |  > ^ ] :6 bind!
+
+[ . .  |  v <
+  . .  |  v .
+  . .  |  > ^ ] :6 bind!
+
+[ . .  |  > >
+  . .  |  . v
+  . .  |  . v ] :7 bind!
+
+[ . .  |  v <
+  . .  |  >v ^<
+  . .  |   >  ^ ] :8 bind!
+
+[ . .  |  v <
+  . .  |  > v
+  . .  |  . o ] :9 bind!
+
+[ . .  |  v <v
+  . .  |  > ^v
+  . .  |  .  o ] :9 bind!
+
+
+;; shifted number keys
+
+[ . .  |  v .
+  . .  |  v .
+  . .  |  o . ] :! bind! ;; :S-1
+
+[ o .  |  . .
+  ^ <  |  . .
+  . .  |  . . ] :@ bind! ;; :S-2
+
+[ o .  |  . .
+  ^ .  |  . .
+  ^ <  |  . . ] :# bind! ;; :S-3
+
+[ v <  |  . .
+  > v  |  . .
+  o <  |  . . ] :$ bind! ;; :S-4
+
+[ o .  |  . .
+  ^ .  |  . .
+  ^ .  |  . . ] :% bind! ;; :S-5
+
+[ v .  |  . .
+  ^ .  |  . .
+  ^ .  |  . . ] :^ bind! ;; :S-6
+
+[ o .  |  . .
+  ^ .  |  . .
+  . .  |  . . ] :& bind! ;; :S-7
+
+[ . .  |  . v
+  . .  |  > <v
+  . .  |  o  < ] :* bind! ;; :S-8
+
+;; and grouping symbols
+
+[ . .  |  . .
+  x .  |  . .
+  . .  |  > o ] :( bind! ;; :S-9
+
+[ . .  |  . .
+  x .  |  . .
+  . .  |  o < ] :) bind! ;; :S-0
+
+[ . .  |  . .
+  . x  |  . .
+  . .  |  > o ] :[ bind!
+
+[ . .  |  . .
+  . x  |  . .
+  . .  |  o < ] :] bind!
+
+
+[ . .  |  . .
+  . .  |  . .
+  x .  |  > o ] :< bind!
+
+[ . .  |  . .
+  . .  |  . .
+  x .  |  o < ] :> bind!
+
+
+[ . .  |  . .
+  . .  |  . .
+  . x  |  > o ] :{ bind!
+
+[ . .  |  . .
+  . .  |  . .
+  . x  |  o < ] :} bind!
+
+
+;; quotes
+
+[ v .  |  . .
+  o .  |  . .
+  . .  |  . . ] :' bind!
+
+[ v .  |  . .
+  > o  |  . .
+  . .  |  . . ] :` bind!
+
+[ v .  |  . .
+  > v  |  . .
+  . o  |  . . ] :" bind! ;;"
+
+
+;; the rest
+
+[ v .  |  . .
+  v .  |  . .
+  o .  |  . . ] :| bind!
+
+[ . .  |  . .
+  . .  |  o .
+  . .  |  ^ < ] :\ bind!
+
+[ o .  |  . .
+  ^ .  |  . .
+  ^ .  |  . . ] :% bind!
+
+[ . .  |  . o
+  . .  |  > ^
+  . .  |  ^ . ] :~ bind!
+
+[ . .  |  . .
+  . .  |  v .
+  . .  |  ^ . ] :; bind!
+
+[ . .  |  v .
+  . .  |  ^ .
+  . .  |  . . ] :: bind!
+
+[ . .  |  > v
+  . .  |  v <
+  . .  |  o . ] :? bind!
+
+[ . .  |  . .
+  . .  |  . o
+  . .  |  > ^ ] :/ bind!
+
+[ . .  |  . v
+  . .  |  > <v
+  . .  |  .  o ] :+ bind!
+
+[ . .  |  . v
+  . .  |  > <
+  . .  |  . . ] :- bind!
+
+[ . .  |  . v
+  . .  |  . v
+  . .  |  o < ] :ENTER bind!
+
+;; navigation
+
+[ . .  |  . .
+  . .  |  . v
+  . .  |  . o ] :DPAD_DOWN bind!
+
+[ . .  |  . .
+  . .  |  . .
+  . .  |  > o ] :DPAD_RIGHT bind!
+
+[ . .  |  . .
+  . .  |  . .
+  . .  |  o < ] :DPAD_LEFT bind!
+
+[ . .  |  . .
+  . .  |  . o
+  . .  |  . ^ ] :DPAD_UP bind!
+
+[ . .  |  . .
+  > o  |  . .
+  . .  |  . . ] :MOVE_END bind!
+
+[ . .  |  . .
+  o <  |  . .
+  . .  |  . . ] :MOVE_HOME bind!
+
+[ . .  |  . .
+  . .  |  . .
+  > o  |  . . ] :C-DPAD_RIGHT bind!
+
+[ . .  |  . .
+  . .  |  . .
+  < o  |  . . ] :C-DPAD_LEFT bind!
+
+;; some punctuation
+
+[ . .  |  o .
+  . .  |  ^ .
+  . .  |  . . ] :. bind!
+
+[ . .  |  . .
+  . .  |  o .
+  . .  |  ^ . ] :, bind!
+
+;; [ . .  |  . .
+;;   . .  |  . .
+;;   . .  |  . . ] [ delete-line ] bind!
+
+[ . .  |  . .
+  . .  |  o <
+  . .  |  . . ] :BACKSPACE bind!
+
+[ . .  |  . .
+  . .  |  > <
+  . .  |  . . ] [ delete-word ] bind!
+
+;; old-school emoji
+
+[ . .  |  . .
+  . .  |  . .
+  . .  |  . . ] ":)" bind!
+
+[ . .  |  . o
+  . .  |  v ^
+  . .  |  > ^ ] ":-)" bind!
+
+[ . .  |  > v
+  . .  |  ^ v
+  . .  |  . o ] ":-(" bind!
+
+[ . .  |  . .
+  . .  |  > v
+  . .  |  ^ o ] ":(" bind!
+
+[ . .  |  . .
+  . .  |  > o
+  . .  |  . . ] :TAB bind!
+
+[ . .  |  . o
+  . .  |  . ^
+  . .  |  . . ] :DELETE bind!
+
+

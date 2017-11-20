@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.InputConnection;
+import android.widget.Toast;
 
 import com.adellica.thumbkeyboard.tsm.Keypress;
 import com.adellica.thumbkeyboard.tsm.Library.NamedApplicable;
@@ -145,6 +146,19 @@ public class ThumbkeyboardIME extends InputMethodService {
                 Log.i(TAG, m.stk.pop(Str.class).value);
             }
         });
+
+        m.searchPaths.add(0, ThumbkeyboardView.configDir());
+        Layout.ensureExists(getAssets(), "default.layout.thumb");
+        Layout.ensureExists(getAssets(), "main.thumb");
+
+        try {
+            m.stk.push(new Str(ThumbkeyboardView.configDir() + "main.thumb"));
+            m.eval(new Machine.Word("load"));
+        } catch (Throwable e) {
+            e.printStackTrace();
+            Toast.makeText(this, "error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+
         if(server == null) {
             server = new Thread(new Runnable() {
                 @Override

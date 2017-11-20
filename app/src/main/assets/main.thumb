@@ -1,0 +1,8 @@
+;;; -*- clojure -*-
+;;; clojure-mode seems to almost match our syntax, so better than nothing.
+;;;
+;;; this is the entry point of your Thumbkeyboard configuration.
+
+"==================== LOADING main.thumb ====================" log
+
+"default.layout.thumb" load
