@@ -233,6 +233,24 @@ public class Library {
                 m.stk.push(reverse(o));
             }
         };
+
+        public static Applicable ref = new NamedApplicable() {
+            @Override
+            public void exe(Machine m) {
+                final Object key = m.stk.pop(Object.class);
+                final Map d = m.stk.pop(Map.class);
+                m.stk.push(d.get(key));
+            }
+        };
+        public static Applicable assoc = new NamedApplicable() {
+            @Override
+            public void exe(Machine m) {
+                final Object value = m.stk.pop(Object.class);
+                final Object key = m.stk.pop(Object.class);
+                final Map d = m.stk.pop(Map.class);
+                m.stk.push(d.put(key, value));
+            }
+        };
     }
 
     public static class Math extends Library {
