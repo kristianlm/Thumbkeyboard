@@ -44,6 +44,10 @@ public class Machine {
         public final T value;
         public Datum(T value) { this.value = value; }
         abstract public String toString();
+        @Override public boolean equals(Object o) {
+            if(o instanceof Datum) return value.equals(((Datum)o).value);
+            return false;
+        }
     }
     public static class Str extends Datum<String> {
         public Str(String s) { super(s); }

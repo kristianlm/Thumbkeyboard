@@ -133,6 +133,11 @@ public class Library {
                 m.stk.push(new Machine.Quoted(m.stk.pop()));
             }
         };
+        public static Applicable equals = new NamedApplicable("=") {
+            public void exe(Machine m) {
+                m.stk.push(m.stk.pop().equals(m.stk.pop()));
+            }
+        };
         public static Applicable type = new NamedApplicable() {
             public void exe(Machine m) {
                 m.stk.push(m.stk.pop().getClass());
