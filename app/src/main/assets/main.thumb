@@ -10,7 +10,10 @@
 '!alt   [ alt   not alt!   ] set
 '!win   [ win   not win!   ] set
 
-;; toggle overlay
+;; repress: execute last operation, unless it's repress itself
+'repress [ 'last.op get
+                    dup 'repress = [ drop ] [ 'last* swap set ] ifte
+           'last* get press ] set
 
 '!overlay [ overlay not overlay! ] set
 

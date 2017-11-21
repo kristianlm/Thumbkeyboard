@@ -241,7 +241,6 @@ public class ThumbkeyboardIME extends InputMethodService {
     public void handleStroke(Stroke stroke) {
         final Object op = layout.get(stroke);
         Log.i(TAG, "handleStroke: " + op);
-        m.dict.put("last", stroke);
 
         if(op == null) {
             try {
@@ -252,7 +251,6 @@ public class ThumbkeyboardIME extends InputMethodService {
             return;
         } else {
             // we found a procedure for stroke, go!
-            m.dict.put("last.op", op);
             try {
                 if(op instanceof Keypress || op instanceof Str) {
                     m.stk.push(op);
@@ -265,5 +263,7 @@ public class ThumbkeyboardIME extends InputMethodService {
                 e.printStackTrace();
             }
         }
+        m.dict.put("last", stroke);
+        m.dict.put("last.op", op);
     }
 }
