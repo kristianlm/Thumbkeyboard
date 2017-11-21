@@ -121,6 +121,13 @@ public class Library {
                 }
             }
         };
+        public static Applicable exit = new NamedApplicable() {
+            @Override
+            public void exe(Machine m) {
+                System.exit(m.stk.pop(Integer.class));
+            }
+        };
+
         public static Applicable QUOTE = new NamedApplicable("quote") {
             public void exe(Machine m) {
                 m.stk.push(new Machine.Quoted(m.stk.pop()));
