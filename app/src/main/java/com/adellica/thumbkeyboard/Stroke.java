@@ -4,6 +4,8 @@ import com.adellica.thumbkeyboard.tsm.Machine;
 import com.adellica.thumbkeyboard.tsm.stack.IPair;
 import com.adellica.thumbkeyboard.tsm.stack.Stack;
 
+import java.util.Arrays;
+
 /**
 * Created by klm on 12/28/16.
 */
@@ -119,5 +121,21 @@ class Stroke {
             downs[i] = stroke.downs[i];
             rights[i] = stroke.rights[i];
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(ups) + Arrays.hashCode(downs) +
+                Arrays.hashCode(lefts) + Arrays.hashCode(rights) +
+                Arrays.hashCode(taps);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if(!(o instanceof Stroke)) return false;
+        Stroke s = (Stroke)o;
+        return Arrays.equals(ups, s.ups) && Arrays.equals(downs, s.downs) &&
+                Arrays.equals(lefts, s.lefts) && Arrays.equals(rights, s.rights) &&
+                Arrays.equals(taps, s.taps);
     }
 }

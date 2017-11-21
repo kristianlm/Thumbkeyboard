@@ -36,7 +36,7 @@ public class ThumbkeyboardIME extends InputMethodService {
 
     private final Handler mHandler = new Handler();
 
-    private final Map<String, Object> layout = new HashMap<String, Object>();
+    public final Map<Stroke, Object> layout = new HashMap<Stroke, Object>();
     // only one machine and one server per app instance
     public static Machine m = new Machine();
     public static Thread server = null;
@@ -134,9 +134,18 @@ public class ThumbkeyboardIME extends InputMethodService {
             @Override
             public void exe(Machine m) {
                 Object proc = m.stk.pop();
-                IPair istroke = m.stk.pop(IPair.class);
-                Stroke stroke = Stroke.fromPair(istroke);
-                layout.put(stroke.toString(), proc);
+                Stroke stroke;
+                try {
+                    stroke = m.stk.pop(Stroke.class);
+                } catch(Machine.TypeMismatch e) {
+                    stroke = Stroke.fromPair(m.stk.pop(IPair.class));
+                }
+                if(stroke == null) {
+                    Log.e(TAG, "cannot bind!: stroke is null");
+                    return;
+                }
+                Log.i(TAG, "assigning layout: " + stroke + " " + proc);
+                layout.put(stroke, proc);
             }
         });
 
@@ -222,16 +231,31 @@ public class ThumbkeyboardIME extends InputMethodService {
     }
 
     public void handleStroke(Stroke stroke) {
-        final Object op = layout.get(stroke.toString());
+        final Object op = layout.get(stroke);
         Log.i(TAG, "handleStroke: " + op);
         m.dict.put("last", stroke);
-        m.dict.put("last.op", op);
-        m.stk.push(op);
-        try {
-            m.eval(m.dict.get("press"));
-        } catch (Throwable e) {
-            Log.i(TAG, "failed handling stroke:" + stroke);
-            e.printStackTrace();
+
+        if(op == null) {
+            try {
+                m.eval(new Machine.Word("missing"));
+            } catch (Throwable e) {
+                Log.e(TAG, "running `missing`: " + e.getMessage());
+            }
+            return;
+        } else {
+            // we found a procedure for stroke, go!
+            m.dict.put("last.op", op);
+            try {
+                if(op instanceof Keypress || op instanceof Str) {
+                    m.stk.push(op);
+                    m.eval(m.dict.get("press"));
+                } else {
+                    m.eval(op);
+                }
+            } catch (Throwable e) {
+                Log.i(TAG, "failed handling stroke:" + stroke);
+                e.printStackTrace();
+            }
         }
     }
 }
