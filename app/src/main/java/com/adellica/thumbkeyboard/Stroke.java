@@ -60,9 +60,9 @@ class Stroke {
         for(int i = 0 ; i < 12 ; i++) if(rep(i).length() > x) x = rep(i).length();
         x++; // ensure we have at least one space in there
         String s = "\n";
-        s += "[" + align(x, rep(0)) + align(x, rep(1)) + " |" + align(x, rep(2)) + align(x, rep(3)) + "\n";
-        s += " " + align(x, rep(4)) + align(x, rep(5)) + " |" + align(x, rep(6)) + align(x, rep(7)) + "\n";
-        s += " " + align(x, rep(8)) + align(x, rep(9)) + " |" + align(x, rep(10)) + align(x, rep(11)) + " ]";
+        s += "#S[" + align(x, rep(0)) + align(x, rep(1)) + " |" + align(x, rep(2)) + align(x, rep(3)) + "\n";
+        s += "   " + align(x, rep(4)) + align(x, rep(5)) + " |" + align(x, rep(6)) + align(x, rep(7)) + "\n";
+        s += "   " + align(x, rep(8)) + align(x, rep(9)) + " |" + align(x, rep(10)) + align(x, rep(11)) + " ]";
         return s;
     }
 
