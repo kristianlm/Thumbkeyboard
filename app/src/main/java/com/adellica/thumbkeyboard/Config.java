@@ -59,28 +59,9 @@ public class Config {
         return c;
     }
 
-
-    public void handleColor(String input) {
-        handle("color." + input);
-    }
-
-    // input is eg "config.color #ff00ff00"
-    public void handle(String input) {
-        Log.e(TAG, "handling config " + input);
-        final String key = ThumbkeyboardView.cmd(input);
-        put(key, ThumbkeyboardView.value(input));
-    }
-
-
-
-    public int colorBackgroundHolding() {return s2c(get("color.holding"));}
-    public void colorBackgroundHolding(String c) {put("color.holding", c);}
-    public int colorBackgroundNonIdle() {return s2c(get("color.active"));}
-    public void colorBackgroundNonIdle(String c) {put("color.active", c);}
-    public int colorBackgroundIdle() {return s2c(get("color.background"));}
-    public void colorBackgroundIdle(String c) {put("color.background", c);}
-    public int colorLabel() {return s2c(get("color.label"));}
-    public void colorLabel(String c) {cmap.put("color.label", c);}
-    public boolean showLabelsAlways() {return "true".equals(cmap.get("label.show"));}
-    public void showLabelsAlways(boolean v) {cmap.put("label.show", v ? "true" : "");}
+    public int colorBackgroundHolding() {return s2c("#a000a0");}
+    public int colorBackgroundNonIdle() {return s2c("#404040");}
+    public int colorBackgroundIdle() {return s2c("#404040");}
+    public int colorLabel() {return s2c("#ff8080");}
+    public boolean showLabelsAlways() {return true; }
 }
