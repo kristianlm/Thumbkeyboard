@@ -10,4 +10,12 @@
 '!alt   [ alt   not alt!   ] set
 '!win   [ win   not win!   ] set
 
+;; toggle overlay
+
+'!overlay [ overlay not overlay! ] set
+
+[ x . | . .
+  . . | . .
+  x . | . . ] '!overlay bind!
+
 "default.layout.thumb" load
