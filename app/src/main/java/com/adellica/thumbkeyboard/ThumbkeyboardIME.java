@@ -150,6 +150,13 @@ public class ThumbkeyboardIME extends InputMethodService {
             }
         });
 
+        m.dict.put("layout", new NamedApplicable("layout") {
+            @Override
+            public void exe(Machine m) {
+                m.stk.push(layout);
+            }
+        });
+
         m.dict.put("log", new NamedApplicable("log") {
             @Override
             public void exe(Machine m) {
