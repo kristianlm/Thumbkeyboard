@@ -5,4 +5,9 @@
 
 "==================== LOADING main.thumb ====================" log
 
+'!ctrl  [ ctrl  not ctrl!  ] set
+'!shift [ shift not shift! ] set
+'!alt   [ alt   not alt!   ] set
+'!win   [ win   not win!   ] set
+
 "default.layout.thumb" load

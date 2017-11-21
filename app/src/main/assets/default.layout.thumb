@@ -25,19 +25,23 @@
 
 [ x .  |  . x
   . .  |  . .
-  . .  |  . . ] [ shift not shift! ] bind!
+  . .  |  . . ] '!shift bind!
 
 [ . .  |  . x
   x .  |  . .
-  . .  |  . . ] [ ctrl not ctrl! ] bind!
+  . .  |  . . ] '!ctrl bind!
 
 [ . .  |  . x
   . .  |  . .
-  x .  |  . . ] [ meta not meta! ] bind!
+  x .  |  . . ] '!alt bind!
 
 [ . .  |  . x
   . .  |  . .
-  . .  |  . . ] [ repress ] bind!
+  . x  |  . . ] '!win bind!
+
+[ . .  |  . x
+  . .  |  . .
+  . .  |  . . ] 'repress bind!
 
 [ . .  |  . .
   . .  |  . x
@@ -404,7 +408,7 @@
 
 [ . .  |  . .
   . .  |  > <
-  . .  |  . . ] [ delete-word ] bind!
+  . .  |  . . ] 'delete-word bind!
 
 ;; old-school emoji
 
