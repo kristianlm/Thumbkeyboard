@@ -11,15 +11,20 @@ abstract public class APair implements IPair, Machine.Applicable {
         throw new Machine.TypeMismatch(t, car());
     }
 
-    public String toString() {
-        if (this == nil) return "[ ]";
-        String f = "[";
-        IPair p = this;
+    public String toStringParenless() {
+        if(this == nil) return "";
+        String f = "" + car();
+        IPair p = cdr();
         while (p != nil) {
             f += " " + p.car();
             p = p.cdr();
         }
-        return f + " ]";
+        return f;
+    }
+
+    public String toString() {
+        if (this == nil) return "[ ]";
+        return "[ " + toStringParenless() + " ]";
     }
 
     @Override
