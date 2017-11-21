@@ -227,7 +227,7 @@ public class Reader {
 
         InputStream pis = new InputStreamEnterCallback(is, new Runnable() {
             public void run() {
-                ps.print("\u001b[31m[ \u001b[0m" + reverse(m.stk.peek()).toStringParenless() + "\u001b[31m ]\u001b[0m ");
+                ps.print("\u001b[35m[ \u001b[0m" + reverse(m.stk.peek()).toStringParenless() + "\u001b[35m ]\u001b[0m ");
             }
         });
 
