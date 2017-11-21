@@ -59,9 +59,9 @@ public class Config {
         return c;
     }
 
-    public int colorBackgroundHolding() {return s2c("#a000a0");}
-    public int colorBackgroundNonIdle() {return s2c("#404040");}
-    public int colorBackgroundIdle() {return s2c("#404040");}
+    public int colorBackgroundHolding() {return s2c("#ffa000a0");}
+    public int colorBackgroundNonIdle() {return s2c("#40404040");}
+    public int colorBackgroundIdle() {return s2c("#40404040");}
     public int colorLabel() {return s2c("#ff8080");}
     public boolean showLabelsAlways() {return true; }
 }
