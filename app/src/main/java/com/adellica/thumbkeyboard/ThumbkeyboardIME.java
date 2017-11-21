@@ -108,6 +108,7 @@ public class ThumbkeyboardIME extends InputMethodService {
                 else throw new Machine.TypeMismatch(Keypress.class, o);
             }
         });
+        m.dict.put("press*", m.dict.get("press")); // in case you want to override it.
 
         m.dict.put("overlay", new NamedApplicable("overlay") {
             @Override
