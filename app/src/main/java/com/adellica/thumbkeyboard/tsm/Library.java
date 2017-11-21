@@ -128,7 +128,7 @@ public class Library {
             }
         };
 
-        public static Applicable QUOTE = new NamedApplicable("quote") {
+        public static Applicable quote = new NamedApplicable() {
             public void exe(Machine m) {
                 m.stk.push(new Machine.Quoted(m.stk.pop()));
             }
