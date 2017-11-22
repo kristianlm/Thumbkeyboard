@@ -35,6 +35,15 @@
              'alt*   falsify
              'win*   falsify ] set
 
+'mod-merge [
+         ctrl*  'ctrl!  ctrl*  'e [ drop drop ] ifte
+         shift* 'shift! shift* 'e [ drop drop ] ifte
+         alt*   'alt!   alt*   'e [ drop drop ] ifte
+         win*   'win!   win*   'e [ drop drop ] ifte
+         ] set
+
+'press [ mod-merge press* mod-reset ] set
+
 [ x . | . .
   . . | . .
   x . | . . ] '!overlay bind!
