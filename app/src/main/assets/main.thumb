@@ -17,6 +17,18 @@
 
 '!overlay [ overlay not overlay! ] set
 
+'ctrl*  false set
+'shift* false set
+'alt*   false set
+'win*   false set
+
+'!ctrl  [ 'ctrl* ctrl* not set ] set
+'!shift [ 'shift* shift* not set ] set
+'!alt   [ 'alt* alt* not set ] set
+'!win   [ 'win* win* not set ] set
+
+'press [ ctrl* ctrl! shift* shift! alt* alt! win* win! press* ] set
+
 [ x . | . .
   . . | . .
   x . | . . ] '!overlay bind!
