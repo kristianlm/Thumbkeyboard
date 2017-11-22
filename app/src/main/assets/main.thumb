@@ -18,6 +18,7 @@
 '!overlay [ overlay not overlay! ] set
 
 'invert [ dup e not set ] set
+'falsify [ false set ] set
 
 'ctrl*  false set
 'shift* false set
@@ -29,7 +30,10 @@
 '!alt   [ 'alt*   invert ] set
 '!win   [ 'win*   invert ] set
 
-'press [ ctrl* ctrl! shift* shift! alt* alt! win* win! press* ] set
+'mod-reset [ 'ctrl*  falsify
+             'shift* falsify 
+             'alt*   falsify
+             'win*   falsify ] set
 
 [ x . | . .
   . . | . .
