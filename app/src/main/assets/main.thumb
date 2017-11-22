@@ -17,15 +17,17 @@
 
 '!overlay [ overlay not overlay! ] set
 
+'invert [ dup e not set ] set
+
 'ctrl*  false set
 'shift* false set
 'alt*   false set
 'win*   false set
 
-'!ctrl  [ 'ctrl* ctrl* not set ] set
-'!shift [ 'shift* shift* not set ] set
-'!alt   [ 'alt* alt* not set ] set
-'!win   [ 'win* win* not set ] set
+'!ctrl  [ 'ctrl*  invert ] set
+'!shift [ 'shift* invert ] set
+'!alt   [ 'alt*   invert ] set
+'!win   [ 'win*   invert ] set
 
 'press [ ctrl* ctrl! shift* shift! alt* alt! win* win! press* ] set
 
