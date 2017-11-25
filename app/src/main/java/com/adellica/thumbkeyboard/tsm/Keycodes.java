@@ -98,14 +98,14 @@ public class Keycodes {
         put("ENVELOPE", 65);
         put("ENTER", 66);
         put("BACKSPACE", 67);
-        put("'", 68);
+        put("`", 68);
         put("-", 69);
         put("=", 70);
         put("[", 71);
         put("]", 72);
         put("\\", 73);
         put(";", 74);
-        put("`", 75);
+        put("'", 75);
         put("/", 76);
         put("@", 77);
         put("NUM", 78);
