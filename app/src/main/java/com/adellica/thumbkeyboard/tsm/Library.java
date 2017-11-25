@@ -300,5 +300,23 @@ public class Library {
                 m.stk.push(new Str(s1.value + s0.value));
             }
         };
+        public static final Applicable str_p = new NamedApplicable("str?") {
+            public void exe(Machine m) {
+                Object o = m.stk.pop();
+                m.stk.push(o instanceof Str);
+            }
+        };
+        public static final Applicable upcase = new NamedApplicable() {
+            public void exe(Machine m) {
+                Str s = m.stk.pop(Str.class);
+                m.stk.push(new Str(s.value.toUpperCase()));
+            }
+        };
+        public static final Applicable downcase = new NamedApplicable() {
+            public void exe(Machine m) {
+                Str s = m.stk.pop(Str.class);
+                m.stk.push(new Str(s.value.toLowerCase()));
+            }
+        };
     }
 }
