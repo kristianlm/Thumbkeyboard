@@ -45,7 +45,7 @@
 
 [ . .  |  . .
   . .  |  . x
-  . .  |  . . ] :SPACE bind!
+  . .  |  . . ] :space bind!
 
 ;; letters
 
@@ -352,41 +352,41 @@
 
 [ . .  |  . v
   . .  |  . v
-  . .  |  o < ] :ENTER bind!
+  . .  |  o < ] :enter bind!
 
 ;; navigation
 
 [ . .  |  . .
   . .  |  . v
-  . .  |  . o ] :DPAD_DOWN bind!
+  . .  |  . o ] :dpad_down bind!
 
 [ . .  |  . .
   . .  |  . .
-  . .  |  > o ] :DPAD_RIGHT bind!
+  . .  |  > o ] :dpad_right bind!
 
 [ . .  |  . .
   . .  |  . .
-  . .  |  o < ] :DPAD_LEFT bind!
+  . .  |  o < ] :dpad_left bind!
 
 [ . .  |  . .
   . .  |  . o
-  . .  |  . ^ ] :DPAD_UP bind!
+  . .  |  . ^ ] :dpad_up bind!
 
 [ . .  |  . .
   . .  |  . .
-  > o  |  . . ] :MOVE_END bind!
+  > o  |  . . ] :move_end bind!
 
 [ . .  |  . .
   . .  |  . .
-  o <  |  . . ] :MOVE_HOME bind!
+  o <  |  . . ] :move_home bind!
 
 [ . .  |  . .
   > o  |  . .
-  . .  |  . . ] :C-DPAD_RIGHT bind!
+  . .  |  . . ] :C-dpad_right bind!
 
 [ . .  |  . .
   o <  |  . .
-  . .  |  . . ] :C-DPAD_LEFT bind!
+  . .  |  . . ] :C-dpad_left bind!
 
 ;; some punctuation
 
@@ -404,7 +404,7 @@
 
 [ . .  |  . .
   . .  |  o <
-  . .  |  . . ] :BACKSPACE bind!
+  . .  |  . . ] :backspace bind!
 
 [ . .  |  . .
   . .  |  > <
@@ -413,7 +413,7 @@
 
 [ . .  |  . o
   . .  |  . ^
-  . .  |  . . ] :DELETE bind!
+  . .  |  . . ] :delete bind!
 
 [ . .  |  . v
   . .  |  . ^
