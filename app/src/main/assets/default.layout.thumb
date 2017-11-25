@@ -408,7 +408,16 @@
 
 [ . .  |  . .
   . .  |  > <
-  . .  |  . . ] 'delete-word bind!
+  . .  |  . . ] :C-backspace bind!
+
+
+[ . .  |  . o
+  . .  |  . ^
+  . .  |  . . ] :DELETE bind!
+
+[ . .  |  . v
+  . .  |  . ^
+  . .  |  . . ] :C-delete bind!
 
 ;; old-school emoji
 
@@ -431,9 +440,5 @@
 [ . .  |  . .
   . .  |  > o
   . .  |  . . ] :TAB bind!
-
-[ . .  |  . o
-  . .  |  . ^
-  . .  |  . . ] :DELETE bind!
 
 
