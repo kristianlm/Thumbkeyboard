@@ -35,11 +35,19 @@
              'alt*   falsify
              'win*   falsify ] set
 
+;; .. keypress/str => .. uppercased keypress/str
+'shiftify! [
+          dup str?
+          [ upcase ] ;; string
+          [ true shift! ] ;; keypress
+          ifte
+         ] set
+
 'mod-merge [
-         ctrl*  'ctrl!  ctrl*  'e [ drop drop ] ifte
-         shift* 'shift! shift* 'e [ drop drop ] ifte
-         alt*   'alt!   alt*   'e [ drop drop ] ifte
-         win*   'win!   win*   'e [ drop drop ] ifte
+         'shiftify! shift* [ e ] [ drop ] ifte
+         'ctrl!     ctrl*  [ true swap e ] [ drop ] ifte
+         'alt!      alt*   [ true swap e ] [ drop ] ifte
+         'win!      win*   [ true swap e ] [ drop ] ifte
          ] set
 
 'press [ mod-merge press* mod-reset ] set
