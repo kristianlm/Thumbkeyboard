@@ -30,6 +30,7 @@
 '!alt   [ 'alt*   invert ] set
 '!win   [ 'win*   invert ] set
 
+;; .. => ..
 'mod-reset [ 'ctrl*  falsify
              'shift* falsify 
              'alt*   falsify
