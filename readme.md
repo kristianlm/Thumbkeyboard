@@ -23,31 +23,6 @@ apps.
 
 ![screenshot](screenshot.gif)
 
-## Configurable
-
-The layout is fully customizable, and you're welcome to
-experiment. Unfortunately, the process of changing a stroke this isn't
-the most user-friendly experience at the moment. However, it can be
-done directly from the keyboard itself. Try this:
-
-Hit the "circled superlayout" button, and press `stroke write`. This
-will dump the action of your subsequent stroke. So if you now tap on
-`s`, it should print "key S" into your text editor at the current
-cursor position.
-
-Let's say you wanted the percentage sign `%` to appear if you swipe
-from the bottom left to the bottom top, then you'd do this:
-
-1. Type `shift 5` on a line on its own into a text editor
-2. Press the "circled superlayout" button
-3. Press "stroke record" (the current line will be associated with
-   your next stroke)
-3. Make the bottom-left -> top-left swipe you wanted for `%`.
-
-Note that you could also use `input %` instead of `shift 5` for a `%`,
-but that wouldn't be the same in all applications (emacs won't detect
-`input %` correctly)
-
 ## Design goals
 
 ### Universal
@@ -108,7 +83,8 @@ Machine (TSM).
 
 > Note: Clojure's syntax-highlighting works quite well for this language.
 
-You can run the TSM interpreter without Android like this:
+You can run the TSM interpreter without Android like this (after
+`gradle` or Android Studio build):
 
 ```clojure
 ➤ rlwrap java -cp app/build/intermediates/classes/debug/ com.adellica.thumbkeyboard.tsm.Reader
@@ -116,6 +92,10 @@ Thumb StackMachine (REPL on port 2345)
 [ ] 2 3 +
 [ 5 ]
 ```
+
+This syntax is used for layout configuration. See
+[main.thumb](app/src/main/assets/main.thumb) and
+[default.layout.thumb](app/src/main/assets/default.layout.thumb).
 
 ## Keypresses
 
