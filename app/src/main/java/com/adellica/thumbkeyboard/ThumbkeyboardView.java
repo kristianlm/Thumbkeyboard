@@ -38,7 +38,6 @@ public class ThumbkeyboardView extends View {
     private static final int BLOB_RADIUS = 38; // dpi
     private static final int BLOB_BORDER = 4; // dpi
 
-    private Config config = new Config();
     public boolean overlay = false;
 
     public static String configDir() {
@@ -153,9 +152,9 @@ public class ThumbkeyboardView extends View {
 
         public void draw(Canvas canvas, boolean idle, final String label) {
             if(idle)
-                if(holding) fill.setColor(config.colorBackgroundHolding());
-                else        fill.setColor(config.colorBackgroundNonIdle());
-            else            fill.setColor(config.colorBackgroundIdle());
+                if(holding) fill.setColor(Ime.config.colorBackgroundHolding);
+                else        fill.setColor(Ime.config.colorBackgroundNonIdle);
+            else            fill.setColor(Ime.config.colorBackgroundIdle);
 
             final int S = pixels(BLOB_RADIUS - BLOB_BORDER);
             if(bid() == 1)
@@ -173,7 +172,7 @@ public class ThumbkeyboardView extends View {
             p.setTextSize(y / 16);
 
             p.setStyle(Paint.Style.FILL);
-            p.setColor(config.colorLabel());
+            p.setColor(Ime.config.colorLabel);
             canvas.save();
             canvas.translate(x(), y()); // anchor to center of rectangle
 
@@ -489,7 +488,7 @@ public class ThumbkeyboardView extends View {
             }
 
             final boolean show_labels_maybe = true;
-            final boolean show_labels = config.showLabelsAlways() ? true : show_labels_maybe;
+            final boolean show_labels = Ime.config.showLabelsAlways ? true : show_labels_maybe;
             bs[i].draw(canvas, any, show_labels
                     ? (token == null ? "" : prettify(token))
                     : "");

@@ -3,6 +3,7 @@
 
 package com.adellica.thumbkeyboard;
 
+import android.graphics.Color;
 import android.inputmethodservice.InputMethodService;
 import android.os.Handler;
 import android.util.Log;
@@ -45,6 +46,7 @@ public class ThumbkeyboardIME extends InputMethodService {
      * toggle using overlay(boolean) method.
      */
     private boolean _overlaymode = false;
+    Config config = new Config();
 
     private ThumbkeyboardView viewInput; // used for non-overlay
     private ThumbkeyboardView viewCandidates; // used for fullscreen overlay
@@ -53,6 +55,10 @@ public class ThumbkeyboardIME extends InputMethodService {
         return _overlaymode;
     }
 
+    private void redraw() {
+        viewCandidates.postInvalidate();
+        viewInput.postInvalidate();
+    }
     /**
      * fullblown-fullscreen overlay or standard opaque keyboard view with a height?
      * @param value
@@ -161,6 +167,21 @@ public class ThumbkeyboardIME extends InputMethodService {
             @Override
             public void exe(Machine m) {
                 Log.i(TAG, m.stk.pop(Str.class).value);
+            }
+        });
+
+        m.dict.put("label.color!", new NamedApplicable("label.color!") {
+            @Override
+            public void exe(Machine m) {
+                config.colorLabel = Config.s2c(m.stk.pop(Str.class).value);
+                redraw();
+            }
+        });
+        m.dict.put("background.color!", new NamedApplicable("background.color!") {
+            @Override
+            public void exe(Machine m) {
+                config.colorBackgroundIdle = Config.s2c(m.stk.pop(Str.class).value);
+                redraw();
             }
         });
 

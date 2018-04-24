@@ -18,37 +18,8 @@ import static com.adellica.thumbkeyboard.Layout.TAG;
  * Created by klm on 10/15/17.
  */
 public class Config {
-    Map<String, String> cmap = new HashMap<String, String>();
 
-    public String get(final String key) {
-        return cmap.get(key);
-    }
-    public void put(String key, String val) {
-        cmap.put(key, val);
-        save();
-    }
-
-    public String filename() {
-        return android.os.Environment.getExternalStorageDirectory()
-                + File.separator + "thumb-keyboard" + File.separator + "config";
-    }
-    public void save() {
-        List<String> l = new ArrayList<String>(cmap.keySet());
-        Collections.sort(l); Collections.reverse(l);
-        Log.i(TAG, "saving layout to " + filename());
-        try {
-            PrintWriter out = new PrintWriter(filename());
-            for (final String key : cmap.keySet()) {
-                final String value = cmap.get(key);
-                out.println("config " + key + " " + value);
-            }
-            out.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private int s2c(String color) {
+    public static int s2c(String color) {
         if(color == null) return 0;
         int c = 0;
         try {
@@ -59,9 +30,9 @@ public class Config {
         return c;
     }
 
-    public int colorBackgroundHolding() {return s2c("#ffa000a0");}
-    public int colorBackgroundNonIdle() {return s2c("#40404040");}
-    public int colorBackgroundIdle() {return s2c("#40404040");}
-    public int colorLabel() {return s2c("#ff8080");}
-    public boolean showLabelsAlways() {return true; }
+    public int colorBackgroundHolding = s2c("#ffa000a0");
+    public int colorBackgroundNonIdle = s2c("#40404040");
+    public int colorBackgroundIdle =  s2c("#40404040");
+    public int colorLabel = s2c("#ff8080");
+    public boolean showLabelsAlways = false;
 }
