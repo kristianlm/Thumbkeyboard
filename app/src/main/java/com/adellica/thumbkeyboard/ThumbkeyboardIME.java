@@ -242,7 +242,7 @@ public class ThumbkeyboardIME extends InputMethodService {
     }
 
     private void handleStr(Str input, InputConnection ic) {
-        ic.commitText(input.value, 0);
+        ic.commitText(input.value, 1); // 1 means 'end of new inserted text'
     }
 
     @Override public void onStartInputView(android.view.inputmethod.EditorInfo info, boolean restarting) {
