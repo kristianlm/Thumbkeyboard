@@ -170,18 +170,23 @@ public class ThumbkeyboardView extends View {
 
             p.setTypeface(Typeface.MONOSPACE);
             p.setAntiAlias(true);
-            p.setTextSize(y / 16);
-
+            p.setTextSize(y / 8);
+            String newlabel;
+            if (label.length() > 1){
+                newlabel = label.substring(1);
+            } else {
+                newlabel = label;
+            }
             p.setStyle(Paint.Style.FILL);
             p.setColor(config.colorLabel());
             canvas.save();
             canvas.translate(x(), y()); // anchor to center of rectangle
 
-            float txtWidth = p.measureText(label);
+            float txtWidth = p.measureText(newlabel);
             if(txtWidth > PBS * 2) { // text is too big for button!
                 p.setTextScaleX(0.9f / (txtWidth / (PBS*2))); // fit width
             }
-            canvas.drawText(label, -(txtWidth * p.getTextScaleX())/2,0,p);
+            canvas.drawText(newlabel, -(txtWidth * p.getTextScaleX())/2,0,p);
             canvas.restore();
         }
     }
