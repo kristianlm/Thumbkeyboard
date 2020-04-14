@@ -10,20 +10,11 @@ import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputConnection;
 
-import com.adellica.thumbkeyboard.tsm.Keycodes;
-
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -379,7 +370,7 @@ public class ThumbkeyboardView extends View {
                                 int nx = btn.bid() % 4, ny = btn.bid() / 4;
                                 int dx = nx - ox, dy = ny - oy;
                                 Log.i(TAG, "swipe on " + bid + ": " + dx + "," + dy);
-                                int table[] = (dx == 0
+                                int[] table = (dx == 0
                                         ? (dy == 1 ? stroke.downs : stroke.ups)
                                         : (dx == 1 ? stroke.rights : stroke.lefts));
                                 table[bid]++;
@@ -471,7 +462,7 @@ public class ThumbkeyboardView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        Blob bs [] = blobs();
+        Blob[] bs = blobs();
         boolean any = false; // <-- anybody being pressed?
         for (int i = 0 ; i < bs.length ; i++) {
             any |= bs[i].holding;
@@ -494,7 +485,7 @@ public class ThumbkeyboardView extends View {
             }
 
             final boolean show_labels_maybe = true;
-            final boolean show_labels = config.showLabelsAlways() ? true : show_labels_maybe;
+            final boolean show_labels = config.showLabelsAlways() || show_labels_maybe;
             bs[i].draw(canvas, any, show_labels
                     ? (token == null ? "" : prettify(token))
                     : "");

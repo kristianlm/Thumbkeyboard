@@ -27,9 +27,10 @@ import static com.adellica.thumbkeyboard.tsm.stack.Pair.reverse;
  */
 public class Reader {
 
-    public static class InvalidEscapeSequence extends TFE {public InvalidEscapeSequence(String s){super(s);}};
+    public static class InvalidEscapeSequence extends TFE {public InvalidEscapeSequence(String s){super(s);}}
+
     private class ReservedToken extends TFE {
-        public ReservedToken(int c) { super("reserved for future use " + String.valueOf((char)c));  }
+        public ReservedToken(int c) { super("reserved for future use " + (char) c);  }
     }
 
 
