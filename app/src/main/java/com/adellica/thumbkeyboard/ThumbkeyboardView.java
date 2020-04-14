@@ -158,7 +158,7 @@ public class ThumbkeyboardView extends View {
             else            fill.setColor(config.colorBackgroundIdle());
 
             final int S = pixels(BLOB_RADIUS - BLOB_BORDER);
-            if(bid() == 1)
+            if(bid() == -99)
                 canvas.drawCircle(x(), y(), pixels(BS), fill);
             else
                 canvas.drawRect(x()-S, y()-S, x()+S, y()+S, fill);
@@ -330,7 +330,7 @@ public class ThumbkeyboardView extends View {
 
             case MotionEvent.ACTION_DOWN: { // primary finger down!
                 final int btn = touch2blob(event.getX(i), event.getY(i));
-                if(btn == 1) { // anchor button. no layouts for this guy
+                if(btn == -99) { // anchor button. no layouts for this guy
                     anchorFinger = i;
                 } else if(btn >= 0) {
                     blobs()[btn].tapping = true;
