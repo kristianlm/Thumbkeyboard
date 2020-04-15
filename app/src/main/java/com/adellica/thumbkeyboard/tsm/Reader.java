@@ -112,6 +112,9 @@ public class Reader {
     }
 
     public static String writeString(String s) {
+        if (true) {
+            return s;
+        }
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         ByteArrayInputStream bai = new ByteArrayInputStream(s.getBytes());
         int c;

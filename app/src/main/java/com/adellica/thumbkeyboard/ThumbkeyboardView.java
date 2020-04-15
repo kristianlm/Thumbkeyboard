@@ -107,74 +107,40 @@ public class ThumbkeyboardView extends View {
     private boolean modMeta()  { return (_ModifierMask & Modifiers.Meta) != 0;  }
     private boolean modAlt()   { return (_ModifierMask & Modifiers.Alt) != 0;  }
     private boolean modCtrl()  { return (_ModifierMask & Modifiers.Ctrl) != 0;  }
-    private boolean modShift() { return Ime.m.  }
+
+    private boolean modShift() {
+        return (_ModifierMask & Modifiers.Shift) != 0;
+    }
 
     public ThumbkeyboardView(Context context, AttributeSet attrs) {
         super(context, attrs);
         Log.i(TAG, "no config here");
     }
 
-    class Blob {
-        // dpi coordinates (negative counts from right/bottom)
-        final private int col;
-        final private int row;
-        final private int bid;
-        public boolean holding = false;
-        public boolean tapping = false;
-
-
-        final Paint fill = new Paint();
-
-        Blob(int bid, int col, int row) {
-            this.bid = bid;
-            this.col = col;
-            this.row = row;
-            this.fill.setStyle(Paint.Style.FILL);
+    private String prettify2(final String label) {
+        String newLabel;
+        if (label.startsWith(":") | label.startsWith("!")) {
+            newLabel = label.substring(1);
+        } else if (label.startsWith("\"")) {
+            newLabel = label.substring(1, label.length() - 1);
+        } else {
+            newLabel = label;
         }
-        public double dist2(double x, double y) {
-            return  (this.x() - x) * (this.x() - x) +
-                    (this.y() - y) * (this.y() - y);
+        if ("space".equals(newLabel)) return "␣";
+        if ("repeat".equals(newLabel)) return "↺";
+        if ("delete".equals(newLabel)) return "Del";
+        if ("backspace".equals(newLabel)) return "⌫";
+        if ("tab".equals(newLabel)) return "↹";
+        if ("shift".equals(newLabel)) return "⇧";
+        if ("enter".equals(newLabel)) return "↵";
+        if ("dpad_left".equals(newLabel)) return "←";
+        if ("dpad_up".equals(newLabel)) return "↑";
+        if ("dpad_right".equals(newLabel)) return "→";
+        if ("dpad_down".equals(newLabel)) return "↓";
+        if (newLabel.length() == 1) {
+            return modShift() ? newLabel.toUpperCase() : newLabel.toLowerCase();
         }
-
-        // screen coordinates
-        public float x() { return (col < 0 ? getWidth() : 0) + pixels(col * (BS * 2) + BS); }
-        public float y() { return anchorY() + (pixels(row * (BS * 2) + BS)); }
-
-        public int bid() { return bid; }
-
-        public void draw(Canvas canvas, boolean idle, final String label) {
-            if(idle)
-                if(holding) fill.setColor(config.colorBackgroundHolding());
-                else        fill.setColor(config.colorBackgroundNonIdle());
-            else            fill.setColor(config.colorBackgroundIdle());
-
-            final int S = pixels(BLOB_RADIUS - BLOB_BORDER);
-            if(bid() == -99)
-                canvas.drawCircle(x(), y(), pixels(BS), fill);
-            else
-                canvas.drawRect(x()-S, y()-S, x()+S, y()+S, fill);
-
-
-            final TextPaint p = new TextPaint();
-            final int PBS = pixels(BS);
-            final int y = Math.min(canvas.getWidth(), canvas.getHeight());
-
-            p.setTypeface(Typeface.MONOSPACE);
-            p.setAntiAlias(true);
-            p.setTextSize(y / 8);
-            String newLabel = prettify2(label);
-            p.setStyle(Paint.Style.FILL);
-            p.setColor(config.colorLabel());
-            canvas.save();
-            canvas.translate(x(), y()); // anchor to center of rectangle
-
-            float txtWidth = p.measureText(newLabel);
-            if(txtWidth > PBS * 2) { // text is too big for button!
-                p.setTextScaleX(0.9f / (txtWidth / (PBS*2))); // fit width
-            }
-            canvas.drawText(newLabel, -(txtWidth * p.getTextScaleX())/2,0,p);
-            canvas.restore();
-        }
+        return newLabel; // For all other keys
     }
 
 
@@ -518,28 +484,75 @@ public class ThumbkeyboardView extends View {
         return token; // eg "input å"
     }
 
+    class Blob {
+        // dpi coordinates (negative counts from right/bottom)
+        final private int col;
+        final private int row;
+        final private int bid;
+        public boolean holding = false;
+        public boolean tapping = false;
 
-    private String prettify2(final String label) {
-        String newLabel;
-        if(label.startsWith(":") | label.startsWith("!")) {
-            newLabel = label.substring(1);
-        } else {
-            newLabel = label;
+
+        final Paint fill = new Paint();
+
+        Blob(int bid, int col, int row) {
+            this.bid = bid;
+            this.col = col;
+            this.row = row;
+            this.fill.setStyle(Paint.Style.FILL);
         }
-        if("space".equals(newLabel)) return "␣";
-        if("repeat".equals(newLabel)) return "↺";
-        if("delete".equals(newLabel)) return "Del";
-        if("backspace".equals(newLabel)) return "⌫";
-        if("tab".equals(newLabel)) return "↹";
-        if("shift".equals(newLabel)) return "⇧";
-        if("enter".equals(newLabel)) return "↵";
-        if("dpad_left".equals(newLabel)) return "←";
-        if("dpad_up".equals(newLabel)) return "↑";
-        if("dpad_right".equals(newLabel)) return "→";
-        if("dpad_down".equals(newLabel)) return "↓";
-        if (newLabel.length() == 1) {
-            return modShift() ? newLabel.toUpperCase() : newLabel.toLowerCase();
+
+        public double dist2(double x, double y) {
+            return (this.x() - x) * (this.x() - x) +
+                    (this.y() - y) * (this.y() - y);
         }
-        return newLabel; // eg "key Del"
+
+        // screen coordinates
+        public float x() {
+            return (col < 0 ? getWidth() : 0) + pixels(col * (BS * 2) + BS);
+        }
+
+        public float y() {
+            return anchorY() + (pixels(row * (BS * 2) + BS));
+        }
+
+        public int bid() {
+            return bid;
+        }
+
+        public void draw(Canvas canvas, boolean idle, final String label) {
+            if (idle)
+                if (holding) fill.setColor(config.colorBackgroundHolding());
+                else fill.setColor(config.colorBackgroundNonIdle());
+            else fill.setColor(config.colorBackgroundIdle());
+
+            final int S = pixels(BLOB_RADIUS - BLOB_BORDER);
+            if (bid() == -99)
+                canvas.drawCircle(x(), y(), pixels(BS), fill);
+            else
+                canvas.drawRect(x() - S, y() - S, x() + S, y() + S, fill);
+
+            System.out.println(label);
+
+            final TextPaint p = new TextPaint();
+            final int PBS = pixels(BS);
+            final int y = Math.min(canvas.getWidth(), canvas.getHeight());
+
+            p.setTypeface(Typeface.MONOSPACE);
+            p.setAntiAlias(true);
+            p.setTextSize(y / 8);
+            String newLabel = prettify2(label);
+            p.setStyle(Paint.Style.FILL);
+            p.setColor(config.colorLabel());
+            canvas.save();
+            canvas.translate(x(), y()); // anchor to center of rectangle
+
+            float txtWidth = p.measureText(newLabel);
+            if (txtWidth > PBS * 2) { // text is too big for button!
+                p.setTextScaleX(0.9f / (txtWidth / (PBS * 2))); // fit width
+            }
+            canvas.drawText(newLabel, -(txtWidth * p.getTextScaleX()) / 2, 0, p);
+            canvas.restore();
+        }
     }
 }
