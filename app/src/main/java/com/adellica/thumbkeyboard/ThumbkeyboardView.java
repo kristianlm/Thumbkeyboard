@@ -100,16 +100,27 @@ public class ThumbkeyboardView extends View {
         _ModifierMask = 0;
     }
 
-    private void modShift(boolean down_p) { _ModifierMask = down_p?(_ModifierMask|Modifiers.Shift):(_ModifierMask&~Modifiers.Shift); }
-    private void modCtrl(boolean down_p)  { _ModifierMask = down_p?(_ModifierMask|Modifiers.Ctrl):(_ModifierMask&~Modifiers.Ctrl); }
-    private void modAlt(boolean down_p)   { _ModifierMask = down_p?(_ModifierMask|Modifiers.Alt):(_ModifierMask&~Modifiers.Alt); }
-    private void modMeta(boolean down_p)  { _ModifierMask = down_p?(_ModifierMask|Modifiers.Meta):(_ModifierMask&~Modifiers.Meta); }
-    private boolean modMeta()  { return (_ModifierMask & Modifiers.Meta) != 0;  }
-    private boolean modAlt()   { return (_ModifierMask & Modifiers.Alt) != 0;  }
-    private boolean modCtrl()  { return (_ModifierMask & Modifiers.Ctrl) != 0;  }
+    /*private void modShift(boolean down_p) { _ModifierMask = down_p?(_ModifierMask|Modifiers.Shift):(_ModifierMask&~Modifiers.Shift); }
+    //private void modCtrl(boolean down_p)  { _ModifierMask = down_p?(_ModifierMask|Modifiers.Ctrl):(_ModifierMask&~Modifiers.Ctrl); }
+    //private void modAlt(boolean down_p)   { _ModifierMask = down_p?(_ModifierMask|Modifiers.Alt):(_ModifierMask&~Modifiers.Alt); }
+    //private void modMeta(boolean down_p)  { _ModifierMask = down_p?(_ModifierMask|Modifiers.Meta):(_ModifierMask&~Modifiers.Meta); }
+
+     */
 
     private boolean modShift() {
-        return (_ModifierMask & Modifiers.Shift) != 0;
+        return (ThumbkeyboardIME.m.dict.get("shift*") == Boolean.TRUE);
+    }
+
+    private boolean modCtrl() {
+        return (ThumbkeyboardIME.m.dict.get("ctrl*") == Boolean.TRUE);
+    }
+
+    private boolean modAlt() {
+        return (ThumbkeyboardIME.m.dict.get("alt*") == Boolean.TRUE);
+    }
+
+    private boolean modMeta() {
+        return (ThumbkeyboardIME.m.dict.get("meta*") == Boolean.TRUE);
     }
 
     public ThumbkeyboardView(Context context, AttributeSet attrs) {
