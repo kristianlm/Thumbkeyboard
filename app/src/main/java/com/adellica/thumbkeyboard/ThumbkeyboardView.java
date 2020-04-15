@@ -104,10 +104,10 @@ public class ThumbkeyboardView extends View {
     private void modCtrl(boolean down_p)  { _ModifierMask = down_p?(_ModifierMask|Modifiers.Ctrl):(_ModifierMask&~Modifiers.Ctrl); }
     private void modAlt(boolean down_p)   { _ModifierMask = down_p?(_ModifierMask|Modifiers.Alt):(_ModifierMask&~Modifiers.Alt); }
     private void modMeta(boolean down_p)  { _ModifierMask = down_p?(_ModifierMask|Modifiers.Meta):(_ModifierMask&~Modifiers.Meta); }
-    private  boolean modMeta()  { return (_ModifierMask & Modifiers.Meta) != 0;  }
-    private  boolean modAlt()   { return (_ModifierMask & Modifiers.Alt) != 0;  }
-    private  boolean modCtrl()  { return (_ModifierMask & Modifiers.Ctrl) != 0;  }
-    private  boolean modShift() { return (_ModifierMask & Modifiers.Shift) != 0;  }
+    private boolean modMeta()  { return (_ModifierMask & Modifiers.Meta) != 0;  }
+    private boolean modAlt()   { return (_ModifierMask & Modifiers.Alt) != 0;  }
+    private boolean modCtrl()  { return (_ModifierMask & Modifiers.Ctrl) != 0;  }
+    private boolean modShift() { return Ime.m.  }
 
     public ThumbkeyboardView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -162,22 +162,17 @@ public class ThumbkeyboardView extends View {
             p.setTypeface(Typeface.MONOSPACE);
             p.setAntiAlias(true);
             p.setTextSize(y / 8);
-            String newlabel;
-            if (label.length() > 1){
-                newlabel = label.substring(1);
-            } else {
-                newlabel = label;
-            }
+            String newLabel = prettify2(label);
             p.setStyle(Paint.Style.FILL);
             p.setColor(config.colorLabel());
             canvas.save();
             canvas.translate(x(), y()); // anchor to center of rectangle
 
-            float txtWidth = p.measureText(newlabel);
+            float txtWidth = p.measureText(newLabel);
             if(txtWidth > PBS * 2) { // text is too big for button!
                 p.setTextScaleX(0.9f / (txtWidth / (PBS*2))); // fit width
             }
-            canvas.drawText(newlabel, -(txtWidth * p.getTextScaleX())/2,0,p);
+            canvas.drawText(newLabel, -(txtWidth * p.getTextScaleX())/2,0,p);
             canvas.restore();
         }
     }
@@ -490,7 +485,7 @@ public class ThumbkeyboardView extends View {
                     ? (token == null ? "" : prettify(token))
                     : "");
 
-            if(i == 2 && token == null) {
+            if(i == -98 && token == null) {
                 final Paint red = new Paint();
                 red.setStyle(Paint.Style.STROKE);
                 red.setStrokeWidth(pixels(3));
@@ -523,4 +518,28 @@ public class ThumbkeyboardView extends View {
         return token; // eg "input å"
     }
 
+
+    private String prettify2(final String label) {
+        String newLabel;
+        if(label.startsWith(":") | label.startsWith("!")) {
+            newLabel = label.substring(1);
+        } else {
+            newLabel = label;
+        }
+        if("space".equals(newLabel)) return "␣";
+        if("repeat".equals(newLabel)) return "↺";
+        if("delete".equals(newLabel)) return "Del";
+        if("backspace".equals(newLabel)) return "⌫";
+        if("tab".equals(newLabel)) return "↹";
+        if("shift".equals(newLabel)) return "⇧";
+        if("enter".equals(newLabel)) return "↵";
+        if("dpad_left".equals(newLabel)) return "←";
+        if("dpad_up".equals(newLabel)) return "↑";
+        if("dpad_right".equals(newLabel)) return "→";
+        if("dpad_down".equals(newLabel)) return "↓";
+        if (newLabel.length() == 1) {
+            return modShift() ? newLabel.toUpperCase() : newLabel.toLowerCase();
+        }
+        return newLabel; // eg "key Del"
+    }
 }
