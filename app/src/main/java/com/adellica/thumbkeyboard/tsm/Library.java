@@ -77,7 +77,7 @@ public class Library {
     public static class Core extends Library {
         public static Applicable help = new NamedApplicable() {
             public void exe(Machine m) {
-                m.stk.push("d for dictoionary, ' to quote, [] to postpone evaluation, ; for comments\n example: [ 2 3 + ] e \n example: 'greet [ \"hello there!\" p ] set greet");
+                m.stk.push("d for dictionary, ' to quote, [] to postpone evaluation, ; for comments\n example: [ 2 3 + ] e \n example: 'greet [ \"hello there!\" p ] set greet");
                 m.eval(p);
             }
         };

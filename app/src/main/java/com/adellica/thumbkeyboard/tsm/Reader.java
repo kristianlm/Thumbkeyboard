@@ -3,7 +3,6 @@ package com.adellica.thumbkeyboard.tsm;
 import com.adellica.thumbkeyboard.tsm.Machine.Str;
 import com.adellica.thumbkeyboard.tsm.stack.Pair;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,9 +40,9 @@ public class Reader {
     }
 
     public static String writeString(String s) {
-        if (true) {
-            return s;
-        }
+        return s;
+    }
+        /*
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         ByteArrayInputStream bai = new ByteArrayInputStream(s.getBytes());
         int c;
@@ -107,6 +106,7 @@ public class Reader {
         }
         return bao.toString();
     }
+    */
 
     final InputStream is;
 
@@ -223,9 +223,9 @@ public class Reader {
                     case '-':
                         final String num = readUntilWS(c);
                         try {
-                            return new Integer(num);
+                            return Integer.valueOf(num);
                         } catch (NumberFormatException e) {
-                            return new Double(num);
+                            return Integer.valueOf(num);
                         }
                     case ';':
                         readUntil(-1, new int[]{'\n'});
@@ -332,8 +332,8 @@ public class Reader {
     }
 
     private boolean inArray(int[] breaks, int c) {
-        for (int i = 0; i < breaks.length; i++)
-            if (breaks[i] == c)
+        for (int aBreak : breaks)
+            if (aBreak == c)
                 return true;
         return false;
     }

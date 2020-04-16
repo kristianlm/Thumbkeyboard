@@ -14,7 +14,7 @@ apps.
 
 - With only 12 buttons, they can be large and you rarely miss
 - With only 12 buttons, you'll need to press multiple buttons
-  simultaniously to access all the 26 letters of the alphabet
+  simultaneously to access all the 26 letters of the alphabet
 - With fewer key misses, you (hopefully) don't need a dictionary
 - There are swipe gestures for pretty much all keyboard symbols
 - You can define your own layouts
@@ -120,7 +120,7 @@ Thumb StackMachine (REPL on port 2345)
 [ :1 :1 ] shift?
 [ :1 false ] not ;; negate!
 [ :1 true ] shift! ;; set shift modifier to true on keypress in stack position 2
-[ :! ] drop ;; makes sence? holding shift and pressing 1 yields ! (US layout only)
+[ :! ] drop ;; makes sense? holding shift and pressing 1 yields ! (US layout only)
 [ ] :@ ;; let's try the other way
 [ :@ ] false shift! ;; how does this keypress look like without holding shift?
 [ :2 ] drop ;; it looks like :2 (again, it's always US layout)

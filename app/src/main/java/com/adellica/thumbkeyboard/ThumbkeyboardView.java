@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.inputmethod.InputConnection;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -91,19 +92,6 @@ public class ThumbkeyboardView extends View {
                 Alt = 0x04,
                 Meta = 0x08; // I don't now what this one is but it's in KeyEvent. Maybe win/option/command
     }
-
-    private int _ModifierMask = 0;
-
-    private void modifiersClear() {
-        _ModifierMask = 0;
-    }
-
-    /*private void modShift(boolean down_p) { _ModifierMask = down_p?(_ModifierMask|Modifiers.Shift):(_ModifierMask&~Modifiers.Shift); }
-    //private void modCtrl(boolean down_p)  { _ModifierMask = down_p?(_ModifierMask|Modifiers.Ctrl):(_ModifierMask&~Modifiers.Ctrl); }
-    //private void modAlt(boolean down_p)   { _ModifierMask = down_p?(_ModifierMask|Modifiers.Alt):(_ModifierMask&~Modifiers.Alt); }
-    //private void modMeta(boolean down_p)  { _ModifierMask = down_p?(_ModifierMask|Modifiers.Meta):(_ModifierMask&~Modifiers.Meta); }
-
-     */
 
     private boolean modShift() {
         return (ThumbkeyboardIME.m.dict.get("shift*") == Boolean.TRUE);
@@ -421,7 +409,7 @@ public class ThumbkeyboardView extends View {
 
     private void flushStroke() {
         stroke.clear();
-        for (int j = 0; j < fingerTouches.length; j++) fingerTouches[j] = null;
+        Arrays.fill(fingerTouches, null);
         for (int j = 0; j < blobs().length; j++) {
             blobs()[j].tapping = false;
             blobs()[j].holding = false;
@@ -463,8 +451,8 @@ public class ThumbkeyboardView extends View {
 
         Blob[] bs = blobs();
         boolean any = false; // <-- anybody being pressed?
-        for (int i = 0; i < bs.length; i++) {
-            any |= bs[i].holding;
+        for (Blob b : bs) {
+            any |= b.holding;
         }
 
         for (int i = 0; i < bs.length; i++) {
