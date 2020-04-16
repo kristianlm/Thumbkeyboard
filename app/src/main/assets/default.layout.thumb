@@ -17,9 +17,9 @@
 ;;; read dup ' not swap sym->str "!" append
 
 ;; bindings for "reflection"
-[ . .  |  . x
-  . .  |  . .
-  . .  |  . x ] [ read exe ] bind!
+;;[ . .  |  . x
+;;  . .  |  . .
+;;  . .  |  . x ] [ read exe ] bind!
 
 ;; some important ones
 
@@ -27,25 +27,29 @@
   ^ .  |  . .
   . .  |  . . ] '!shift bind!
 
-[ . .  |  . v
-  x .  |  v <
-  . .  |  > o ] '!ctrl bind!
+;;[ . .  |  . v
+;;  x .  |  v <
+;;  . .  |  > o ] '!ctrl bind!
 
-[ . .  |  . v
-  . .  |  . v
-  x .  |  o < ] '!alt bind!
+;;[ . .  |  . v
+;;  . .  |  . v
+;;  x .  |  o < ] '!alt bind!
 
-[ . .  |  v <
-  . .  |  o .
-  . x  |  . . ] '!win bind!
+;;[ . .  |  v <
+;;  . .  |  o .
+;;  . x  |  . . ] '!win bind!
 
-[ . .  |  . v
-  . .  |  o v
-  . x  |  ^ < ] 'repress bind!
+;;[ . .  |  . v
+;;  . .  |  o v
+;;  . x  |  ^ < ] 'repress bind!
 
 [ . .  |  . .
   x .  |  . .
   . .  |  . . ] :space bind!
+
+[ . .  |  . .
+  x .  |  . .
+  . .  |  . x ] " " bind!
 
 ;; letters
 
@@ -231,43 +235,27 @@
 
 [ . .  |  . .
   . .  |  . .
-  . x  |  . x ] "!" bind! ;; :S-1
+  . x  |  . x ] "!" bind!
 
 [ . .  |  . .
   . x  |  x .
   . .  |  . . ] "@" bind!
 
-[ o .  |  . .
-  ^ .  |  . .
-  ^ <  |  . . ] :# bind! ;; :S-3
-
 [ . .  |  . .
   . .  |  o <
-  . .  |  . . ] "&" bind! ;; :S-4
+  . .  |  . . ] "&" bind!
 
 [ . .  |  v .
   . .  |  o .
-  . .  |  . . ] "$" bind! ;; :S-4
+  . .  |  . . ] "$" bind!
 
 [ . .  |  v .
   x .  |  o .
-  . .  |  . . ] "€" bind! ;; :S-4
+  . .  |  . . ] "€" bind!
 
 [ . .  |  v .
   . x  |  o .
-  . .  |  . . ] "£" bind! ;; :S-4
-
-[ o .  |  . .
-  ^ .  |  . .
-  ^ .  |  . . ] :% bind! ;; :S-5
-
-[ v .  |  . .
-  ^ .  |  . .
-  ^ .  |  . . ] :^ bind! ;; :S-6
-
-;;[ o .  |  . .
-;;  ^ .  |  . .
-;;  . .  |  . . ] :& bind! ;; :S-7
+  . .  |  . . ] "£" bind!
 
 [ . .  |  . .
   . .  |  x .
@@ -307,6 +295,14 @@
   . .  |  . .
   o <  |  . . ] "⟩" bind!
 
+[ . .  |  . .
+  . .  |  x .
+  > o  |  . . ] "<" bind!
+
+[ . .  |  . .
+  . .  |  x .
+  o <  |  . . ] ">" bind!
+
 ;; quotes
 
 [ . .  |  x .
@@ -321,9 +317,6 @@
   x .  |  . .
   . .  |  . . ] "‘" bind!
 
-[ v .  |  . .
-  > o  |  . .
-  . .  |  . . ] :` bind!
 
 ;; the rest
 
@@ -376,8 +369,12 @@
   . .  |  o . ] "—" bind!
 
 [ . .  |  . .
+  . x  |  . .
+  . .  |  x . ] "_" bind!
+
+[ . .  |  . .
   . .  |  x .
-  . x  |  . . ] "_" bind!
+  . x  |  . . ] "=" bind!
 
 [ x .  |  . .
   . .  |  . .
@@ -391,43 +388,52 @@
   . .  |  . .
   . .  |  . x ] "”" bind!
 
+[ . o  |  . .
+  . ^  |  . .
+  . .  |  . . ] "^" bind!
+
+;; Not too sure about these three; may replace with something more useful
+[ . .  |  . .
+  . o  |  . .
+  . ^  |  . . ] "#" bind!
+
+[ . v |  . .
+  . o  |  . .
+  . .  |  . . ] "~" bind!
+
+[ . .  |  . x
+  . .  |  . .
+  x .  |  . . ] "~" bind!
+
 [ . .  |  . .
   . .  |  . x
   x .  |  . . ] :enter bind!
 
 ;; navigation
 
-;;[ . .  |  . .
-;;  . .  |  . v
-;;  . .  |  . o ] :dpad_down bind!
+[ . .  |  . .
+  v .  |  . .
+  o .  |  . . ] :dpad_down bind!
 
-;;[ . .  |  . .
-;;  . .  |  . .
-;;  . .  |  > o ] :dpad_right bind!
+[ . .  |  . .
+  . .  |  . .
+  . .  |  > o ] :dpad_right bind!
 
-;;[ . .  |  . .
-;;  . .  |  . .
-;;  . .  |  o < ] :dpad_left bind!
+[ . .  |  . .
+  . .  |  . .
+  . .  |  o < ] :dpad_left bind!
 
-;;[ . .  |  . .
-;;  . .  |  . o
-;;  . .  |  . ^ ] :dpad_up bind!
+[ . .  |  . .
+  o .  |  . .
+  ^ .  |  . . ] :dpad_up bind!
 
-;;[ . .  |  . .
-;;  . .  |  . .
-;;  > o  |  . . ] :move_end bind!
+[ . .  |  . .
+  . .  |  . o
+  . .  |  > ^ ] :move_end bind!
 
-;;[ . .  |  . .
-;;  . .  |  . .
-;;  o <  |  . . ] :move_home bind!
-
-;;[ . .  |  . .
-;;  > o  |  . .
-;;  . .  |  . . ] :C-dpad_right bind!
-
-;;[ . .  |  . .
-;;  o <  |  . .
-;;  . .  |  . . ] :C-dpad_left bind!
+[ . .  |  . .
+  . .  |  o .
+  . .  |  ^ < ] :move_home bind!
 
 ;; some punctuation
 
@@ -439,43 +445,21 @@
   x .  |  x .
   . .  |  . . ] "," bind!
 
-;; [ . .  |  . .
-;;   . .  |  . .
-;;   . .  |  . . ] [ delete-line ] bind!
-
 [ . .  |  . .
   o <  |  . .
   . .  |  . . ] :backspace bind!
 
-;;[ . .  |  . .
-;;  . .  |  > <
-;;  . .  |  . . ] :C-backspace bind!
+[ o .  |  . .
+  ^ <  |  . .
+  . .  |  . . ] :C-backspace bind!
 
 [ . .  |  . .
   . .  |  > o
   . .  |  . . ] :delete bind!
 
-;;[ . .  |  . v
-;;  . .  |  . ^
-;;  . .  |  . . ] :C-delete bind!
-
-;; old-school emoji
-
-[ . .  |  . .
-  . .  |  v o
-  . .  |  > ^ ] ":)" bind!
-
 [ . .  |  . o
-  . .  |  v ^
-  . .  |  > ^ ] ":-)" bind!
-
-[ . .  |  > v
-  . .  |  ^ v
-  . .  |  . o ] ":-(" bind!
-
-[ . .  |  . .
-  . .  |  > v
-  . .  |  ^ o ] ":(" bind!
+  . .  |  > ^
+  . .  |  . . ] :C-delete bind!
 
 [ . .  |  . .
   > o  |  . .

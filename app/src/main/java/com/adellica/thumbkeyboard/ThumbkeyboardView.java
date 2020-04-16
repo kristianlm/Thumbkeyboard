@@ -123,17 +123,24 @@ public class ThumbkeyboardView extends View {
         } else {
             newLabel = label;
         }
+        if ("overlay".equals(newLabel)) return "";
         if ("space".equals(newLabel)) return "␣";
+        if (" ".equals(newLabel)) return "⍽";
         if ("repeat".equals(newLabel)) return "↺";
         if ("delete".equals(newLabel)) return "Del";
+        if ("C-delete".equals(newLabel)) return "DW";
         if ("backspace".equals(newLabel)) return "⌫";
+        if ("C-backspace".equals(newLabel)) return "⌫⌫";
         if ("tab".equals(newLabel)) return "↹";
         if ("shift".equals(newLabel)) return "⇧";
         if ("enter".equals(newLabel)) return "↵";
         if ("dpad_left".equals(newLabel)) return "←";
-        if ("dpad_up".equals(newLabel)) return "↑";
         if ("dpad_right".equals(newLabel)) return "→";
+        if ("dpad_up".equals(newLabel)) return "↑";
         if ("dpad_down".equals(newLabel)) return "↓";
+        if ("move_end".equals(newLabel)) return "End";
+        if ("move_home".equals(newLabel)) return "Home";
+
         if (newLabel.length() == 1) {
             return modShift() ? newLabel.toUpperCase() : newLabel.toLowerCase();
         }
