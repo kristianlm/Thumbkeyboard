@@ -13,7 +13,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -94,12 +94,12 @@ public class Layout {
             String line;
             Map<String, String> map = new HashMap<String, String>();
             InputStream fis = new FileInputStream(filename);
-            InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
+            InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
             BufferedReader br = new BufferedReader(isr);
 
             while ((line = br.readLine()) != null) {
-                final String[] pair = Stroke.parse(line);
-                map.put(pair[0], pair[1]);
+                final String stroke = Stroke.parse(line);
+                map.put(stroke, "unknown");
             }
             return new Layout(name, map);
         } catch (IOException e) {

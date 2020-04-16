@@ -21,15 +21,6 @@ import com.adellica.thumbkeyboard.tsm.stack.IPair;
 import java.util.HashMap;
 import java.util.Map;
 
-import static android.view.KeyEvent.META_ALT_LEFT_ON;
-import static android.view.KeyEvent.META_ALT_ON;
-import static android.view.KeyEvent.META_CTRL_LEFT_ON;
-import static android.view.KeyEvent.META_CTRL_ON;
-import static android.view.KeyEvent.META_META_LEFT_ON;
-import static android.view.KeyEvent.META_META_ON;
-import static android.view.KeyEvent.META_SHIFT_LEFT_ON;
-import static android.view.KeyEvent.META_SHIFT_ON;
-
 
 public class ThumbkeyboardIME extends InputMethodService {
     private static final String TAG = "TSM";
@@ -205,20 +196,10 @@ public class ThumbkeyboardIME extends InputMethodService {
         return viewCandidates;
     }
 
-    private int keypressMetastate(Keypress key) {
-        int mask = 0;
-        if (key.shift) mask |= META_SHIFT_ON | META_SHIFT_LEFT_ON;
-        if (key.ctrl) mask |= META_CTRL_ON | META_CTRL_LEFT_ON;
-        if (key.alt) mask |= META_ALT_ON | META_ALT_LEFT_ON;
-        if (key.win) mask |= META_META_ON | META_META_LEFT_ON;
-        return mask;
-    }
-
     private void handleKeypress(Keypress key, InputConnection ic) {
-        final int meta = keypressMetastate(key);
         final long now = System.currentTimeMillis();
-        ic.sendKeyEvent(new KeyEvent(now, now, KeyEvent.ACTION_DOWN, key.keycode, 0, meta));
-        ic.sendKeyEvent(new KeyEvent(now, now, KeyEvent.ACTION_UP, key.keycode, 0, meta));
+        ic.sendKeyEvent(new KeyEvent(now, now, KeyEvent.ACTION_DOWN, key.keycode, 0, key.getMetaState()));
+        ic.sendKeyEvent(new KeyEvent(now, now, KeyEvent.ACTION_UP, key.keycode, 0, key.getMetaState()));
     }
 
     private void handleStr(Str input, InputConnection ic) {
