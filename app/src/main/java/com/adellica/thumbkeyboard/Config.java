@@ -63,19 +63,19 @@ public class Config {
     }
 
     public int colorBackgroundHolding() {
-        return s2c("#ffa000a0");
+        return s2c("#e0747f80");
     }
 
     public int colorBackgroundNonIdle() {
-        return s2c("#40404040");
+        return s2c("#e0d7d8d9");
     }
 
     public int colorBackgroundIdle() {
-        return s2c("#40404040");
+        return s2c("#e0d7d8d9");
     }
 
     public int colorLabel() {
-        return s2c("#ff8080");
+        return s2c("#e0182633");
     }
 
     public boolean showLabelsAlways() {

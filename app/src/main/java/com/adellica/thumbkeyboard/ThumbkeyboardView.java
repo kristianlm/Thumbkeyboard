@@ -138,8 +138,8 @@ public class ThumbkeyboardView extends View {
         if ("dpad_right".equals(newLabel)) return "→";
         if ("dpad_up".equals(newLabel)) return "↑";
         if ("dpad_down".equals(newLabel)) return "↓";
-        if ("move_end".equals(newLabel)) return "End";
-        if ("move_home".equals(newLabel)) return "Home";
+        if ("move_end".equals(newLabel)) return "⇲";
+        if ("move_home".equals(newLabel)) return "⇱";
 
         if (newLabel.length() == 1) {
             return modShift() ? newLabel.toUpperCase() : newLabel.toLowerCase();
@@ -567,15 +567,14 @@ public class ThumbkeyboardView extends View {
             else
                 canvas.drawRect(x() - S, y() - S, x() + S, y() + S, fill);
 
-            System.out.println(label);
-
             final TextPaint p = new TextPaint();
             final int PBS = pixels(BS);
             final int y = Math.min(canvas.getWidth(), canvas.getHeight());
+            float textSize = y / 6;
 
-            p.setTypeface(Typeface.MONOSPACE);
+            p.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
             p.setAntiAlias(true);
-            p.setTextSize(y / 8);
+            p.setTextSize(textSize);
             String newLabel = prettify2(label);
             p.setStyle(Paint.Style.FILL);
             p.setColor(config.colorLabel());
@@ -584,9 +583,11 @@ public class ThumbkeyboardView extends View {
 
             float txtWidth = p.measureText(newLabel);
             if (txtWidth > PBS * 2) { // text is too big for button!
-                p.setTextScaleX(0.9f / (txtWidth / (PBS * 2))); // fit width
+                textSize = textSize * 0.9f / (txtWidth / (PBS * 2));
+                p.setTextSize(textSize); // fit width
+                txtWidth = p.measureText(newLabel);
             }
-            canvas.drawText(newLabel, -(txtWidth * p.getTextScaleX()) / 2, 0, p);
+            canvas.drawText(newLabel, -txtWidth / 2, textSize / 3f, p);
             canvas.restore();
         }
     }
