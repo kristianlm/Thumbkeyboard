@@ -23,6 +23,7 @@ public class Config {
     public String get(final String key) {
         return cmap.get(key);
     }
+
     public void put(String key, String val) {
         cmap.put(key, val);
         save();
@@ -32,9 +33,11 @@ public class Config {
         return android.os.Environment.getExternalStorageDirectory()
                 + File.separator + "thumb-keyboard" + File.separator + "config";
     }
+
     public void save() {
         List<String> l = new ArrayList<String>(cmap.keySet());
-        Collections.sort(l); Collections.reverse(l);
+        Collections.sort(l);
+        Collections.reverse(l);
         Log.i(TAG, "saving layout to " + filename());
         try {
             PrintWriter out = new PrintWriter(filename());
@@ -49,7 +52,7 @@ public class Config {
     }
 
     private int s2c(String color) {
-        if(color == null) return 0;
+        if (color == null) return 0;
         int c = 0;
         try {
             c = Color.parseColor(color);
@@ -59,9 +62,23 @@ public class Config {
         return c;
     }
 
-    public int colorBackgroundHolding() {return s2c("#ffa000a0");}
-    public int colorBackgroundNonIdle() {return s2c("#40404040");}
-    public int colorBackgroundIdle() {return s2c("#40404040");}
-    public int colorLabel() {return s2c("#ff8080");}
-    public boolean showLabelsAlways() {return true; }
+    public int colorBackgroundHolding() {
+        return s2c("#ffa000a0");
+    }
+
+    public int colorBackgroundNonIdle() {
+        return s2c("#40404040");
+    }
+
+    public int colorBackgroundIdle() {
+        return s2c("#40404040");
+    }
+
+    public int colorLabel() {
+        return s2c("#ff8080");
+    }
+
+    public boolean showLabelsAlways() {
+        return true;
+    }
 }
