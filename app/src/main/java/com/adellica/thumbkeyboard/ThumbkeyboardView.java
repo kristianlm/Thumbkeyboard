@@ -428,6 +428,11 @@ public class ThumbkeyboardView extends View {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dpi, r.getDisplayMetrics());
     }
 
+    // fakeStroke is the stroke if the current held buttons were released
+    Stroke fakeStroke = new Stroke(blobs().length);
+    // tempStroke is the stroke if a new button was tapped as well
+    Stroke tempStroke = new Stroke(blobs().length);
+
     /**
      * This is supertricky and a complete mess.
      *
@@ -444,13 +449,12 @@ public class ThumbkeyboardView extends View {
         int j = Blobdelta(bid, dx, dy);
         if (j >= 0 && blobs()[j].holding) {
             i[j]++;
+            stroke.taps[j]--;
             final Object o = Ime.layout.get(stroke);
             return o == null ? null : o.toString();
         }
         return null;
     }
-
-    Stroke tempStroke = new Stroke(blobs().length);
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -461,23 +465,27 @@ public class ThumbkeyboardView extends View {
         for (Blob b : bs) {
             any |= b.holding;
         }
+        fakeStroke.copyFrom(stroke);
+        for (int j = 0; j < blobs().length; j++)
+            if (blobs()[j].tapping)
+                fakeStroke.taps[j]++; // <-- pretend we tapped held buttons
 
         for (int i = 0; i < bs.length; i++) {
-            tempStroke.copyFrom(stroke);
+            tempStroke.copyFrom(fakeStroke);
             tempStroke.taps[i]++; // <-- pretend we tapped current
-            for (int j = 0; j < blobs().length; j++)
-                if (blobs()[j].tapping)
-                    tempStroke.taps[j]++; // <-- pretend we tapped held buttons
+
 
             final Object _token = Ime.layout.get(tempStroke);
             String token = _token == null ? null : _token.toString();
             if (any) { // try surrounding swipes
                 if (token == null)
-                    token = strokeTry(i, stroke, tempStroke, tempStroke.downs, 0, -1);
-                if (token == null) token = strokeTry(i, stroke, tempStroke, tempStroke.ups, 0, 1);
+                    token = strokeTry(i, fakeStroke, tempStroke, tempStroke.downs, 0, -1);
                 if (token == null)
-                    token = strokeTry(i, stroke, tempStroke, tempStroke.rights, -1, 0);
-                if (token == null) token = strokeTry(i, stroke, tempStroke, tempStroke.lefts, 1, 0);
+                    token = strokeTry(i, fakeStroke, tempStroke, tempStroke.ups, 0, 1);
+                if (token == null)
+                    token = strokeTry(i, fakeStroke, tempStroke, tempStroke.rights, -1, 0);
+                if (token == null)
+                    token = strokeTry(i, fakeStroke, tempStroke, tempStroke.lefts, 1, 0);
             }
 
             final boolean show_labels_maybe = true;
@@ -494,7 +502,6 @@ public class ThumbkeyboardView extends View {
                 canvas.drawCircle(bs[i].x(), bs[i].y(), pixels(BS / 4), red);
             }
         }
-
     }
 
     // describe a token to the user (lower case letter? special command?).
