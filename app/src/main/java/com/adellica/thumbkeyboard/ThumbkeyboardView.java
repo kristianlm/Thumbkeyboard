@@ -3,7 +3,6 @@ package com.adellica.thumbkeyboard;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.text.TextPaint;
@@ -114,38 +113,7 @@ public class ThumbkeyboardView extends View {
         Log.i(TAG, "no config here");
     }
 
-    private String prettify2(final String label) {
-        String newLabel;
-        if (label.startsWith(":") | label.startsWith("!")) {
-            newLabel = label.substring(1);
-        } else if (label.startsWith("\"")) {
-            newLabel = label.substring(1, label.length() - 1);
-        } else {
-            newLabel = label;
-        }
-        if ("overlay".equals(newLabel)) return "";
-        if ("space".equals(newLabel)) return "␣";
-        if (" ".equals(newLabel)) return "⍽";
-        if ("repeat".equals(newLabel)) return "↺";
-        if ("delete".equals(newLabel)) return "Del";
-        if ("C-delete".equals(newLabel)) return "DW";
-        if ("backspace".equals(newLabel)) return "⌫";
-        if ("C-backspace".equals(newLabel)) return "⌫⌫";
-        if ("tab".equals(newLabel)) return "↹";
-        if ("shift".equals(newLabel)) return "⇧";
-        if ("enter".equals(newLabel)) return "↵";
-        if ("dpad_left".equals(newLabel)) return "←";
-        if ("dpad_right".equals(newLabel)) return "→";
-        if ("dpad_up".equals(newLabel)) return "↑";
-        if ("dpad_down".equals(newLabel)) return "↓";
-        if ("move_end".equals(newLabel)) return "⇲";
-        if ("move_home".equals(newLabel)) return "⇱";
-
-        if (newLabel.length() == 1) {
-            return modShift() ? newLabel.toUpperCase() : newLabel.toLowerCase();
-        }
-        return newLabel; // For all other keys
-    }
+    String[] tokens = new String[blobs().length];
 
 
     private int __anchorY = -1;
@@ -428,10 +396,62 @@ public class ThumbkeyboardView extends View {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dpi, r.getDisplayMetrics());
     }
 
-    // fakeStroke is the stroke if the current held buttons were released
-    Stroke fakeStroke = new Stroke(blobs().length);
-    // tempStroke is the stroke if a new button was tapped as well
-    Stroke tempStroke = new Stroke(blobs().length);
+    String[][] subTokens = new String[blobs().length][blobs().length];
+    boolean[] blobTaps = new boolean[blobs().length];
+
+    private static boolean isTapped(Stroke stroke, boolean[] blobTaps, int j) {
+
+        if ((j - 4) >= 0 && stroke.downs[j - 4] > 0) {
+            return true;
+        }
+        if ((j + 4) < blobTaps.length && stroke.ups[j + 4] > 0) {
+            return true;
+        }
+        if ((j - 1) >= 0 && stroke.rights[j - 1] > 0) {
+            return true;
+        }
+        if ((j + 1) < blobTaps.length && stroke.lefts[j + 1] > 0) {
+            return true;
+        }
+        return blobTaps[j];
+
+    }
+
+    private String prettify2(final String label) {
+        if (label == null) {
+            return "";
+        }
+        String newLabel;
+        if (label.startsWith(":") | label.startsWith("!")) {
+            newLabel = label.substring(1);
+        } else if (label.startsWith("\"")) {
+            newLabel = label.substring(1, label.length() - 1);
+        } else {
+            newLabel = label;
+        }
+        if ("overlay".equals(newLabel)) return "";
+        if ("space".equals(newLabel)) return "␣";
+        if (" ".equals(newLabel)) return "⍽";
+        if ("repeat".equals(newLabel)) return "↺";
+        if ("delete".equals(newLabel)) return "Del";
+        if ("C-delete".equals(newLabel)) return "DW";
+        if ("backspace".equals(newLabel)) return "⌫";
+        if ("C-backspace".equals(newLabel)) return "⌫⌫";
+        if ("tab".equals(newLabel)) return "↹";
+        if ("shift".equals(newLabel)) return "⇧";
+        if ("enter".equals(newLabel)) return "↵";
+        if ("dpad_left".equals(newLabel)) return "←";
+        if ("dpad_right".equals(newLabel)) return "→";
+        if ("dpad_up".equals(newLabel)) return "↑";
+        if ("dpad_down".equals(newLabel)) return "↓";
+        if ("move_end".equals(newLabel)) return "⇲";
+        if ("move_home".equals(newLabel)) return "⇱";
+
+        if (newLabel.length() == 1) {
+            return modShift() ? newLabel.toUpperCase() : newLabel.toLowerCase();
+        }
+        return newLabel; // For all other keys
+    }
 
     /**
      * This is supertricky and a complete mess.
@@ -442,58 +462,92 @@ public class ThumbkeyboardView extends View {
      * @param i        array of inverse direction of dx,dy
      * @param dx       on Blob grid, +1 is right, -1 is left
      * @param dy       on Blob grid, +1 is down, -1 is up
+     * @param sbs      The subToken array to calculate
      * @return
      */
-    public String strokeTry(int bid, Stroke original, Stroke stroke, int[] i, int dx, int dy) {
+    public String strokeTry(int bid, Stroke original, Stroke stroke, int[] i, int dx, int dy, String[][] sbs, boolean[] blobTaps) {
+        boolean realTap = false;
         stroke.copyFrom(original);
         int j = Blobdelta(bid, dx, dy);
-        if (j >= 0 && blobs()[j].holding) {
+        if (j >= 0 && isTapped(stroke, blobTaps, j)) {
             i[j]++;
-            stroke.taps[j]--;
+            if (stroke.taps[j] > 0) {
+                stroke.taps[j]--;
+                realTap = true;
+            }
+            if (sbs != null) {
+                if (realTap) {
+                    blobTaps[j] = false;
+                }
+                getChildren(stroke, blobTaps, sbs[bid], null);
+                if (realTap) {
+                    blobTaps[j] = true;
+                }
+            }
             final Object o = Ime.layout.get(stroke);
             return o == null ? null : o.toString();
+        } else if (sbs != null) {
+            Arrays.fill(sbs[bid], null);
         }
         return null;
+    }
+
+    private void getChildren(Stroke stroke, boolean[] blobTaps, String[] tokens, String[][] subs) {
+        // fakeStroke is the stroke if the current held buttons were released
+        Stroke fakeStroke = new Stroke(blobTaps.length);
+        // tempStroke is the stroke if a new button was tapped as well
+        Stroke tempStroke = new Stroke(blobTaps.length);
+        String token;
+        fakeStroke.copyFrom(stroke);
+        for (int j = 0; j < blobTaps.length; j++) {
+            if (blobTaps[j]) {
+                fakeStroke.taps[j]++; // <-- pretend we tapped held buttons
+            }
+        }
+        for (int i = 0; i < blobTaps.length; i++) {
+            tempStroke.copyFrom(fakeStroke);
+            tempStroke.taps[i]++; // <-- pretend we tapped current
+            final Object _token = Ime.layout.get(tempStroke);
+            token = null;
+            if (_token != null) {
+                tokens[i] = _token.toString();
+                if (subs != null) {
+                    System.out.println(tempStroke);
+                    blobTaps[i] = true;
+                    getChildren(fakeStroke, blobTaps, subs[i], null);
+                    blobTaps[i] = false;
+                }
+            } else {
+                if (token == null)
+                    token = strokeTry(i, fakeStroke, tempStroke, tempStroke.downs, 0, -1, subs, blobTaps);
+                if (token == null)
+                    token = strokeTry(i, fakeStroke, tempStroke, tempStroke.ups, 0, 1, subs, blobTaps);
+                if (token == null)
+                    token = strokeTry(i, fakeStroke, tempStroke, tempStroke.rights, -1, 0, subs, blobTaps);
+                if (token == null)
+                    token = strokeTry(i, fakeStroke, tempStroke, tempStroke.lefts, 1, 0, subs, blobTaps);
+                tokens[i] = token;
+            }
+        }
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-
         Blob[] bs = blobs();
+
         boolean any = false; // <-- anybody being pressed?
-        for (Blob b : bs) {
-            any |= b.holding;
-        }
-        fakeStroke.copyFrom(stroke);
-        for (int j = 0; j < blobs().length; j++)
-            if (blobs()[j].tapping)
-                fakeStroke.taps[j]++; // <-- pretend we tapped held buttons
-
         for (int i = 0; i < bs.length; i++) {
-            tempStroke.copyFrom(fakeStroke);
-            tempStroke.taps[i]++; // <-- pretend we tapped current
+            any |= bs[i].holding;
+            blobTaps[i] = bs[i].tapping;
+        }
 
-
-            final Object _token = Ime.layout.get(tempStroke);
-            String token = _token == null ? null : _token.toString();
-            if (any) { // try surrounding swipes
-                if (token == null)
-                    token = strokeTry(i, fakeStroke, tempStroke, tempStroke.downs, 0, -1);
-                if (token == null)
-                    token = strokeTry(i, fakeStroke, tempStroke, tempStroke.ups, 0, 1);
-                if (token == null)
-                    token = strokeTry(i, fakeStroke, tempStroke, tempStroke.rights, -1, 0);
-                if (token == null)
-                    token = strokeTry(i, fakeStroke, tempStroke, tempStroke.lefts, 1, 0);
-            }
-
-            final boolean show_labels_maybe = true;
-            final boolean show_labels = config.showLabelsAlways() || show_labels_maybe;
-            bs[i].draw(canvas, any, show_labels
-                    ? (token == null ? "" : prettify(token))
-                    : "");
-
+        getChildren(stroke, blobTaps, tokens, subTokens);
+        for (int i = 0; i < bs.length; i++) {
+            //final boolean show_labels_maybe = true;
+            //final boolean show_labels = config.showLabelsAlways() || show_labels_maybe;
+            bs[i].draw(canvas, any, tokens[i] == null ? "" : tokens[i], subTokens[i]);
+            /*
             if (i == -98 && token == null) {
                 final Paint red = new Paint();
                 red.setStyle(Paint.Style.STROKE);
@@ -501,6 +555,7 @@ public class ThumbkeyboardView extends View {
                 red.setColor(Color.argb(0x10, 0, 0xff, 0xff));
                 canvas.drawCircle(bs[i].x(), bs[i].y(), pixels(BS / 4), red);
             }
+             */
         }
     }
 
@@ -562,7 +617,44 @@ public class ThumbkeyboardView extends View {
             return bid;
         }
 
-        public void draw(Canvas canvas, boolean idle, final String label) {
+        private float[] getOffset(int motherIndex, int daughterIndex) {
+            float[] offsets = new float[2];
+            int motherSide = motherIndex % 4 < 2 ? -1 : 1;
+            int daughterSide = daughterIndex % 4 < 2 ? -1 : 1;
+
+            if (motherSide != daughterSide) {
+                offsets[0] = 35f * (daughterIndex % 2 - 0.5f) + 65f * daughterSide;
+                offsets[1] = 65f * (daughterIndex / 4 - 1);
+            } else {
+                int dx = daughterIndex % 4 - motherIndex % 4;
+                int dy = daughterIndex / 4 - motherIndex / 4;
+                offsets[0] = dx * 15f + daughterSide * 60f;
+                offsets[1] = dy * 40f;
+            }
+            return offsets;
+        }
+
+        private void renderText(Canvas canvas, String token, TextPaint p, float size, float space, float xOffset, float yOffset) {
+            int y = (int) (Math.min(canvas.getWidth(), canvas.getHeight()) * size);
+            float textSize = y * 0.14f;
+            int PBS = pixels((int) (BS * space));
+            p.setTextSize(textSize);
+
+            String newLabel = prettify2(token);
+
+            float txtWidth = p.measureText(newLabel);
+
+            if (txtWidth > (PBS * 2) * 0.9) { // text is too big for button
+                textSize = textSize * 0.8f / (txtWidth / (PBS * 2));
+                p.setTextSize(textSize); // fit width
+                txtWidth = p.measureText(newLabel);
+            }
+            float yPos = textSize / 3f;
+            canvas.drawText(newLabel, xOffset - txtWidth / 2, yOffset + yPos, p);
+        }
+
+        public void draw(Canvas canvas, boolean idle, final String label, String[] subs) {
+            float[] offsets;
             if (idle)
                 if (holding) fill.setColor(config.colorBackgroundHolding());
                 else fill.setColor(config.colorBackgroundNonIdle());
@@ -575,26 +667,24 @@ public class ThumbkeyboardView extends View {
                 canvas.drawRect(x() - S, y() - S, x() + S, y() + S, fill);
 
             final TextPaint p = new TextPaint();
-            final int PBS = pixels(BS);
-            final int y = Math.min(canvas.getWidth(), canvas.getHeight());
-            float textSize = y / 6;
-
-            p.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
             p.setAntiAlias(true);
-            p.setTextSize(textSize);
-            String newLabel = prettify2(label);
             p.setStyle(Paint.Style.FILL);
-            p.setColor(config.colorLabel());
+            p.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+
             canvas.save();
             canvas.translate(x(), y()); // anchor to center of rectangle
 
-            float txtWidth = p.measureText(newLabel);
-            if (txtWidth > PBS * 2) { // text is too big for button!
-                textSize = textSize * 0.9f / (txtWidth / (PBS * 2));
-                p.setTextSize(textSize); // fit width
-                txtWidth = p.measureText(newLabel);
+            // Draw big label
+            p.setColor(config.colorLabel());
+            renderText(canvas, label, p, 1, 1, 0, 0);
+
+            // Draw sub-labels
+            p.setColor(config.colorSub());
+            for (int i = 0; i < blobs().length; i++) {
+                offsets = getOffset(bid, i);
+                renderText(canvas, subs[i], p, 0.45f, 0.2f, offsets[0], offsets[1]);
             }
-            canvas.drawText(newLabel, -txtWidth / 2, textSize / 3f, p);
+
             canvas.restore();
         }
     }

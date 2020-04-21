@@ -78,6 +78,9 @@ public class Config {
         return s2c("#e0182633");
     }
 
+    public int colorSub() {
+        return s2c("#e0798591");
+    }
     public boolean showLabelsAlways() {
         return true;
     }
