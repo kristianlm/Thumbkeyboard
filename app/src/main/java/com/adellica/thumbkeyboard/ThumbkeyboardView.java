@@ -547,15 +547,6 @@ public class ThumbkeyboardView extends View {
             //final boolean show_labels_maybe = true;
             //final boolean show_labels = config.showLabelsAlways() || show_labels_maybe;
             bs[i].draw(canvas, any, tokens[i] == null ? "" : tokens[i], subTokens[i]);
-            /*
-            if (i == -98 && token == null) {
-                final Paint red = new Paint();
-                red.setStyle(Paint.Style.STROKE);
-                red.setStrokeWidth(pixels(3));
-                red.setColor(Color.argb(0x10, 0, 0xff, 0xff));
-                canvas.drawCircle(bs[i].x(), bs[i].y(), pixels(BS / 4), red);
-            }
-             */
         }
     }
 
