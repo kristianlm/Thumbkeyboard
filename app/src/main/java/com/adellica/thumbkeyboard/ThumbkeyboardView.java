@@ -511,12 +511,6 @@ public class ThumbkeyboardView extends View {
             token = null;
             if (_token != null) {
                 tokens[i] = _token.toString();
-                if (subs != null) {
-                    System.out.println(tempStroke);
-                    blobTaps[i] = true;
-                    getChildren(fakeStroke, blobTaps, subs[i], null);
-                    blobTaps[i] = false;
-                }
             } else {
                 if (token == null)
                     token = strokeTry(i, fakeStroke, tempStroke, tempStroke.downs, 0, -1, subs, blobTaps);
@@ -527,6 +521,11 @@ public class ThumbkeyboardView extends View {
                 if (token == null)
                     token = strokeTry(i, fakeStroke, tempStroke, tempStroke.lefts, 1, 0, subs, blobTaps);
                 tokens[i] = token;
+            }
+            if (subs != null) {
+                blobTaps[i] = true;
+                getChildren(fakeStroke, blobTaps, subs[i], null);
+                blobTaps[i] = false;
             }
         }
     }
