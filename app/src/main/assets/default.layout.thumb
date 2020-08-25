@@ -23,6 +23,29 @@
 
 ;; some important ones
 
+[ . x  |  . x
+  . .  |  . .
+  . .  |  . . ]
+  [ :C-x press :C-s press ] bind!
+
+[ . .  |  . x
+  . x  |  . .
+  . .  |  . . ]
+  [ :C-x press :C-s press
+    :M-x press
+    :r press
+    :e press
+    :c press
+    :o press
+    :m press
+    :p press
+    :i press
+    :l press
+    :e press
+    :enter press ] bind!
+
+;; [ :r press :e press    :c press    :o press    :m press    :p press    :i press    :l press:e :enter ] bind!
+
 [ x .  |  . x
   . .  |  . .
   . .  |  . . ] '!shift bind!
