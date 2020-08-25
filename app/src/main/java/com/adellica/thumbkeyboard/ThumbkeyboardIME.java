@@ -197,7 +197,7 @@ public class ThumbkeyboardIME extends InputMethodService {
             Toast.makeText(this, "error: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
 
-        if(server == null) {
+        if(false && server == null) {
             server = new Thread(new Runnable() {
                 @Override
                 public void run() {
