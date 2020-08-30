@@ -18,7 +18,7 @@ import static com.adellica.thumbkeyboard.Layout.TAG;
  * Created by klm on 10/15/17.
  */
 public class Config {
-    Map<String, String> cmap = new HashMap<String, String>();
+    public final int colorBackgroundHolding = s2c("#e0747f80");
 
     public String get(final String key) {
         return cmap.get(key);
@@ -34,8 +34,14 @@ public class Config {
                 + File.separator + "thumb-keyboard" + File.separator + "config";
     }
 
+    public final int colorBackgroundNonIdle = s2c("#e0d7d8d9");
+    public final int colorSub = s2c("#e0798591");
+    final Map<String, String> cmap = new HashMap<>();
+    public int colorBackgroundIdle = s2c("#e0d7d8d9");
+    public int colorLabel = s2c("#e0182633");
+
     public void save() {
-        List<String> l = new ArrayList<String>(cmap.keySet());
+        List<String> l = new ArrayList<>(cmap.keySet());
         Collections.sort(l);
         Collections.reverse(l);
         Log.i(TAG, "saving layout to " + filename());
@@ -50,12 +56,6 @@ public class Config {
             e.printStackTrace();
         }
     }
-
-    public int colorBackgroundHolding = s2c("#e0747f80");
-    public int colorBackgroundNonIdle = s2c("#e0d7d8d9");
-    public int colorBackgroundIdle = s2c("#e0d7d8d9");
-    public int colorLabel = s2c("#e0182633");
-    public int colorSub = s2c("#e0798591");
     public boolean showLabelsAlways = true;
 
     public static int s2c(String color) {

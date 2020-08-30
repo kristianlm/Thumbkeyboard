@@ -92,7 +92,7 @@ public class Layout {
         Log.i(TAG, "loading layout from file " + filename);
         try {
             String line;
-            Map<String, String> map = new HashMap<String, String>();
+            Map<String, String> map = new HashMap<>();
             InputStream fis = new FileInputStream(filename);
             InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
             BufferedReader br = new BufferedReader(isr);
@@ -116,7 +116,7 @@ public class Layout {
     }
 
     static public Map<String, Layout> loadLayouts(AssetManager am) {
-        Map<String, Layout> layouts = new HashMap<String, Layout>();
+        Map<String, Layout> layouts = new HashMap<>();
 
         ensureExists(am, "default.chords");
         ensureExists(am, "num.chords");
@@ -126,8 +126,8 @@ public class Layout {
         if (files == null) files = new File[]{};
 
         Log.d(TAG, "Loading config files " + Arrays.asList(files));
-        for (int i = 0; i < files.length; i++) {
-            final String filename = files[i].getName();
+        for (File file : files) {
+            final String filename = file.getName();
             if (filename.endsWith(".chords")) {
                 final String name = filename.substring(0, filename.length() - 7);
                 Log.i(TAG, "loading chords file " + layoutname2path(name) + " as " + name);
@@ -143,7 +143,7 @@ public class Layout {
         // obviously, we need to do this before we save:
         final String result = map.put(key, value);
 
-        List<String> l = new ArrayList<String>(map.keySet());
+        List<String> l = new ArrayList<>(map.keySet());
         Collections.sort(l);
         Collections.reverse(l);
         String filename = layoutname2path(name);
@@ -161,7 +161,7 @@ public class Layout {
     }
 
     public List<String> keys() {
-        List<String> l = new ArrayList<String>(map.keySet());
+        List<String> l = new ArrayList<>(map.keySet());
         Collections.sort(l);
         Collections.reverse(l);
         return l;

@@ -171,7 +171,7 @@ public class Library {
                 m.dict.put(name.value, content);
             }
         };
-        public static Applicable p = new NamedApplicable() { // println
+        public static final Applicable p = new NamedApplicable() { // println
             @Override
             public void exe(Machine m) {
                 OutputStream os = m.get("out", OutputStream.class);
@@ -201,7 +201,7 @@ public class Library {
                 final Object t = m.stk.pop();
                 final Boolean i = m.stk.pop(Boolean.class);
                 Object which = e;
-                if (i.booleanValue()) which = t;
+                if (i) which = t;
                 m.eval(which);
             }
         };
@@ -273,35 +273,35 @@ public class Library {
             public void exe(Machine m) {
                 final Integer n = m.stk.pop(Integer.class);
                 final Integer d = m.stk.pop(Integer.class);
-                m.stk.push(n.intValue() + d.intValue());
+                m.stk.push(n + d);
             }
         };
         public static final Applicable MINUS = new NamedApplicable("-") {
             public void exe(Machine m) {
                 final Integer n = m.stk.pop(Integer.class);
                 final Integer d = m.stk.pop(Integer.class);
-                m.stk.push(n.intValue() - d.intValue());
+                m.stk.push(n - d);
             }
         };
         public static final Applicable MULTIPLY = new NamedApplicable("*") {
             public void exe(Machine m) {
                 final Integer n = m.stk.pop(Integer.class);
                 final Integer d = m.stk.pop(Integer.class);
-                m.stk.push(n.intValue() * d.intValue());
+                m.stk.push(n * d);
             }
         };
         public static final Applicable DIVIDE = new NamedApplicable("/") {
             public void exe(Machine m) {
                 final Integer n = m.stk.pop(Integer.class);
                 final Integer d = m.stk.pop(Integer.class);
-                m.stk.push(n.intValue() / d.intValue());
+                m.stk.push(n / d);
             }
         };
         public static final Applicable MODULUS = new NamedApplicable("%") {
             public void exe(Machine m) {
                 final Integer n = m.stk.pop(Integer.class);
                 final Integer d = m.stk.pop(Integer.class);
-                m.stk.push(n.intValue() % d.intValue());
+                m.stk.push(n % d);
             }
         };
     }

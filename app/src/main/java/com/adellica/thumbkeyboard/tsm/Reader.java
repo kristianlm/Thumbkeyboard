@@ -26,9 +26,9 @@ import static com.adellica.thumbkeyboard.tsm.stack.Pair.reverse;
  */
 public class Reader {
 
-    public static int[] whitespaces = new int[]{' ', '\t', '\r', '\n'};
+    public static final int[] whitespaces = new int[]{' ', '\t', '\r', '\n'};
     // dummy token for ']'
-    private static Object CLOSE_PAREN = new Object() {
+    private static final Object CLOSE_PAREN = new Object() {
     };
 
     // stolen from https://stackoverflow.com/questions/220547/printable-char-in-java
@@ -246,7 +246,7 @@ public class Reader {
     // read a list of instructions [ :a :b drop ]
     // note that we don't have syntax for reading non-quoted lists! because that would be completely useless (I think).
     public Quoted readQuotedList() {
-        List<Object> lst = new ArrayList<Object>();
+        List<Object> lst = new ArrayList<>();
         while (true) {
             Object o = read();
             if (o == null) throw new TFE("unexpected EOF while reading []");
@@ -373,7 +373,7 @@ public class Reader {
         }
     }
 
-    private class ReservedToken extends TFE {
+    private static class ReservedToken extends TFE {
         public ReservedToken(int c) {
             super("reserved for future use " + (char) c);
         }

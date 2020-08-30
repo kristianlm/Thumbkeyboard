@@ -10,11 +10,11 @@ import java.util.Arrays;
  * Created by klm on 12/28/16.
  */
 class Stroke {
-    public int[] taps;
-    public int[] ups;
-    public int[] downs;
-    public int[] lefts;
-    public int[] rights;
+    public final int[] taps;
+    public final int[] ups;
+    public final int[] downs;
+    public final int[] lefts;
+    public final int[] rights;
 
     public Stroke(int len) {
         taps = new int[len];

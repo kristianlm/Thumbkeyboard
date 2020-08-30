@@ -26,16 +26,16 @@ public class ThumbkeyboardIME extends InputMethodService {
 
     private final Handler mHandler = new Handler();
 
-    public final Map<Stroke, Object> layout = new HashMap<Stroke, Object>();
     // only one machine and one server per app instance
-    public static Machine m = new Machine();
+    public static final Machine m = new Machine();
+    public final Map<Stroke, Object> layout = new HashMap<>();
     public static Thread server = null;
 
     /**
      * toggle using overlay(boolean) method.
      */
     private boolean _overlaymode = false;
-    Config config = new Config();
+    final Config config = new Config();
 
     private ThumbkeyboardView viewInput; // used for non-overlay
     private ThumbkeyboardView viewCandidates; // used for fullscreen overlay
@@ -52,7 +52,7 @@ public class ThumbkeyboardIME extends InputMethodService {
     /**
      * fullblown-fullscreen overlay or standard opaque keyboard view with a height?
      *
-     * @param value
+     * @param value whether overlay mode is enabled
      */
     public void overlay(boolean value) {
         if (value == _overlaymode) return;

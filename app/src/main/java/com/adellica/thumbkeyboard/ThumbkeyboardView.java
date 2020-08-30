@@ -39,7 +39,7 @@ public class ThumbkeyboardView extends View {
     }
 
     // negative positions means right/bottom-aligned
-    Blob[] _blobs = new Blob[]{
+    final Blob[] _blobs = new Blob[]{
             //       idx col row
             new Blob(0, 0, 0),
             new Blob(1, 1, 0),
@@ -54,7 +54,7 @@ public class ThumbkeyboardView extends View {
             new Blob(10, -2, 2),
             new Blob(11, -1, 2),
     };
-    Blob[] fingerTouches = new Blob[4]; // who'se got 4 thumbs anyway?
+    final Blob[] fingerTouches = new Blob[4]; // who'se got 4 thumbs anyway?
 
     /**
      * Tricky business! Going from Blob index to the Blob index
@@ -112,7 +112,7 @@ public class ThumbkeyboardView extends View {
         Log.i(TAG, "no config here");
     }
 
-    String[] tokens = new String[blobs().length];
+    final String[] tokens = new String[blobs().length];
 
 
     private int __anchorY = -1;
@@ -172,7 +172,7 @@ public class ThumbkeyboardView extends View {
     }
 
 
-    Stroke stroke = new Stroke(blobs().length);
+    final Stroke stroke = new Stroke(blobs().length);
 
     // screen coordinates of top of top-most button
     private int anchorY() {
@@ -222,8 +222,7 @@ public class ThumbkeyboardView extends View {
         return false;
     }
 
-
-    Map<String, Layout> layouts = new HashMap<String, Layout>();
+    final String[][] subTokens = new String[blobs().length][blobs().length];
 
     private boolean hidden = false;
 
@@ -395,8 +394,8 @@ public class ThumbkeyboardView extends View {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dpi, r.getDisplayMetrics());
     }
 
-    String[][] subTokens = new String[blobs().length][blobs().length];
-    boolean[] blobTaps = new boolean[blobs().length];
+    final boolean[] blobTaps = new boolean[blobs().length];
+    Map<String, Layout> layouts = new HashMap<>();
 
     private static boolean isTapped(Stroke stroke, boolean[] blobTaps, int j) {
 
@@ -462,7 +461,7 @@ public class ThumbkeyboardView extends View {
      * @param dx       on Blob grid, +1 is right, -1 is left
      * @param dy       on Blob grid, +1 is down, -1 is up
      * @param sbs      The subToken array to calculate
-     * @return
+     * @return the symbol on that square
      */
     public String strokeTry(int bid, Stroke original, Stroke stroke, int[] i, int dx, int dy, String[][] sbs, boolean[] blobTaps) {
         boolean realTap = false;

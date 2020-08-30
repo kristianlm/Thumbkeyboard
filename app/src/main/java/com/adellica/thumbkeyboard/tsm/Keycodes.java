@@ -8,7 +8,7 @@ import java.util.Map;
  */
 public class Keycodes {
 
-    private final static Map<String, Integer> mapping = new HashMap<String, Integer>();
+    private final static Map<String, Integer> mapping = new HashMap<>();
 
     static {
         init();

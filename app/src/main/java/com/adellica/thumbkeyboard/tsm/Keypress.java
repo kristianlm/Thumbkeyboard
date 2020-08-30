@@ -44,6 +44,15 @@ public class Keypress {
         return mask;
     }
 
+    public final static Map<String, Integer> specials = new HashMap<>();
+
+    private static void pr(String name, String ref) {
+        Integer kk = Keycodes.fromString(ref);
+        if (kk == null)
+            throw new RuntimeException("internal error JD8: " + name + " not found in Keycodes");
+        specials.put(name, kk);
+    }
+
     public static Keypress fromString(String in) {
         boolean s = false, c = false, a = false, w = false;
         Integer keycode = null;
@@ -62,11 +71,9 @@ public class Keypress {
                         a = true;
                         break;
                     case 's':
-                        w = true;
-                        break; // emacs uses s for "super"
                     case 'W':
                         w = true;
-                        break;
+                        break; // emacs uses s for "super"
                     default:
                         throw new InvalidToken(in.substring(0, 1) + " in " + in);
                 }
@@ -91,15 +98,6 @@ public class Keypress {
         if (kp == null) throw new InvalidToken("key “" + in + "” unknown");
         return new Keypress(kp, s, c, a, w);
     }
-
-    private static void pr(String name, String ref) {
-        Integer kk = Keycodes.fromString(ref);
-        if (kk == null)
-            throw new RuntimeException("internal error JD8: " + name + " not found in Keycodes");
-        specials.put(name, kk);
-    }
-
-    public final static Map<String, Integer> specials = new HashMap<String, Integer>();
 
     @Override
     public String toString() {

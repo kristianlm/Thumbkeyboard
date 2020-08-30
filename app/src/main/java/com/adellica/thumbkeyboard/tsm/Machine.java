@@ -88,7 +88,7 @@ public class Machine {
 
     public final Map<String, Object> dict;
     public final Stack stk;
-    public final List<String> searchPaths = new ArrayList<String>(); // used by "load"
+    public final List<String> searchPaths = new ArrayList<>(); // used by "load"
 
     public static class Word extends Datum<String> implements Applicable {
         public Word(String s) {
@@ -127,7 +127,7 @@ public class Machine {
     }
 
     public static Map<String, Object> dictDefault() {
-        Map<String, Object> dict = new HashMap<String, Object>();
+        Map<String, Object> dict = new HashMap<>();
         new Library.Core().fillDict(dict);
         new Library.Math().fillDict(dict);
         new Library.Strings().fillDict(dict);
