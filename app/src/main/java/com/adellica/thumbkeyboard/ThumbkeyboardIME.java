@@ -15,7 +15,6 @@ import com.adellica.thumbkeyboard.tsm.Keypress;
 import com.adellica.thumbkeyboard.tsm.Library.NamedApplicable;
 import com.adellica.thumbkeyboard.tsm.Machine;
 import com.adellica.thumbkeyboard.tsm.Machine.Str;
-import com.adellica.thumbkeyboard.tsm.Reader;
 import com.adellica.thumbkeyboard.tsm.stack.IPair;
 
 import java.util.HashMap;
@@ -36,12 +35,18 @@ public class ThumbkeyboardIME extends InputMethodService {
      * toggle using overlay(boolean) method.
      */
     private boolean _overlaymode = false;
+    Config config = new Config();
 
     private ThumbkeyboardView viewInput; // used for non-overlay
     private ThumbkeyboardView viewCandidates; // used for fullscreen overlay
 
     public boolean overlay() {
         return _overlaymode;
+    }
+
+    private void redraw() {
+        viewCandidates.postInvalidate();
+        viewInput.postInvalidate();
     }
 
     /**
@@ -156,6 +161,21 @@ public class ThumbkeyboardIME extends InputMethodService {
             }
         });
 
+        m.dict.put("label.color!", new NamedApplicable("label.color!") {
+            @Override
+            public void exe(Machine m) {
+                config.colorLabel = Config.s2c(m.stk.pop(Str.class).value);
+                redraw();
+            }
+        });
+        m.dict.put("background.color!", new NamedApplicable("background.color!") {
+            @Override
+            public void exe(Machine m) {
+                config.colorBackgroundIdle = Config.s2c(m.stk.pop(Str.class).value);
+                redraw();
+            }
+        });
+
         m.searchPaths.add(0, ThumbkeyboardView.configDir());
         Layout.ensureExists(getAssets(), "default.layout.thumb");
         Layout.ensureExists(getAssets(), "main.thumb");
@@ -166,18 +186,6 @@ public class ThumbkeyboardIME extends InputMethodService {
         } catch (Throwable e) {
             e.printStackTrace();
             Toast.makeText(this, "error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-        }
-
-        if (server == null) {
-            server = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    int port = 1234;
-                    Log.i(TAG, "Starting server on port " + port);
-                    Reader.serve(m, port);
-                }
-            });
-            server.start();
         }
     }
 
@@ -203,7 +211,7 @@ public class ThumbkeyboardIME extends InputMethodService {
     }
 
     private void handleStr(Str input, InputConnection ic) {
-        ic.commitText(input.value, 1);
+        ic.commitText(input.value, 1); // 1 means 'end of new inserted text'
     }
 
     @Override

@@ -57,4 +57,12 @@
   . . | . .
   x . | . . ] '!overlay bind!
 
+[ . .  |  . x
+  . .  |  . x
+  . .  |  . . ] [ "#eeeeee" label.color! ] bind!
+
+[ . .  |  . .
+  . .  |  . x
+  . .  |  . x ] [ "#111111" label.color! ] bind!
+
 "default.layout.thumb" load

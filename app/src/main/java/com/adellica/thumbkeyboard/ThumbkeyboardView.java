@@ -29,7 +29,6 @@ public class ThumbkeyboardView extends View {
     private static final int BLOB_RADIUS = 38; // dpi
     private static final int BLOB_BORDER = 4; // dpi
 
-    private Config config = new Config();
     public boolean overlay = false;
 
     public static String configDir() {
@@ -544,7 +543,7 @@ public class ThumbkeyboardView extends View {
         getChildren(stroke, blobTaps, tokens, subTokens);
         for (int i = 0; i < bs.length; i++) {
             //final boolean show_labels_maybe = true;
-            //final boolean show_labels = config.showLabelsAlways() || show_labels_maybe;
+            //final boolean show_labels = Ime.config.showLabelsAlways || show_labels_maybe;
             bs[i].draw(canvas, any, tokens[i] == null ? "" : tokens[i], subTokens[i]);
         }
     }
@@ -646,9 +645,9 @@ public class ThumbkeyboardView extends View {
         public void draw(Canvas canvas, boolean idle, final String label, String[] subs) {
             float[] offsets;
             if (idle)
-                if (holding) fill.setColor(config.colorBackgroundHolding());
-                else fill.setColor(config.colorBackgroundNonIdle());
-            else fill.setColor(config.colorBackgroundIdle());
+                if (holding) fill.setColor(Ime.config.colorBackgroundHolding);
+                else fill.setColor(Ime.config.colorBackgroundNonIdle);
+            else fill.setColor(Ime.config.colorBackgroundIdle);
 
             final int S = pixels(BLOB_RADIUS - BLOB_BORDER);
             if (bid() == -99)
@@ -665,11 +664,11 @@ public class ThumbkeyboardView extends View {
             canvas.translate(x(), y()); // anchor to center of rectangle
 
             // Draw big label
-            p.setColor(config.colorLabel());
+            p.setColor(Ime.config.colorLabel);
             renderText(canvas, label, p, 1, 1, 0, 0);
 
             // Draw sub-labels
-            p.setColor(config.colorSub());
+            p.setColor(Ime.config.colorSub);
             for (int i = 0; i < blobs().length; i++) {
                 offsets = getOffset(bid, i);
                 renderText(canvas, subs[i], p, 0.45f, 0.2f, offsets[0], offsets[1]);

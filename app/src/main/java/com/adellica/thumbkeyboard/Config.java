@@ -51,7 +51,14 @@ public class Config {
         }
     }
 
-    private int s2c(String color) {
+    public int colorBackgroundHolding = s2c("#e0747f80");
+    public int colorBackgroundNonIdle = s2c("#e0d7d8d9");
+    public int colorBackgroundIdle = s2c("#e0d7d8d9");
+    public int colorLabel = s2c("#e0182633");
+    public int colorSub = s2c("#e0798591");
+    public boolean showLabelsAlways = true;
+
+    public static int s2c(String color) {
         if (color == null) return 0;
         int c = 0;
         try {
@@ -60,28 +67,5 @@ public class Config {
             Log.e(TAG, "error parsing color: " + color);
         }
         return c;
-    }
-
-    public int colorBackgroundHolding() {
-        return s2c("#e0747f80");
-    }
-
-    public int colorBackgroundNonIdle() {
-        return s2c("#e0d7d8d9");
-    }
-
-    public int colorBackgroundIdle() {
-        return s2c("#e0d7d8d9");
-    }
-
-    public int colorLabel() {
-        return s2c("#e0182633");
-    }
-
-    public int colorSub() {
-        return s2c("#e0798591");
-    }
-    public boolean showLabelsAlways() {
-        return true;
     }
 }
