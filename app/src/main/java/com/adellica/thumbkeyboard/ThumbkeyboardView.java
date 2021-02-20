@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.text.TextPaint;
 import android.util.AttributeSet;
@@ -24,7 +25,7 @@ import java.util.Map;
 public class ThumbkeyboardView extends View {
     private static final String TAG = "TKEY";
     public ThumbkeyboardIME Ime;
-    private boolean showHelp = false;
+    private final boolean showHelp = false;
     private final int MAX_DELAY_DOUBLE_COMBO = 60; // ms
     private static final int BLOB_RADIUS = 38; // dpi
     private static final int BLOB_BORDER = 4; // dpi
@@ -652,7 +653,7 @@ public class ThumbkeyboardView extends View {
             if (bid() == -99)
                 canvas.drawCircle(x(), y(), pixels(BS), fill);
             else
-                canvas.drawRect(x() - S, y() - S, x() + S, y() + S, fill);
+                canvas.drawRoundRect(new RectF(x() - S, y() - S, x() + S, y() + S), 6, 6, fill);
 
             final TextPaint p = new TextPaint();
             p.setAntiAlias(true);
