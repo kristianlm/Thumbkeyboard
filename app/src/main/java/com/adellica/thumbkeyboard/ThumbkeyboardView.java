@@ -6,6 +6,9 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.Typeface;
+import android.os.Build;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -18,6 +21,8 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import static android.content.Context.VIBRATOR_SERVICE;
 
 /**
  * Created by klm on 9/27/16.
@@ -335,6 +340,7 @@ public class ThumbkeyboardView extends View {
                     final Blob btn = blobs()[touch2blob(event.getX(j), event.getY(j))]; // <-- going to
                     if (btn.bid() >= 0) {
                         if (btn != fingerTouches[event.getPointerId(j)]) {
+                            vibrate(10);
                             final int fid = event.getPointerId(j);
                             final Blob old = fingerTouches[fid]; // <-- coming from
                             if (old != null) {
@@ -379,6 +385,14 @@ public class ThumbkeyboardView extends View {
                 break;
         }
         return true;
+    }
+
+    private void vibrate(int milliseconds) {
+        if (Build.VERSION.SDK_INT >= 26) {
+            ((Vibrator) this.getContext().getSystemService(VIBRATOR_SERVICE)).vibrate(VibrationEffect.createOneShot(milliseconds, VibrationEffect.DEFAULT_AMPLITUDE));
+        } else {
+            ((Vibrator) this.getContext().getSystemService(VIBRATOR_SERVICE)).vibrate(milliseconds);
+        }
     }
 
     private void flushStroke() {
