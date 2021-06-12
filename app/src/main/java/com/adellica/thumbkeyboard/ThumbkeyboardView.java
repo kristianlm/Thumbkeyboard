@@ -326,7 +326,6 @@ public class ThumbkeyboardView extends View {
                     down++;
                 }
             }
-            System.out.println(down);
             for (int blob = 0; blob < LENGTH; blob++) {
                 if (fakeState.blobs[blob].tapping || fakeState.blobs[blob].holding) {
                     down--;
