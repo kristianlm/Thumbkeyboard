@@ -322,11 +322,15 @@ public class ThumbkeyboardView extends View {
         if (eventType == MotionEvent.ACTION_MOVE) {
             for (int j = 0; j < event.getPointerCount(); j++) {
                 final int btn = touch2blob(event.getX(j), event.getY(j));
-                keyboardState.update(eventType, btn, event.getPointerId(j));
+                if (keyboardState.update(eventType, btn, event.getPointerId(j))) {
+                    vibrate(10);
+                }
             }
         } else {
             final int btn = touch2blob(event.getX(i), event.getY(i));
-            keyboardState.update(eventType, btn, -1);
+            if (keyboardState.update(eventType, btn, -1)) {
+                vibrate(10);
+            }
         }
         if (eventType == MotionEvent.ACTION_UP) {
             final String pattern = keyboardState.stroke.toString();
@@ -511,7 +515,8 @@ public class ThumbkeyboardView extends View {
             }
         }
 
-        public void update(int eventType, int btn, int pointer) {
+        public boolean update(int eventType, int btn, int pointer) {
+            boolean wouldVibrate = false;
             switch (eventType) {
                 case MotionEvent.ACTION_DOWN:  // primary finger down!
                 case MotionEvent.ACTION_POINTER_DOWN: { // another finger down while holding one down
@@ -519,6 +524,7 @@ public class ThumbkeyboardView extends View {
                         blobs[btn].tapping = true;
                         blobs[btn].holding = true;
                     }
+                    wouldVibrate = true;
                     break;
                 }
 
@@ -534,6 +540,7 @@ public class ThumbkeyboardView extends View {
                     final Blob button = blobs[btn]; // <-- going to
                     final int blobId = fingerTouches[pointer];
                     if (btn != blobId && blobId != -1) {
+                        wouldVibrate = true;
                         final Blob old = blobs[blobId]; // <-- coming from
                         old.holding = false;
                         button.holding = true;
@@ -563,6 +570,7 @@ public class ThumbkeyboardView extends View {
                     //Log.d(TAG, "missed event " + event.getActionMasked());
                     break;
             }
+            return wouldVibrate;
         }
     }
 
