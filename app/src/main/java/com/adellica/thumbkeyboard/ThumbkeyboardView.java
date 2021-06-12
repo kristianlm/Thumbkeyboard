@@ -262,6 +262,7 @@ public class ThumbkeyboardView extends View {
         if ("dpad_down".equals(newLabel)) return "↓";
         if ("move_end".equals(newLabel)) return "⇲";
         if ("move_home".equals(newLabel)) return "⇱";
+        if ("ctrl".equals(newLabel)) return "Ctrl";
 
         if (newLabel.length() == 1) {
             return modShift() ? newLabel.toUpperCase() : newLabel.toLowerCase();
