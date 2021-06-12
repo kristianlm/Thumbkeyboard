@@ -82,8 +82,7 @@ class Stroke {
     // and return it's stroke part and its token-part. This is tightly connected to Stroke.toString implementation.
     public static String parse(final String line) {
         if (line.length() == 72) {
-            String stroke = line.substring(0, 72);
-            return stroke;
+            return line.substring(0, 72);
         }
         return null;
     }
@@ -111,10 +110,10 @@ class Stroke {
     }
 
     private String repeat(String r, int count) {
-        String result = "";
+        StringBuilder result = new StringBuilder();
         for (int i = 0; i < count; i++)
-            result += r;
-        return result;
+            result.append(r);
+        return result.toString();
     }
 
     private String rep(int index) {

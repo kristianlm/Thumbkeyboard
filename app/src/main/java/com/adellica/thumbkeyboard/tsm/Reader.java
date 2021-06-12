@@ -118,11 +118,7 @@ public class Reader {
 
         final PrintStream ps = new PrintStream(os);
 
-        InputStream pis = new InputStreamEnterCallback(is, new Runnable() {
-            public void run() {
-                ps.print("\u001b[35m[ \u001b[0m" + reverse(m.stk.peek()).toStringParenless() + "\u001b[35m ]\u001b[0m ");
-            }
-        });
+        InputStream pis = new InputStreamEnterCallback(is, () -> ps.print("\u001b[35m[ \u001b[0m" + reverse(m.stk.peek()).toStringParenless() + "\u001b[35m ]\u001b[0m "));
 
         Reader reader = new Reader(pis);
         m.dict.put("out", os);
@@ -147,17 +143,14 @@ public class Reader {
             while (true) {
                 final Socket s = ss.accept();
 
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            final PrintStream pw = new PrintStream(s.getOutputStream());
-                            pw.println("\u001b[32mThumb StackMachine\u001b[0m");
+                new Thread(() -> {
+                    try {
+                        final PrintStream pw = new PrintStream(s.getOutputStream());
+                        pw.println("\u001b[32mThumb StackMachine\u001b[0m");
 
-                            Reader.repl(m, s.getInputStream(), pw);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                        Reader.repl(m, s.getInputStream(), pw);
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }).start();
             }
@@ -171,12 +164,7 @@ public class Reader {
         System.out.println("\u001b[32mThumb StackMachine\u001b[0m (REPL on port " + port + ")");
         final Machine m = new Machine();
 
-        Thread trepl = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                serve(m, port);
-            }
-        });
+        Thread trepl = new Thread(() -> serve(m, port));
         trepl.start();
 
         repl(m, System.in, System.out);

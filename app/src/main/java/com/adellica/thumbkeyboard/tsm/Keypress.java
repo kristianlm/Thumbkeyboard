@@ -75,7 +75,7 @@ public class Keypress {
                         w = true;
                         break; // emacs uses s for "super"
                     default:
-                        throw new InvalidToken(in.substring(0, 1) + " in " + in);
+                        throw new InvalidToken(in.charAt(0) + " in " + in);
                 }
                 in = in.substring(2);
             } else {

@@ -58,17 +58,14 @@ public class ThumbkeyboardIME extends InputMethodService {
         if (value == _overlaymode) return;
         _overlaymode = value;
 
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                setCandidatesViewShown(_overlaymode);
-                if (_overlaymode) {
-                    viewInput.setVisibility(View.GONE);
-                    viewCandidates.setVisibility(View.VISIBLE);
-                } else {
-                    viewInput.setVisibility(View.VISIBLE);
-                    viewCandidates.setVisibility(View.GONE);
-                }
+        mHandler.post(() -> {
+            setCandidatesViewShown(_overlaymode);
+            if (_overlaymode) {
+                viewInput.setVisibility(View.GONE);
+                viewCandidates.setVisibility(View.VISIBLE);
+            } else {
+                viewInput.setVisibility(View.VISIBLE);
+                viewCandidates.setVisibility(View.GONE);
             }
         });
     }

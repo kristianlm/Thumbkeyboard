@@ -28,8 +28,6 @@ public class ThumbkeyboardView extends View {
     public static final int LENGTH = 12;
     private static final String TAG = "TKEY";
     public ThumbkeyboardIME Ime;
-    private final boolean showHelp = false;
-    private final int MAX_DELAY_DOUBLE_COMBO = 60; // ms
     private static final int BLOB_RADIUS = 38; // dpi
     private static final int BLOB_BORDER = 4; // dpi
 
@@ -43,7 +41,7 @@ public class ThumbkeyboardView extends View {
     }
 
     // negative positions means right/bottom-aligned
-    KeyboardState keyboardState = new KeyboardState(new boolean[LENGTH],
+    final KeyboardState keyboardState = new KeyboardState(new boolean[LENGTH],
             new Blob[]{
                     //       idx col row
                     new Blob(0, 0, 0),
@@ -116,7 +114,7 @@ public class ThumbkeyboardView extends View {
         Log.i(TAG, "no config here");
     }
 
-    String[] tokens = new String[LENGTH];
+    final String[] tokens = new String[LENGTH];
 
 
     private int __anchorY = -1;
@@ -140,7 +138,6 @@ public class ThumbkeyboardView extends View {
     }
 
     final int BS = BLOB_RADIUS;
-    static final int BB = BLOB_BORDER * 2; // wall margin
 
     // screen coordinates of top of top-most button
     private int anchorY() {
@@ -160,22 +157,11 @@ public class ThumbkeyboardView extends View {
         Ime.handleStroke(t);
     }
 
-    boolean holding = false;
-
-    String[][] subTokens = new String[LENGTH][LENGTH];
-
-    private boolean hidden = false;
+    final String[][] subTokens = new String[LENGTH][LENGTH];
 
     private void hide() {
-        // Ime.requestHideSelf(0); // <-- does a silly animation
-        hidden = true;
-        Ime.setCandidatesViewShown(!hidden);
-    }
-
-    private void show() {
-        Log.i(TAG, "SHOWING");
-        hidden = false;
-        Ime.setCandidatesViewShown(!hidden);
+        Ime.requestHideSelf(0); // <-- does a silly animation
+        Ime.setCandidatesViewShown(false);
     }
 
     private void vibrate(int milliseconds) {
@@ -209,15 +195,6 @@ public class ThumbkeyboardView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int i = event.getActionIndex(); // index of finger that caused the down event
-
-        switch (event.getActionMasked()) {
-            case MotionEvent.ACTION_DOWN:
-                holding = true;
-                break;
-            case MotionEvent.ACTION_UP:
-                holding = false;
-                break;
-        }
 
         if (event.getPointerId(i) >= keyboardState.fingerTouches.length) {
             Log.e(TAG, "only up to " + keyboardState.fingerTouches.length + " simultanious fingers supported ...");
@@ -396,10 +373,10 @@ public class ThumbkeyboardView extends View {
     }
 
     class KeyboardState {
-        public Blob[] blobs;
-        public Stroke stroke;
-        public boolean[] blobTaps;
-        public int[] fingerTouches;
+        public final Blob[] blobs;
+        public final Stroke stroke;
+        public final boolean[] blobTaps;
+        public final int[] fingerTouches;
 
         public KeyboardState(boolean[] blobTaps, Blob[] blobs, Stroke stroke, int[] fingerTouches) {
             this.blobTaps = blobTaps;

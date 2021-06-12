@@ -103,7 +103,7 @@ public class Library {
         };
         public static Applicable d = new NamedApplicable() {
             public void exe(Machine m) {
-                m.stk.push(new TreeMap(m.dict));
+                m.stk.push(new TreeMap<>(m.dict));
                 m.eval(p); // use internal p for print
             }
         };

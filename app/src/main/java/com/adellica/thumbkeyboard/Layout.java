@@ -33,7 +33,7 @@ public class Layout {
     final Map<String, String> map;
 
     public Layout(String name) {
-        this(name, new HashMap<String, String>());
+        this(name, new HashMap<>());
     }
 
     public Layout(String name, Map<String, String> dict) {
