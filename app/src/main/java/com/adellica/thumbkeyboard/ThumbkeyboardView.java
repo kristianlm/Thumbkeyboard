@@ -28,6 +28,7 @@ import static android.content.Context.VIBRATOR_SERVICE;
  * Created by klm on 9/27/16.
  */
 public class ThumbkeyboardView extends View {
+    public static final int LENGTH = 12;
     private static final String TAG = "TKEY";
     public ThumbkeyboardIME Ime;
     private final boolean showHelp = false;
@@ -45,21 +46,22 @@ public class ThumbkeyboardView extends View {
     }
 
     // negative positions means right/bottom-aligned
-    final Blob[] _blobs = new Blob[]{
-            //       idx col row
-            new Blob(0, 0, 0),
-            new Blob(1, 1, 0),
-            new Blob(2, -2, 0),
-            new Blob(3, -1, 0),
-            new Blob(4, 0, 1),
-            new Blob(5, 1, 1),
-            new Blob(6, -2, 1),
-            new Blob(7, -1, 1),
-            new Blob(8, 0, 2),
-            new Blob(9, 1, 2),
-            new Blob(10, -2, 2),
-            new Blob(11, -1, 2),
-    };
+    KeyboardState keyboardState = new KeyboardState(new boolean[LENGTH],
+            new Blob[]{
+                    //       idx col row
+                    new Blob(0, 0, 0),
+                    new Blob(1, 1, 0),
+                    new Blob(2, -2, 0),
+                    new Blob(3, -1, 0),
+                    new Blob(4, 0, 1),
+                    new Blob(5, 1, 1),
+                    new Blob(6, -2, 1),
+                    new Blob(7, -1, 1),
+                    new Blob(8, 0, 2),
+                    new Blob(9, 1, 2),
+                    new Blob(10, -2, 2),
+                    new Blob(11, -1, 2),
+            }, new Stroke(LENGTH));
     final Blob[] fingerTouches = new Blob[4]; // who'se got 4 thumbs anyway?
 
     /**
@@ -118,7 +120,7 @@ public class ThumbkeyboardView extends View {
         Log.i(TAG, "no config here");
     }
 
-    final String[] tokens = new String[blobs().length];
+    String[] tokens = new String[LENGTH];
 
 
     private int __anchorY = -1;
@@ -177,9 +179,6 @@ public class ThumbkeyboardView extends View {
         return eof ? c : null;
     }
 
-
-    final Stroke stroke = new Stroke(blobs().length);
-
     // screen coordinates of top of top-most button
     private int anchorY() {
         if (__anchorY < 0)
@@ -198,24 +197,7 @@ public class ThumbkeyboardView extends View {
         Ime.handleStroke(t);
     }
 
-    private Blob[] blobs() {
-        return _blobs;
-    }
-
-    private int touch2blob(double x, double y, MutableDouble closestDist) {
-        int nearest = 0; // index
-        double dist2 = blobs()[nearest].dist2(x, y);
-        for (int bid = 1; bid < blobs().length; bid++) {
-            double dist = blobs()[bid].dist2(x, y);
-            if (dist < dist2) {
-                dist2 = dist;
-                nearest = bid;
-            }
-        }
-        if (closestDist != null)
-            closestDist.value = Math.sqrt(dist2);
-        return nearest;
-    }
+    Map<String, Layout> layouts = new HashMap<String, Layout>();
 
     boolean holding = false;
 
@@ -228,7 +210,7 @@ public class ThumbkeyboardView extends View {
         return false;
     }
 
-    final String[][] subTokens = new String[blobs().length][blobs().length];
+    String[][] subTokens = new String[LENGTH][LENGTH];
 
     private boolean hidden = false;
 
@@ -260,12 +242,57 @@ public class ThumbkeyboardView extends View {
         return "";
     }
 
-    // used to indicate (when >= 0) whether we're sliding
-    // the keyboard placement (anchor) up/down.
-    private int anchorFinger = -1;
-
     private boolean hidden() {
         return hidden;
+    }
+
+    private static boolean isTapped(Stroke stroke, boolean[] blobTaps, int j) {
+        int outs = stroke.ups[j] + stroke.downs[j] + stroke.lefts[j] + stroke.rights[j];
+        System.out.println(outs);
+        if ((j - 4) >= 0 && stroke.downs[j - 4] > outs) {
+            return true;
+        }
+        if ((j + 4) < blobTaps.length && stroke.ups[j + 4] > outs) {
+            return true;
+        }
+        if ((j - 1) >= 0 && stroke.rights[j - 1] > outs) {
+            return true;
+        }
+        if ((j + 1) < blobTaps.length && stroke.lefts[j + 1] > outs) {
+            return true;
+        }
+        if (outs == 0) {
+            return blobTaps[j];
+        }
+        return false;
+    }
+
+    private void vibrate(int milliseconds) {
+        if (Build.VERSION.SDK_INT >= 26) {
+            ((Vibrator) this.getContext().getSystemService(VIBRATOR_SERVICE)).vibrate(VibrationEffect.createOneShot(milliseconds, VibrationEffect.DEFAULT_AMPLITUDE));
+        } else {
+            ((Vibrator) this.getContext().getSystemService(VIBRATOR_SERVICE)).vibrate(milliseconds);
+        }
+    }
+
+    private int touch2blob(double x, double y, MutableDouble closestDist) {
+        int nearest = 0; // index
+        double dist2 = keyboardState.blobs[nearest].dist2(x, y);
+        for (int bid = 1; bid < LENGTH; bid++) {
+            double dist = keyboardState.blobs[bid].dist2(x, y);
+            if (dist < dist2) {
+                dist2 = dist;
+                nearest = bid;
+            }
+        }
+        if (closestDist != null)
+            closestDist.value = Math.sqrt(dist2);
+        return nearest;
+    }
+
+    private int pixels(int dpi) {
+        Resources r = getResources();
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dpi, r.getDisplayMetrics());
     }
 
     @Override
@@ -289,145 +316,24 @@ public class ThumbkeyboardView extends View {
         MutableDouble d = new MutableDouble(-1);
         touch2blob(event.getX(i), event.getY(i), d);
         // we're pressing "outside" of keyboard, hide it
-        if (anchorFinger < 0 && d.value > pixels((int) (BLOB_RADIUS * 1.5))) {
+        if (d.value > pixels((int) (BLOB_RADIUS * 1.5))) {
             flushStroke();
             postInvalidate();
             hide();
         }
-
-        switch (event.getActionMasked()) {
-
-            case MotionEvent.ACTION_DOWN: { // primary finger down!
-                final int btn = touch2blob(event.getX(i), event.getY(i));
-                if (btn == -99) { // anchor button. no layouts for this guy
-                    anchorFinger = i;
-                } else if (btn >= 0) {
-                    blobs()[btn].tapping = true;
-                    blobs()[btn].holding = true;
-                    postInvalidate();
-                }
-                break;
-            }
-
-            case MotionEvent.ACTION_POINTER_DOWN: { // another finger down while holding one down
-                if (anchorFinger >= 0) break; // moving anchor, cancel
-                final int btn = touch2blob(event.getX(i), event.getY(i));
-                if (btn >= 0) {
-                    blobs()[btn].tapping = true;
-                    blobs()[btn].holding = true;
-                    postInvalidate();
-                }
-                break;
-            }
-
-            case MotionEvent.ACTION_POINTER_UP: { // finger up, still holding one down
-                if (anchorFinger >= 0) break;
-                final int btn = touch2blob(event.getX(i), event.getY(i));
-                if (btn >= 0) {
-                    if (blobs()[btn].tapping)
-                        stroke.taps[btn]++;
-                    blobs()[btn].holding = false;
-                    postInvalidate();
-                }
-                break;
-            }
-            case MotionEvent.ACTION_MOVE: {
-                if (!hidden() && anchorFinger >= 0) {
-                    anchorY((int) event.getY(anchorFinger) - pixels(BS));
-                    break;
-                }
-                for (int j = 0; j < event.getPointerCount(); j++) {
-                    final Blob btn = blobs()[touch2blob(event.getX(j), event.getY(j))]; // <-- going to
-                    if (btn.bid() >= 0) {
-                        if (btn != fingerTouches[event.getPointerId(j)]) {
-                            vibrate(10);
-                            final int fid = event.getPointerId(j);
-                            final Blob old = fingerTouches[fid]; // <-- coming from
-                            if (old != null) {
-                                old.holding = false;
-                                btn.holding = true;
-
-                                final int bid = old.bid();
-                                int ox = old.bid() % 4, oy = old.bid() / 4;
-                                int nx = btn.bid() % 4, ny = btn.bid() / 4;
-                                int dx = nx - ox, dy = ny - oy;
-                                Log.i(TAG, "swipe on " + bid + ": " + dx + "," + dy);
-                                int[] table = (dx == 0
-                                        ? (dy == 1 ? stroke.downs : stroke.ups)
-                                        : (dx == 1 ? stroke.rights : stroke.lefts));
-                                table[bid]++;
-                                old.tapping = false; // this is no longer a tap
-                                postInvalidate();
-                            }
-                            fingerTouches[fid] = btn;
-                        }
-                    }
-                }
-                break;
-            }
-            case MotionEvent.ACTION_UP: { // all fingers up! obs: last finger up ?≠ first finger down
-                final int btn = touch2blob(event.getX(i), event.getY(i));
-                if (btn >= 0) {
-                    if (blobs()[btn].tapping)
-                        stroke.taps[btn]++;
-                    String pattern = stroke.toString();
-                    Log.i(TAG, "" + pattern);
-                    handlePattern(stroke);
-                    flushStroke();
-                    postInvalidate();
-                }
-                anchorFinger = -1;
-                show();
-                break;
-            }
-            default:
-                //Log.d(TAG, "missed event " + event.getActionMasked());
-                break;
-        }
+        final int btn = touch2blob(event.getX(i), event.getY(i));
+        keyboardState.update(event, btn);
+        postInvalidate();
         return true;
     }
 
-    private void vibrate(int milliseconds) {
-        if (Build.VERSION.SDK_INT >= 26) {
-            ((Vibrator) this.getContext().getSystemService(VIBRATOR_SERVICE)).vibrate(VibrationEffect.createOneShot(milliseconds, VibrationEffect.DEFAULT_AMPLITUDE));
-        } else {
-            ((Vibrator) this.getContext().getSystemService(VIBRATOR_SERVICE)).vibrate(milliseconds);
-        }
-    }
-
     private void flushStroke() {
-        stroke.clear();
+        keyboardState.stroke.clear();
         Arrays.fill(fingerTouches, null);
-        for (int j = 0; j < blobs().length; j++) {
-            blobs()[j].tapping = false;
-            blobs()[j].holding = false;
+        for (int j = 0; j < LENGTH; j++) {
+            keyboardState.blobs[j].tapping = false;
+            keyboardState.blobs[j].holding = false;
         }
-    }
-
-    private int pixels(int dpi) {
-        Resources r = getResources();
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dpi, r.getDisplayMetrics());
-    }
-
-    final boolean[] blobTaps = new boolean[blobs().length];
-    Map<String, Layout> layouts = new HashMap<>();
-
-    private static boolean isTapped(Stroke stroke, boolean[] blobTaps, int j) {
-
-        if ((j - 4) >= 0 && stroke.downs[j - 4] > 0) {
-            return true;
-        }
-        if ((j + 4) < blobTaps.length && stroke.ups[j + 4] > 0) {
-            return true;
-        }
-        if ((j - 1) >= 0 && stroke.rights[j - 1] > 0) {
-            return true;
-        }
-        if ((j + 1) < blobTaps.length && stroke.lefts[j + 1] > 0) {
-            return true;
-        }
-        return blobTaps[j];
-
     }
 
     private String prettify2(final String label) {
@@ -536,9 +442,10 @@ public class ThumbkeyboardView extends View {
                 tokens[i] = token;
             }
             if (subs != null) {
+                boolean btSave = blobTaps[i];
                 blobTaps[i] = true;
                 getChildren(fakeStroke, blobTaps, subs[i], null);
-                blobTaps[i] = false;
+                blobTaps[i] = btSave;
             }
         }
     }
@@ -546,15 +453,15 @@ public class ThumbkeyboardView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        Blob[] bs = blobs();
+        Blob[] bs = keyboardState.blobs;
 
         boolean any = false; // <-- anybody being pressed?
         for (int i = 0; i < bs.length; i++) {
             any |= bs[i].holding;
-            blobTaps[i] = bs[i].tapping;
+            keyboardState.blobTaps[i] = bs[i].tapping;
         }
 
-        getChildren(stroke, blobTaps, tokens, subTokens);
+        getChildren(keyboardState.stroke, keyboardState.blobTaps, tokens, subTokens);
         for (int i = 0; i < bs.length; i++) {
             //final boolean show_labels_maybe = true;
             //final boolean show_labels = Ime.config.showLabelsAlways || show_labels_maybe;
@@ -582,6 +489,90 @@ public class ThumbkeyboardView extends View {
             return token.substring(6);
         }
         return token; // eg "input å"
+    }
+
+    class KeyboardState {
+        public Blob[] blobs;
+        public Stroke stroke;
+        public boolean[] blobTaps;
+
+        public KeyboardState(boolean[] blobTaps, Blob[] blobs, Stroke stroke) {
+            this.blobTaps = blobTaps;
+            this.blobs = blobs;
+            this.stroke = stroke;
+        }
+
+        public void update(MotionEvent event, int btn) {
+            switch (event.getActionMasked()) {
+                case MotionEvent.ACTION_DOWN: { // primary finger down!
+                    if (btn >= 0) {
+                        keyboardState.blobs[btn].tapping = true;
+                        keyboardState.blobs[btn].holding = true;
+                    }
+                    break;
+                }
+
+                case MotionEvent.ACTION_POINTER_DOWN: { // another finger down while holding one down
+                    if (btn >= 0) {
+                        keyboardState.blobs[btn].tapping = true;
+                        keyboardState.blobs[btn].holding = true;
+                    }
+                    break;
+                }
+
+                case MotionEvent.ACTION_POINTER_UP: { // finger up, still holding one down
+                    if (btn >= 0) {
+                        if (keyboardState.blobs[btn].tapping)
+                            keyboardState.stroke.taps[btn]++;
+                        keyboardState.blobs[btn].holding = false;
+                    }
+                    break;
+                }
+                case MotionEvent.ACTION_MOVE: {
+                    for (int j = 0; j < event.getPointerCount(); j++) {
+                        final Blob button = keyboardState.blobs[btn]; // <-- going to
+                        if (button.bid() >= 0) {
+                            if (button != fingerTouches[event.getPointerId(j)]) {
+                                final int fid = event.getPointerId(j);
+                                final Blob old = fingerTouches[fid]; // <-- coming from
+                                if (old != null) {
+                                    old.holding = false;
+                                    button.holding = true;
+
+                                    final int bid = old.bid();
+                                    int ox = old.bid() % 4, oy = old.bid() / 4;
+                                    int nx = button.bid() % 4, ny = button.bid() / 4;
+                                    int dx = nx - ox, dy = ny - oy;
+                                    Log.i(TAG, "swipe on " + bid + ": " + dx + "," + dy);
+                                    int[] table = (dx == 0
+                                            ? (dy == 1 ? keyboardState.stroke.downs : keyboardState.stroke.ups)
+                                            : (dx == 1 ? keyboardState.stroke.rights : keyboardState.stroke.lefts));
+                                    table[bid]++;
+                                    old.tapping = false; // this is no longer a tap
+                                }
+                                fingerTouches[fid] = button;
+                            }
+                        }
+                    }
+                    break;
+                }
+                case MotionEvent.ACTION_UP: { // all fingers up! obs: last finger up ?≠ first finger down
+                    if (btn >= 0) {
+                        if (keyboardState.blobs[btn].tapping)
+                            keyboardState.stroke.taps[btn]++;
+                        String pattern = keyboardState.stroke.toString();
+                        Log.i(TAG, "" + pattern);
+                        handlePattern(keyboardState.stroke);
+                        flushStroke();
+                    }
+                    show();
+                    break;
+                }
+                default:
+                    //Log.d(TAG, "missed event " + event.getActionMasked());
+                    break;
+            }
+        }
     }
 
     class Blob {
@@ -683,11 +674,11 @@ public class ThumbkeyboardView extends View {
 
             // Draw sub-labels
             p.setColor(Ime.config.colorSub);
-            for (int i = 0; i < blobs().length; i++) {
+            for (int i = 0; i < LENGTH; i++) {
+                p.setColor(Ime.config.colorSub);
                 offsets = getOffset(bid, i);
                 renderText(canvas, subs[i], p, 0.45f, 0.2f, offsets[0], offsets[1]);
             }
-
             canvas.restore();
         }
     }
