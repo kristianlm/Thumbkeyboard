@@ -249,8 +249,8 @@ public class ThumbkeyboardView extends View {
         if ("space".equals(newLabel)) return "␣";
         if (" ".equals(newLabel)) return "⍽";
         if ("repeat".equals(newLabel)) return "↺";
-        if ("delete".equals(newLabel)) return "Del";
-        if ("C-delete".equals(newLabel)) return "DW";
+        if ("delete".equals(newLabel)) return "⌦";
+        if ("C-delete".equals(newLabel)) return "⌦⌦";
         if ("backspace".equals(newLabel)) return "⌫";
         if ("C-backspace".equals(newLabel)) return "⌫⌫";
         if ("tab".equals(newLabel)) return "↹";
