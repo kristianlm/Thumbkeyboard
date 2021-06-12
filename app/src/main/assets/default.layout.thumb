@@ -27,6 +27,10 @@
   ^ .  |  . .
   . .  |  . . ] '!shift bind!
 
+[ > o  |  . .
+  ^ .  |  . .
+  . .  |  . . ] '!capslock bind!
+
 [ . .  |  . .
   v .  |  . .
   > o  |  . . ] '!ctrl bind!
