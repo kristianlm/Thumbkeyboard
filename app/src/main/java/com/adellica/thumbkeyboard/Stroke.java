@@ -24,6 +24,18 @@ class Stroke {
         rights = new int[len];
     }
 
+    public Stroke clone() {
+        Stroke new_stroke = new Stroke(taps.length);
+        for (int i = 0; i < taps.length; i++) {
+            new_stroke.taps[i] = taps[i];
+            new_stroke.ups[i] = ups[i];
+            new_stroke.downs[i] = downs[i];
+            new_stroke.lefts[i] = lefts[i];
+            new_stroke.rights[i] = rights[i];
+        }
+        return new_stroke;
+    }
+
     public static int count(String haystack, char needle) {
         int count = 0;
         for (int i = 0; i < haystack.length(); i++) {
