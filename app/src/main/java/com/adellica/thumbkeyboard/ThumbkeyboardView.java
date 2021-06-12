@@ -408,7 +408,7 @@ public class ThumbkeyboardView extends View {
                         break;
                     }
                 }
-                if (from == -1) {
+                if (from == -1 || (from % 4) / 2 != (i % 4) / 2) {
                     continue;
                 }
                 for (int pointer = 0; pointer < 4; pointer++) {
@@ -448,13 +448,10 @@ public class ThumbkeyboardView extends View {
             }
             final Object result = Ime.layout.get(fakeState.stroke);
             if (result == null) {
-                if (subs != null) {
-                    Arrays.fill(subs[i], null);
-                }
                 tokens[i] = null;
-                continue;
+            } else {
+                tokens[i] = result.toString();
             }
-            tokens[i] = result.toString();
             if (subs != null) {
                 if (alreadyPressed) {
                     Arrays.fill(subs[i], null);
