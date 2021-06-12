@@ -31,9 +31,9 @@
   ^ .  |  . .
   . .  |  . . ] '!capslock bind!
 
-[ . .  |  . .
-  v .  |  . .
-  > o  |  . . ] '!ctrl bind!
+[ . o  |  . .
+  > ^  |  . .
+  . .  |  . . ] '!ctrl bind!
 
 ;;[ . .  |  . v
 ;;  . .  |  . v
@@ -513,12 +513,19 @@
 
 [ . .  |  . .
   . .  |  . o
-  . .  |  > ^ ] :move_end bind!
+  . .  |  > ^ ] :C-dpad_right bind!
 
 [ . .  |  . .
   . .  |  o .
-  . .  |  ^ < ] :move_home bind!
+  . .  |  ^ < ] :C-dpad_left bind!
 
+[ . .  |  . .
+  v .  |  . .
+  > o  |  . . ] :move_end bind!
+
+[ . .  |  . .
+  > o  |  . .
+  ^ .  |  . . ] :move_home bind!
 ;; some punctuation
 
 [ . .  |  . .
