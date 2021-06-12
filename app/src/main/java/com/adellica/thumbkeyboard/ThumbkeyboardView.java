@@ -336,7 +336,7 @@ public class ThumbkeyboardView extends View {
         }
     }
 
-    private String prettify2(final String label) {
+    private String prettify(final String label) {
         if (label == null) {
             return "";
         }
@@ -469,28 +469,6 @@ public class ThumbkeyboardView extends View {
         }
     }
 
-    // describe a token to the user (lower case letter? special command?).
-    // we can make this as pretty as we want.
-    private String prettify(final String token) {
-        if ("key SPACE".equals(token)) return "␣";
-        if ("repeat".equals(token)) return "↺";
-        if ("key DEL".equals(token)) return "⇐";
-        if ("key ENTER".equals(token)) return "⏎";
-        if ("key DPAD_LEFT".equals(token)) return "←";
-        if ("key DPAD_UP".equals(token)) return "↑";
-        if ("key DPAD_RIGHT".equals(token)) return "→";
-        if ("key DPAD_DOWN".equals(token)) return "↓";
-        if (token.startsWith("key ")) {
-            final String key = token.substring(4);
-            return key.length() == 1
-                    ? (modShift() ? key.toUpperCase() : key.toLowerCase()) // eg "key S"
-                    : key; // eg "key DEL"
-        } else if (token.startsWith("input ")) {
-            return token.substring(6);
-        }
-        return token; // eg "input å"
-    }
-
     class KeyboardState {
         public Blob[] blobs;
         public Stroke stroke;
@@ -504,33 +482,26 @@ public class ThumbkeyboardView extends View {
 
         public void update(MotionEvent event, int btn) {
             switch (event.getActionMasked()) {
-                case MotionEvent.ACTION_DOWN: { // primary finger down!
-                    if (btn >= 0) {
-                        keyboardState.blobs[btn].tapping = true;
-                        keyboardState.blobs[btn].holding = true;
-                    }
-                    break;
-                }
-
+                case MotionEvent.ACTION_DOWN:  // primary finger down!
                 case MotionEvent.ACTION_POINTER_DOWN: { // another finger down while holding one down
                     if (btn >= 0) {
-                        keyboardState.blobs[btn].tapping = true;
-                        keyboardState.blobs[btn].holding = true;
+                        blobs[btn].tapping = true;
+                        blobs[btn].holding = true;
                     }
                     break;
                 }
 
                 case MotionEvent.ACTION_POINTER_UP: { // finger up, still holding one down
                     if (btn >= 0) {
-                        if (keyboardState.blobs[btn].tapping)
-                            keyboardState.stroke.taps[btn]++;
-                        keyboardState.blobs[btn].holding = false;
+                        if (blobs[btn].tapping)
+                            stroke.taps[btn]++;
+                        blobs[btn].holding = false;
                     }
                     break;
                 }
                 case MotionEvent.ACTION_MOVE: {
                     for (int j = 0; j < event.getPointerCount(); j++) {
-                        final Blob button = keyboardState.blobs[btn]; // <-- going to
+                        final Blob button = blobs[btn]; // <-- going to
                         if (button.bid() >= 0) {
                             if (button != fingerTouches[event.getPointerId(j)]) {
                                 final int fid = event.getPointerId(j);
@@ -545,8 +516,8 @@ public class ThumbkeyboardView extends View {
                                     int dx = nx - ox, dy = ny - oy;
                                     Log.i(TAG, "swipe on " + bid + ": " + dx + "," + dy);
                                     int[] table = (dx == 0
-                                            ? (dy == 1 ? keyboardState.stroke.downs : keyboardState.stroke.ups)
-                                            : (dx == 1 ? keyboardState.stroke.rights : keyboardState.stroke.lefts));
+                                            ? (dy == 1 ? stroke.downs : stroke.ups)
+                                            : (dx == 1 ? stroke.rights : stroke.lefts));
                                     table[bid]++;
                                     old.tapping = false; // this is no longer a tap
                                 }
@@ -558,11 +529,11 @@ public class ThumbkeyboardView extends View {
                 }
                 case MotionEvent.ACTION_UP: { // all fingers up! obs: last finger up ?≠ first finger down
                     if (btn >= 0) {
-                        if (keyboardState.blobs[btn].tapping)
-                            keyboardState.stroke.taps[btn]++;
-                        String pattern = keyboardState.stroke.toString();
+                        if (blobs[btn].tapping)
+                            stroke.taps[btn]++;
+                        String pattern = stroke.toString();
                         Log.i(TAG, "" + pattern);
-                        handlePattern(keyboardState.stroke);
+                        handlePattern(stroke);
                         flushStroke();
                     }
                     show();
@@ -634,7 +605,7 @@ public class ThumbkeyboardView extends View {
             int PBS = pixels((int) (BS * space));
             p.setTextSize(textSize);
 
-            String newLabel = prettify2(token);
+            String newLabel = prettify(token);
 
             float txtWidth = p.measureText(newLabel);
 
