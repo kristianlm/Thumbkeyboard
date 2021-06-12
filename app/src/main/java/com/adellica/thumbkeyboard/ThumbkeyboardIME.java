@@ -29,7 +29,6 @@ public class ThumbkeyboardIME extends InputMethodService {
     // only one machine and one server per app instance
     public static final Machine m = new Machine();
     public final Map<Stroke, Object> layout = new HashMap<>();
-    public static Thread server = null;
 
     /**
      * toggle using overlay(boolean) method.
@@ -174,8 +173,8 @@ public class ThumbkeyboardIME extends InputMethodService {
         });
 
         m.searchPaths.add(0, ThumbkeyboardView.configDir());
-        Layout.ensureExists(getAssets(), "default.layout.thumb");
-        Layout.ensureExists(getAssets(), "main.thumb");
+        FileCopier.ensureExists(getAssets(), "default.layout.thumb");
+        FileCopier.ensureExists(getAssets(), "main.thumb");
 
         try {
             m.stk.push(new Str(ThumbkeyboardView.configDir() + "main.thumb"));

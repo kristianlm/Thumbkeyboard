@@ -78,15 +78,6 @@ class Stroke {
         return repeat(" ", padding) + content;
     }
 
-    // read a line like 00000-00000:00000-00000 00000-00000:00000-00000 00100-00000:00000-00000 key DPAD_UP
-    // and return it's stroke part and its token-part. This is tightly connected to Stroke.toString implementation.
-    public static String parse(final String line) {
-        if (line.length() == 72) {
-            return line.substring(0, 72);
-        }
-        return null;
-    }
-
     public void clear() {
         for (int i = 0; i < taps.length; i++) {
             taps[i] = 0;

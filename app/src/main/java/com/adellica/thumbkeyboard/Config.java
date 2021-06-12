@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.adellica.thumbkeyboard.Layout.TAG;
+import static com.adellica.thumbkeyboard.FileCopier.TAG;
 
 /**
  * Created by klm on 10/15/17.
