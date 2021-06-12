@@ -15,12 +15,9 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.inputmethod.InputConnection;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 import static android.content.Context.VIBRATOR_SERVICE;
 
@@ -145,39 +142,6 @@ public class ThumbkeyboardView extends View {
     final int BS = BLOB_RADIUS;
     static final int BB = BLOB_BORDER * 2; // wall margin
 
-    // utils
-    String readBackwardsUntil(String p, boolean eof) {
-        final InputConnection ic = Ime.getCurrentInputConnection();
-        if (ic == null) return null;
-        int size = 32;
-        String c = null;
-        while (size < 4096) {
-            c = ic.getTextBeforeCursor(size, 0).toString();
-            int idx = c.lastIndexOf(p);
-            if (idx >= 0) {
-                return c.substring(idx + 1);
-            }
-            size *= 2;
-        }
-        return eof ? c : null;
-    }
-
-    String readForwardsUntil(String p, boolean eof) {
-        final InputConnection ic = Ime.getCurrentInputConnection();
-        if (ic == null) return null;
-        int size = 32;
-        String c = null;
-        while (size < 4096) {
-            c = ic.getTextAfterCursor(size, 0).toString();
-            int idx = c.indexOf(p);
-            if (idx >= 0) {
-                return c.substring(0, idx);
-            }
-            size *= 2;
-        }
-        return eof ? c : null;
-    }
-
     // screen coordinates of top of top-most button
     private int anchorY() {
         if (__anchorY < 0)
@@ -196,18 +160,7 @@ public class ThumbkeyboardView extends View {
         Ime.handleStroke(t);
     }
 
-    Map<String, Layout> layouts = new HashMap<String, Layout>();
-
     boolean holding = false;
-
-    private boolean deleteSurroundingText(int before, int after) {
-        final InputConnection ic = Ime.getCurrentInputConnection();
-        if (ic != null) {
-            ic.deleteSurroundingText(before, after);
-            return true;
-        }
-        return false;
-    }
 
     String[][] subTokens = new String[LENGTH][LENGTH];
 
@@ -223,46 +176,6 @@ public class ThumbkeyboardView extends View {
         Log.i(TAG, "SHOWING");
         hidden = false;
         Ime.setCandidatesViewShown(!hidden);
-    }
-
-    /**
-     * This guy isn't great. You can't specify SPACE|ENTER. So, for example,
-     * a word boundary can only be " " and not " |\n|\t" which is very limiting.
-     *
-     * @return The string that was deleted
-     */
-    private String deleteSurroundingUntil(final String pre, boolean bof, final String post, boolean eof, boolean trimLeft, boolean trimRight) {
-        final String preline = readBackwardsUntil(pre, bof);
-        final String postline = readForwardsUntil(post, eof);
-        if (deleteSurroundingText(
-                preline == null ? 0 : preline.length() + (trimLeft ? 1 : 0),
-                postline == null ? 0 : postline.length() + (trimRight ? 1 : 0)))
-            return preline + postline;
-        return "";
-    }
-
-    private boolean hidden() {
-        return hidden;
-    }
-
-    private static boolean isTapped(Stroke stroke, boolean[] blobTaps, int j) {
-        int outs = stroke.ups[j] + stroke.downs[j] + stroke.lefts[j] + stroke.rights[j];
-        if ((j - 4) >= 0 && stroke.downs[j - 4] > outs) {
-            return true;
-        }
-        if ((j + 4) < blobTaps.length && stroke.ups[j + 4] > outs) {
-            return true;
-        }
-        if ((j - 1) >= 0 && stroke.rights[j - 1] > outs) {
-            return true;
-        }
-        if ((j + 1) < blobTaps.length && stroke.lefts[j + 1] > outs) {
-            return true;
-        }
-        if (outs == 0) {
-            return blobTaps[j];
-        }
-        return false;
     }
 
     private void vibrate(int milliseconds) {
