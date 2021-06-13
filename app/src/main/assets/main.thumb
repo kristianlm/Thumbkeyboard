@@ -70,4 +70,3 @@
   . .  |  . x ] [ "#111111" label.color! ] bind!
 
 "default.layout.thumb" load
-latin

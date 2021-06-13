@@ -214,6 +214,11 @@ public class ThumbkeyboardIME extends InputMethodService {
     public void onStartInputView(android.view.inputmethod.EditorInfo info, boolean restarting) {
         super.onStartInputView(info, restarting);
         setCandidatesViewShown(overlay());
+        if ((info.inputType & 3) == 2 || (info.inputType & 3) == 3) {
+            m.eval(m.dict.get("numpad"));
+        } else {
+            m.eval(m.dict.get("latin"));
+        }
     }
 
     @Override
