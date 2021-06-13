@@ -56,6 +56,7 @@ public class Config {
             e.printStackTrace();
         }
     }
+
     public boolean showLabelsAlways = true;
 
     public static int s2c(String color) {

@@ -12,7 +12,7 @@ abstract public class APair implements IPair, Machine.Applicable {
     }
 
     public String toStringParenless() {
-        if(this == nil) return "";
+        if (this == nil) return "";
         StringBuilder f = new StringBuilder("" + car());
         IPair p = cdr();
         while (p != nil) {

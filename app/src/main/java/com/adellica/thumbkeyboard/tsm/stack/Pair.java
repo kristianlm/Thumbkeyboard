@@ -23,9 +23,11 @@ public class Pair extends APair implements Machine.Applicable {
         public <T> T car(Class<T> t) {
             throw new Machine.EmptyStackPopped();
         }
+
         public Object car() {
             throw new Machine.EmptyStackPopped();
         }
+
         public Pair cdr() {
             throw new Machine.EmptyStackPopped();
         }
