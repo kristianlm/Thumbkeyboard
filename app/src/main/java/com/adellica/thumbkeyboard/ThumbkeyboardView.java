@@ -567,10 +567,6 @@ public class ThumbkeyboardView extends View {
             canvas.save();
             canvas.translate(x(), y()); // anchor to center of rectangle
 
-            // Draw big label
-            p.setColor(Ime.config.colorLabel);
-            renderText(canvas, label, p, 1, 1, 0, 0);
-
             // Draw sub-labels
             p.setColor(Ime.config.colorSub);
             for (int i = 0; i < LENGTH; i++) {
@@ -578,6 +574,11 @@ public class ThumbkeyboardView extends View {
                 offsets = getOffset(bid, i);
                 renderText(canvas, subs[i], p, 0.45f, 0.2f, offsets[0], offsets[1]);
             }
+
+            // Draw big label
+            p.setColor(Ime.config.colorLabel);
+            renderText(canvas, label, p, 1, 1, 0, 0);
+
             canvas.restore();
         }
     }
