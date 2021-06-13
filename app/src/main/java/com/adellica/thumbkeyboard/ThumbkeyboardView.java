@@ -256,6 +256,9 @@ public class ThumbkeyboardView extends View {
         if ("tab".equals(newLabel)) return "↹";
         if ("shift".equals(newLabel)) return "⇧";
         if ("capslock".equals(newLabel)) return "⇪";
+        if ("[ latin ]".equals(newLabel)) return "ab";
+        if ("[ numpad ]".equals(newLabel)) return "⇭";
+        if ("[ greek ]".equals(newLabel)) return "αβ";
         if ("enter".equals(newLabel)) return "↵";
         if ("dpad_left".equals(newLabel)) return "←";
         if ("C-dpad_left".equals(newLabel)) return "⇐";
