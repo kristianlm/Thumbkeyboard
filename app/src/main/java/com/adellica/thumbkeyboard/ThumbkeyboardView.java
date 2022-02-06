@@ -384,6 +384,16 @@ public class ThumbkeyboardView extends View {
         public final boolean[] blobTaps;
         public final int[] fingerTouches;
 
+        @Override
+        public String toString() {
+            return "KeyboardState{" +
+                    "blobs=" + Arrays.toString(blobs) +
+                    ", stroke=" + stroke +
+                    ", blobTaps=" + Arrays.toString(blobTaps) +
+                    ", fingerTouches=" + Arrays.toString(fingerTouches) +
+                    '}';
+        }
+
         public KeyboardState(boolean[] blobTaps, Blob[] blobs, Stroke stroke, int[] fingerTouches) {
             this.blobTaps = blobTaps;
             this.blobs = blobs;
@@ -442,7 +452,7 @@ public class ThumbkeyboardView extends View {
                         final int ox = old.bid() % 4, oy = old.bid() / 4;
                         final int nx = btn % 4, ny = btn / 4;
                         final int dx = nx - ox, dy = ny - oy;
-                        Log.i(TAG, "swipe on " + bid + ": " + dx + "," + dy);
+//                        Log.i(TAG, "swipe on " + bid + ": " + dx + "," + dy);
                         int[] table = (dx == 0
                                 ? (dy == 1 ? stroke.downs : stroke.ups)
                                 : (dx == 1 ? stroke.rights : stroke.lefts));
