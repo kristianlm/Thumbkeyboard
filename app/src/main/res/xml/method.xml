@@ -2,8 +2,8 @@
 
 <input-method xmlns:android="http://schemas.android.com/apk/res/android">
     <subtype
-        android:label="@string/label_subtype"
-        android:icon="@drawable/icon_en"
+        android:icon="@mipmap/ic_launcher"
         android:imeSubtypeLocale="en_US"
-        android:imeSubtypeMode="keyboard" />
+        android:imeSubtypeMode="keyboard"
+        android:label="@string/label_subtype" />
 </input-method>

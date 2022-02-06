@@ -12,14 +12,14 @@ abstract public class APair implements IPair, Machine.Applicable {
     }
 
     public String toStringParenless() {
-        if(this == nil) return "";
-        String f = "" + car();
+        if (this == nil) return "";
+        StringBuilder f = new StringBuilder("" + car());
         IPair p = cdr();
         while (p != nil) {
-            f += " " + p.car();
+            f.append(" ").append(p.car());
             p = p.cdr();
         }
-        return f;
+        return f.toString();
     }
 
     public String toString() {

@@ -24,15 +24,19 @@
 'shift* false set
 'alt*   false set
 'win*   false set
+'capslock* false set
+'shiftkey* false set
 
 '!ctrl  [ 'ctrl*  invert ] set
-'!shift [ 'shift* invert ] set
+'!shift [ 'shiftkey* invert 'shift* invert ] set
 '!alt   [ 'alt*   invert ] set
 '!win   [ 'win*   invert ] set
+'!capslock [ 'capslock* invert 'shift* invert ] set
 
 ;; .. => ..
 'mod-reset [ 'ctrl*  falsify
-             'shift* falsify 
+             'shiftkey* falsify
+             'shift* capslock* set
              'alt*   falsify
              'win*   falsify ] set
 

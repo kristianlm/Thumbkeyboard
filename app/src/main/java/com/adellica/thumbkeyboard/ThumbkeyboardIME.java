@@ -3,7 +3,6 @@
 
 package com.adellica.thumbkeyboard;
 
-import android.graphics.Color;
 import android.inputmethodservice.InputMethodService;
 import android.os.Handler;
 import android.util.Log;
@@ -16,20 +15,10 @@ import com.adellica.thumbkeyboard.tsm.Keypress;
 import com.adellica.thumbkeyboard.tsm.Library.NamedApplicable;
 import com.adellica.thumbkeyboard.tsm.Machine;
 import com.adellica.thumbkeyboard.tsm.Machine.Str;
-import com.adellica.thumbkeyboard.tsm.Reader;
 import com.adellica.thumbkeyboard.tsm.stack.IPair;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static android.view.KeyEvent.META_ALT_LEFT_ON;
-import static android.view.KeyEvent.META_ALT_ON;
-import static android.view.KeyEvent.META_CTRL_LEFT_ON;
-import static android.view.KeyEvent.META_CTRL_ON;
-import static android.view.KeyEvent.META_META_LEFT_ON;
-import static android.view.KeyEvent.META_META_ON;
-import static android.view.KeyEvent.META_SHIFT_LEFT_ON;
-import static android.view.KeyEvent.META_SHIFT_ON;
 
 
 public class ThumbkeyboardIME extends InputMethodService {
@@ -37,16 +26,15 @@ public class ThumbkeyboardIME extends InputMethodService {
 
     private final Handler mHandler = new Handler();
 
-    public final Map<Stroke, Object> layout = new HashMap<Stroke, Object>();
     // only one machine and one server per app instance
-    public static Machine m = new Machine();
-    public static Thread server = null;
+    public static final Machine m = new Machine();
+    public final Map<Stroke, Object> layout = new HashMap<>();
 
     /**
      * toggle using overlay(boolean) method.
      */
     private boolean _overlaymode = false;
-    Config config = new Config();
+    final Config config = new Config();
 
     private ThumbkeyboardView viewInput; // used for non-overlay
     private ThumbkeyboardView viewCandidates; // used for fullscreen overlay
@@ -59,25 +47,24 @@ public class ThumbkeyboardIME extends InputMethodService {
         viewCandidates.postInvalidate();
         viewInput.postInvalidate();
     }
+
     /**
      * fullblown-fullscreen overlay or standard opaque keyboard view with a height?
-     * @param value
+     *
+     * @param value whether overlay mode is enabled
      */
     public void overlay(boolean value) {
-        if(value == _overlaymode) return;
+        if (value == _overlaymode) return;
         _overlaymode = value;
 
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                setCandidatesViewShown(_overlaymode);
-                if(_overlaymode) {
-                    viewInput.setVisibility(View.GONE);
-                    viewCandidates.setVisibility(View.VISIBLE);
-                } else {
-                    viewInput.setVisibility(View.VISIBLE);
-                    viewCandidates.setVisibility(View.GONE);
-                }
+        mHandler.post(() -> {
+            setCandidatesViewShown(_overlaymode);
+            if (_overlaymode) {
+                viewInput.setVisibility(View.GONE);
+                viewCandidates.setVisibility(View.VISIBLE);
+            } else {
+                viewInput.setVisibility(View.VISIBLE);
+                viewCandidates.setVisibility(View.GONE);
             }
         });
     }
@@ -144,10 +131,10 @@ public class ThumbkeyboardIME extends InputMethodService {
                 Stroke stroke;
                 try {
                     stroke = m.stk.pop(Stroke.class);
-                } catch(Machine.TypeMismatch e) {
+                } catch (Machine.TypeMismatch e) {
                     stroke = Stroke.fromPair(m.stk.pop(IPair.class));
                 }
-                if(stroke == null) {
+                if (stroke == null) {
                     Log.e(TAG, "cannot bind!: stroke is null");
                     return;
                 }
@@ -186,8 +173,8 @@ public class ThumbkeyboardIME extends InputMethodService {
         });
 
         m.searchPaths.add(0, ThumbkeyboardView.configDir());
-        Layout.ensureExists(getAssets(), "default.layout.thumb");
-        Layout.ensureExists(getAssets(), "main.thumb");
+        FileCopier.ensureExists(getAssets(), "default.layout.thumb");
+        FileCopier.ensureExists(getAssets(), "main.thumb");
 
         try {
             m.stk.push(new Str(ThumbkeyboardView.configDir() + "main.thumb"));
@@ -195,18 +182,6 @@ public class ThumbkeyboardIME extends InputMethodService {
         } catch (Throwable e) {
             e.printStackTrace();
             Toast.makeText(this, "error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-        }
-
-        if(false && server == null) {
-            server = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    int port = 1234;
-                    Log.i(TAG, "Starting server on port " + port);
-                    Reader.serve(m, port);
-                }
-            });
-            server.start();
         }
     }
 
@@ -219,42 +194,40 @@ public class ThumbkeyboardIME extends InputMethodService {
     @Override
     public View onCreateCandidatesView() {
         viewCandidates = createThumbkeyboardView(true);
-        if(!overlay())
+        if (!overlay())
             viewCandidates.setVisibility(View.GONE);
         // ^ otherwise, it will hide viewInput (since it has superheight)
         return viewCandidates;
     }
 
-    private int keypressMetastate(Keypress key) {
-        int mask = 0;
-        if (key.shift) mask |= META_SHIFT_ON | META_SHIFT_LEFT_ON;
-        if (key.ctrl)  mask |= META_CTRL_ON  | META_CTRL_LEFT_ON;
-        if (key.alt)   mask |= META_ALT_ON   | META_ALT_LEFT_ON;
-        if (key.win)   mask |= META_META_ON  | META_META_LEFT_ON;
-        return mask;
-    }
-
     private void handleKeypress(Keypress key, InputConnection ic) {
-        final int meta = keypressMetastate(key);
         final long now = System.currentTimeMillis();
-        ic.sendKeyEvent(new KeyEvent(now, now, KeyEvent.ACTION_DOWN, key.keycode, 0, meta));
-        ic.sendKeyEvent(new KeyEvent(now, now, KeyEvent.ACTION_UP,   key.keycode, 0, meta));
+        ic.sendKeyEvent(new KeyEvent(now, now, KeyEvent.ACTION_DOWN, key.keycode, 0, key.getMetaState()));
+        ic.sendKeyEvent(new KeyEvent(now, now, KeyEvent.ACTION_UP, key.keycode, 0, key.getMetaState()));
     }
 
     private void handleStr(Str input, InputConnection ic) {
         ic.commitText(input.value, 1); // 1 means 'end of new inserted text'
     }
 
-    @Override public void onStartInputView(android.view.inputmethod.EditorInfo info, boolean restarting) {
+    @Override
+    public void onStartInputView(android.view.inputmethod.EditorInfo info, boolean restarting) {
         super.onStartInputView(info, restarting);
         setCandidatesViewShown(overlay());
+        if ((info.inputType & 3) == 2 || (info.inputType & 3) == 3) {
+            m.eval(m.dict.get("numpad"));
+        } else {
+            m.eval(m.dict.get("latin"));
+        }
     }
 
-    @Override public boolean onEvaluateFullscreenMode() {
-      return false;
-   }
+    @Override
+    public boolean onEvaluateFullscreenMode() {
+        return false;
+    }
 
-    @Override public void onFinishInput() {
+    @Override
+    public void onFinishInput() {
         setCandidatesViewShown(false);
         super.onFinishInput();
     }
@@ -263,7 +236,7 @@ public class ThumbkeyboardIME extends InputMethodService {
         final Object op = layout.get(stroke);
         Log.i(TAG, "handleStroke: " + op);
 
-        if(op == null) {
+        if (op == null) {
             try {
                 m.eval(new Machine.Word("missing"));
             } catch (Throwable e) {
@@ -273,7 +246,7 @@ public class ThumbkeyboardIME extends InputMethodService {
         } else {
             // we found a procedure for stroke, go!
             try {
-                if(op instanceof Keypress || op instanceof Str) {
+                if (op instanceof Keypress || op instanceof Str) {
                     m.stk.push(op);
                     m.eval(m.dict.get("press"));
                 } else {

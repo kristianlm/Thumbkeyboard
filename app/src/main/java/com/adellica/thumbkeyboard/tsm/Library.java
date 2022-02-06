@@ -29,31 +29,27 @@ import static com.adellica.thumbkeyboard.tsm.stack.Pair.reverse;
 @SuppressWarnings("unused")
 public class Library {
 
-    public abstract static class NamedApplicable implements Applicable {
-        public String name = null;
-        public NamedApplicable() {}
-        public NamedApplicable(String name) {this.name=name;}
-        @Override public String toString() {return "\u001b[34m‹" + name + "›\u001b[0m";}
-    }
     public static void init(Library library) {
-        for(Field field : library.getClass().getFields()) {
+        for (Field field : library.getClass().getFields()) {
             try {
                 final Object o = field.get(library);
-                if(!(o instanceof NamedApplicable)) continue;
-                NamedApplicable na = ((NamedApplicable)o);
-                if(na.name == null) na.name = field.getName();
-            } catch (IllegalAccessException e) {e.printStackTrace();}
+                if (!(o instanceof NamedApplicable)) continue;
+                NamedApplicable na = ((NamedApplicable) o);
+                if (na.name == null) na.name = field.getName();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     public void fillDict(Map<String, Object> dict) {
         init(this);
-        for(Field field : this.getClass().getFields()) {
+        for (Field field : this.getClass().getFields()) {
             try {
                 String name = field.getName();
                 Object o = field.get(this);
-                if(o instanceof NamedApplicable) {
-                    name = ((NamedApplicable)o).name;
+                if (o instanceof NamedApplicable) {
+                    name = ((NamedApplicable) o).name;
                 }
                 dict.put(name, o);
             } catch (IllegalAccessException e) {
@@ -62,10 +58,26 @@ public class Library {
         }
     }
 
+    public abstract static class NamedApplicable implements Applicable {
+        public String name = null;
+
+        public NamedApplicable() {
+        }
+
+        public NamedApplicable(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return "\u001b[34m‹" + name + "›\u001b[0m";
+        }
+    }
+
     public static class Core extends Library {
         public static Applicable help = new NamedApplicable() {
             public void exe(Machine m) {
-                m.stk.push("d for dictoionary, ' to quote, [] to postpone evaluation, ; for comments\n example: [ 2 3 + ] e \n example: 'greet [ \"hello there!\" p ] set greet");
+                m.stk.push("d for dictionary, ' to quote, [] to postpone evaluation, ; for comments\n example: [ 2 3 + ] e \n example: 'greet [ \"hello there!\" p ] set greet");
                 m.eval(p);
             }
         };
@@ -91,7 +103,7 @@ public class Library {
         };
         public static Applicable d = new NamedApplicable() {
             public void exe(Machine m) {
-                m.stk.push(new TreeMap(m.dict));
+                m.stk.push(new TreeMap<>(m.dict));
                 m.eval(p); // use internal p for print
             }
         };
@@ -105,15 +117,15 @@ public class Library {
             public void exe(Machine m) {
                 String filename = m.stk.pop(Str.class).value;
                 File file = new File(filename);
-                for(String sp : m.searchPaths) {
-                    if(file.exists()) break;
+                for (String sp : m.searchPaths) {
+                    if (file.exists()) break;
                     file = new File(sp + filename);
                 }
 
                 try {
                     Reader reader = new Reader(new FileInputStream(file));
                     Object read;
-                    while((read = reader.read()) != null) {
+                    while ((read = reader.read()) != null) {
                         m.eval(read);
                     }
                 } catch (FileNotFoundException e1) {
@@ -159,7 +171,7 @@ public class Library {
                 m.dict.put(name.value, content);
             }
         };
-        public static Applicable p = new NamedApplicable() { // println
+        public static final Applicable p = new NamedApplicable() { // println
             @Override
             public void exe(Machine m) {
                 OutputStream os = m.get("out", OutputStream.class);
@@ -168,7 +180,9 @@ public class Library {
                     os.flush();
                 } catch (final IOException e) {
                     throw new TFE() {
-                        public String getMessage() { return "io error " + e; }
+                        public String getMessage() {
+                            return "io error " + e;
+                        }
                     };
                 }
             }
@@ -187,7 +201,7 @@ public class Library {
                 final Object t = m.stk.pop();
                 final Boolean i = m.stk.pop(Boolean.class);
                 Object which = e;
-                if(i.booleanValue()) which = t;
+                if (i) which = t;
                 m.eval(which);
             }
         };
@@ -196,7 +210,7 @@ public class Library {
             public void exe(Machine m) {
                 int i = m.stk.pop(Integer.class);
                 final Object body = m.stk.pop();
-                while(i > 0) {
+                while (i > 0) {
                     i--;
                     m.eval(body);
                 }
@@ -209,7 +223,7 @@ public class Library {
                 IPair lst = m.stk.pop(IPair.class);
                 Machine mm = new Machine();
                 Stack result = new Stack(nil);
-                while(lst != nil) {
+                while (lst != nil) {
                     mm.stk.push(lst.car());
                     mm.eval(proc);
                     result.push(mm.stk.pop());
@@ -259,35 +273,35 @@ public class Library {
             public void exe(Machine m) {
                 final Integer n = m.stk.pop(Integer.class);
                 final Integer d = m.stk.pop(Integer.class);
-                m.stk.push(n.intValue() + d.intValue());
+                m.stk.push(n + d);
             }
         };
         public static final Applicable MINUS = new NamedApplicable("-") {
             public void exe(Machine m) {
                 final Integer n = m.stk.pop(Integer.class);
                 final Integer d = m.stk.pop(Integer.class);
-                m.stk.push(n.intValue() - d.intValue());
+                m.stk.push(n - d);
             }
         };
         public static final Applicable MULTIPLY = new NamedApplicable("*") {
             public void exe(Machine m) {
                 final Integer n = m.stk.pop(Integer.class);
                 final Integer d = m.stk.pop(Integer.class);
-                m.stk.push(n.intValue() * d.intValue());
+                m.stk.push(n * d);
             }
         };
         public static final Applicable DIVIDE = new NamedApplicable("/") {
             public void exe(Machine m) {
                 final Integer n = m.stk.pop(Integer.class);
                 final Integer d = m.stk.pop(Integer.class);
-                m.stk.push(n.intValue() / d.intValue());
+                m.stk.push(n / d);
             }
         };
         public static final Applicable MODULUS = new NamedApplicable("%") {
             public void exe(Machine m) {
                 final Integer n = m.stk.pop(Integer.class);
                 final Integer d = m.stk.pop(Integer.class);
-                m.stk.push(n.intValue() % d.intValue());
+                m.stk.push(n % d);
             }
         };
     }

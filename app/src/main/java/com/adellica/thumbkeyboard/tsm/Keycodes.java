@@ -8,7 +8,7 @@ import java.util.Map;
  */
 public class Keycodes {
 
-    private final static Map<String, Integer> mapping = new HashMap<String, Integer>();
+    private final static Map<String, Integer> mapping = new HashMap<>();
 
     static {
         init();
@@ -17,13 +17,15 @@ public class Keycodes {
     private static void put(String name, int keycode) {
         mapping.put(name, keycode);
     }
+
     public static Integer fromString(final String name) {
         return mapping.get(name);
     }
+
     public static String toString(int _code) {
         Integer code = _code;
-        for(String key : mapping.keySet()) {
-            if(code.equals(mapping.get(key))) return key;
+        for (String key : mapping.keySet()) {
+            if (code.equals(mapping.get(key))) return key;
         }
         throw new RuntimeException("no key for code " + code);
     }

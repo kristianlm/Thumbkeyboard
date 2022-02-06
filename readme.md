@@ -1,20 +1,28 @@
   [KeyEvent]: https://developer.android.com/reference/android/view/KeyEvent.html
   
-# Adellica's Chorded Keyboard
+# ThumbKeyboard
 
-This is a 12-button chorded keyboard for Android. The objective is to
-replace the standard QUERTY Touch-screen keyboards. It is heavily
-inspired
-by [Chorded keyboards](https://en.wikipedia.org/wiki/Chorded_keyboard)
-and Alexander
-Burger's [PentiKeyboard](https://software-lab.de/penti.html) in
-particular. The keyboard is fully usable but not very
+This is a 12-button [chorded keyboard](https://en.wikipedia.org/wiki/Chorded_keyboard) for Android.
+Forked from [Adellica’s](https://github.com/kristianlm/Thumbkeyboard) Thumbkeyboard,
+which is in turn a fork of Alexander Burger’s [PentiKeyboard](https://software-lab.de/penti.html).
+
+Main changes from Adellica’s keyboard:
+* Should build in Android Studio.
+* New layout, which I think is more efficient.
+* Remove special anchor key and blank key, to add more normal keys.
+* Show capital letters when shift is pressed.
+* Show unicode characters on keyboard.
+
+
+Adellica’s `readme.md` follows. Most of it is still relevant.
+
+The keyboard is fully usable but not very
 user-friendly. The transparency feature may misfunction in certain
 apps.
 
 - With only 12 buttons, they can be large and you rarely miss
 - With only 12 buttons, you'll need to press multiple buttons
-  simultaniously to access all the 26 letters of the alphabet
+  simultaneously to access all the 26 letters of the alphabet
 - With fewer key misses, you (hopefully) don't need a dictionary
 - There are swipe gestures for pretty much all keyboard symbols
 - You can define your own layouts
@@ -120,7 +128,7 @@ Thumb StackMachine (REPL on port 2345)
 [ :1 :1 ] shift?
 [ :1 false ] not ;; negate!
 [ :1 true ] shift! ;; set shift modifier to true on keypress in stack position 2
-[ :! ] drop ;; makes sence? holding shift and pressing 1 yields ! (US layout only)
+[ :! ] drop ;; makes sense? holding shift and pressing 1 yields ! (US layout only)
 [ ] :@ ;; let's try the other way
 [ :@ ] false shift! ;; how does this keypress look like without holding shift?
 [ :2 ] drop ;; it looks like :2 (again, it's always US layout)
@@ -145,3 +153,4 @@ prefix), but some have been renamed (`FORWARD_DEL` => `:delete`).
 - a quick and easy way to update/share layouts/strokes
 - add a way to switch to other keyboard apps
 - add a non-seethrough mode
+
