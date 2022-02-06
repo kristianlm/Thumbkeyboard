@@ -218,7 +218,7 @@ public class ThumbkeyboardView extends View {
             }
         } else {
             final int btn = touch2blob(event.getX(i), event.getY(i));
-            if (keyboardState.update(eventType, btn, -1)) {
+            if (keyboardState.update(eventType, btn, event.getPointerId(event.getActionIndex()))) {
                 vibrate(10);
             }
         }
@@ -278,7 +278,13 @@ public class ThumbkeyboardView extends View {
 
     private void getChildren(KeyboardState keyboardState, String[] tokens, String[][] subs) {
         for (int i = 0; i < LENGTH; i++) {
-            final boolean alreadyPressed = keyboardState.blobs[i].tapping || keyboardState.blobs[i].holding;
+            boolean alreadyPressed = false;
+            for (int pointer = 0; pointer < 4; pointer++) {
+                if (keyboardState.fingerTouches[pointer] == i) {
+                    alreadyPressed = true;
+                    break;
+                }
+            }
             if (alreadyPressed && subs == null) {
                 tokens[i] = null;
                 continue;
@@ -317,29 +323,26 @@ public class ThumbkeyboardView extends View {
                 }
             }
             if (!swipable && !alreadyPressed) {
-                fakeState.update(MotionEvent.ACTION_POINTER_DOWN, i, -1);
-                for (int p = 0; p < 4; p++) {
-                    if (fakeState.fingerTouches[p] == -1) {
-                        fakeState.fingerTouches[p] = i;
+                for (int pointer = 0; pointer < 4; pointer++) {
+                    if (keyboardState.fingerTouches[pointer] == -1) {
+                        fakeState.update(MotionEvent.ACTION_POINTER_DOWN, i, pointer);
                         break;
                     }
                 }
             }
             final KeyboardState childFakeState = fakeState.clone();
             int down = 0;
-            for (int blob = 0; blob < LENGTH; blob++) {
-                if (fakeState.blobs[blob].tapping || fakeState.blobs[blob].holding) {
+            for (int pointer = 0; pointer < 4; pointer++) {
+                if (fakeState.fingerTouches[pointer] != -1) {
                     down++;
                 }
             }
-            for (int blob = 0; blob < LENGTH; blob++) {
-                if (fakeState.blobs[blob].tapping || fakeState.blobs[blob].holding) {
+            for (int pointer = 0; pointer < 4; pointer++) {
+                if (fakeState.fingerTouches[pointer] != -1) {
                     down--;
-                    if (down == 0) {
-                        fakeState.update(MotionEvent.ACTION_UP, blob, -1);
-                    } else {
-                        fakeState.update(MotionEvent.ACTION_POINTER_UP, blob, -1);
-                    }
+                    fakeState.update(down == 0 ? MotionEvent.ACTION_UP : MotionEvent.ACTION_POINTER_UP,
+                            fakeState.fingerTouches[pointer],
+                            pointer);
                 }
             }
             final Object result = Ime.layout.get(fakeState.stroke);
@@ -427,6 +430,7 @@ public class ThumbkeyboardView extends View {
                         blobs[btn].tapping = true;
                         blobs[btn].holding = true;
                     }
+                    fingerTouches[pointer] = btn;
                     wouldVibrate = true;
                     break;
                 }
