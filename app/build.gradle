@@ -3,7 +3,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdk 32
     defaultConfig {
-        applicationId "com.adellica.thumbkeyboard3"
+        applicationId "com.github.kristianlm.joykeyboard"
         minSdkVersion 16
         versionCode 1
         versionName "1.0"

@@ -1,6 +1,6 @@
 <resources>
     <!-- Title -->
-    <string name="app_name">Thumb Keyboard</string>
+    <string name="app_name">JoyKeyboard Thumbs</string>
     <!-- Labels for subtype -->
-    <string name="label_subtype">12b(3) Chorded Thumb Keyboard</string>
+    <string name="label_subtype">JoyKeyboard Thumbs</string>
 </resources>
