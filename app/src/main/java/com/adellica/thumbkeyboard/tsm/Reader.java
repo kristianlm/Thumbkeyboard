@@ -130,7 +130,10 @@ public class Reader {
                     case 0x3F: bao.write('\\'); c = '?' ; break;
                     default:
                 }
-                if(isPrintableChar(c)) {
+                // TODO: \xXX-escape nonprintable characters
+                // but allow valid UTF8 sequences, so that "€"
+                // doesn't turn into cryptic "\xE2\x82\xAC".
+                if(true || isPrintableChar(c)) {
                     bao.write(c);
                 } else {
                     bao.write(String.format("\\x%02x", c).getBytes());
