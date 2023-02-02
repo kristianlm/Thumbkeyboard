@@ -150,38 +150,34 @@ public class ThumbkeyboardView extends View {
 
         public int bid() { return bid; }
 
-        public void draw(Canvas canvas, boolean idle, final String label) {
-            if(idle)
-                if(holding) fill.setColor(Ime.config.colorBackgroundHolding);
-                else        fill.setColor(Ime.config.colorBackgroundNonIdle);
-            else            fill.setColor(Ime.config.colorBackgroundIdle);
+        public void draw(Canvas canvas, final String label) {
+            if(holding) fill.setColor(Ime.config.colorBackgroundHolding);
+            else        fill.setColor(Ime.config.colorBackgroundNonIdle);
 
             final int S = pixels(BLOB_RADIUS - BLOB_BORDER);
-            if(bid() == 1)
-                canvas.drawCircle(x(), y(), pixels(BS), fill);
-            else
-                canvas.drawRect(x()-S, y()-S, x()+S, y()+S, fill);
+            canvas.drawRect(x()-S, y()-S, x()+S, y()+S, fill);
 
+            if(label != null) {
+                final TextPaint p = new TextPaint();
+                final int PBS = pixels(BS);
+                final int y = Math.min(canvas.getWidth(), canvas.getHeight());
 
-            final TextPaint p = new TextPaint();
-            final int PBS = pixels(BS);
-            final int y = Math.min(canvas.getWidth(), canvas.getHeight());
+                p.setTypeface(Typeface.MONOSPACE);
+                p.setAntiAlias(true);
+                p.setTextSize(y / 16);
 
-            p.setTypeface(Typeface.MONOSPACE);
-            p.setAntiAlias(true);
-            p.setTextSize(y / 16);
+                p.setStyle(Paint.Style.FILL);
+                p.setColor(Ime.config.colorLabel);
+                canvas.save();
+                canvas.translate(x(), y()); // anchor to center of rectangle
 
-            p.setStyle(Paint.Style.FILL);
-            p.setColor(Ime.config.colorLabel);
-            canvas.save();
-            canvas.translate(x(), y()); // anchor to center of rectangle
-
-            float txtWidth = p.measureText(label);
-            if(txtWidth > PBS * 2) { // text is too big for button!
-                p.setTextScaleX(0.9f / (txtWidth / (PBS*2))); // fit width
+                float txtWidth = p.measureText(label);
+                if (txtWidth > PBS * 2) { // text is too big for button!
+                    p.setTextScaleX(0.9f / (txtWidth / (PBS * 2))); // fit width
+                }
+                canvas.drawText(label, -(txtWidth * p.getTextScaleX()) / 2, 0, p);
+                canvas.restore();
             }
-            canvas.drawText(label, -(txtWidth * p.getTextScaleX())/2,0,p);
-            canvas.restore();
         }
     }
 
@@ -192,7 +188,9 @@ public class ThumbkeyboardView extends View {
     // input: y screen coordinate of top of keyboard
     private void anchorY(int newValue) {
         __anchorY = newValue;
-        postInvalidate();
+        removeCallbacks(redraw);
+        postDelayed(redraw, draw_delay);
+        //postInvalidateDelayed(1000);
     }
     // screen coordinates of top of top-most button
     private int anchorY() {
@@ -295,8 +293,9 @@ public class ThumbkeyboardView extends View {
 
     // used to indicate (when >= 0) whether we're sliding
     // the keyboard placement (anchor) up/down.
-    private int anchorFinger = -1;
 
+    private Runnable redraw = () -> postInvalidate();
+    private long draw_delay = 50;
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int i = event.getActionIndex(); // index of finger that caused the down event
@@ -314,50 +313,39 @@ public class ThumbkeyboardView extends View {
         MutableDouble d = new MutableDouble(-1);
         touch2blob(event.getX(i), event.getY(i), d);
         // we're pressing "outside" of keyboard, hide it
-        if(anchorFinger < 0 && d.value > pixels((int)(BLOB_RADIUS * 1.5))) {
+        if(d.value > pixels((int)(BLOB_RADIUS * 1.5))) {
             flushStroke();
-            postInvalidate();
+            removeCallbacks(redraw);
+            postDelayed(redraw, draw_delay);
             hide();
         }
 
         switch(event.getActionMasked()) {
 
-            case MotionEvent.ACTION_DOWN: { // primary finger down!
-                final int btn = touch2blob(event.getX(i), event.getY(i));
-                if(btn == 1) { // anchor button. no layouts for this guy
-                    anchorFinger = i;
-                } else if(btn >= 0) {
-                    blobs()[btn].tapping = true;
-                    blobs()[btn].holding = true;
-                    postInvalidate();
-                }
-                break; }
-
-            case MotionEvent.ACTION_POINTER_DOWN: { // another finger down while holding one down
-                if(anchorFinger >= 0) break; // moving anchor, cancel
+            case MotionEvent.ACTION_DOWN:
+            case MotionEvent.ACTION_POINTER_DOWN: { // primary finger down!
                 final int btn = touch2blob(event.getX(i), event.getY(i));
                 if(btn >= 0) {
                     blobs()[btn].tapping = true;
                     blobs()[btn].holding = true;
-                    postInvalidate();
+                    removeCallbacks(redraw);
+                    postDelayed(redraw, draw_delay);
+                    //postInvalidateDelayed(draw_delay);
                 }
-                break; }
+                break; }// another finger down while holding one down
 
             case MotionEvent.ACTION_POINTER_UP: { // finger up, still holding one down
-                if(anchorFinger >= 0) break;
                 final int btn = touch2blob(event.getX(i), event.getY(i));
                 if(btn >= 0) {
                     if (blobs()[btn].tapping)
                         stroke.taps[btn]++;
                     blobs()[btn].holding = false;
-                    postInvalidate();
+                    removeCallbacks(redraw);
+                    postDelayed(redraw, draw_delay);
+                    //postInvalidateDelayed(draw_delay);
                 }
                 break; }
             case MotionEvent.ACTION_MOVE: {
-                if(!hidden() && anchorFinger >= 0) {
-                    anchorY((int)event.getY(anchorFinger) - pixels(BS));
-                    break;
-                }
                 for( int j = 0 ; j < event.getPointerCount() ; j++) {
                     final Blob btn = blobs()[touch2blob(event.getX(j), event.getY(j))]; // <-- going to
                     if(btn.bid() >= 0) {
@@ -373,12 +361,14 @@ public class ThumbkeyboardView extends View {
                                 int nx = btn.bid() % 4, ny = btn.bid() / 4;
                                 int dx = nx - ox, dy = ny - oy;
                                 Log.i(TAG, "swipe on " + bid + ": " + dx + "," + dy);
-                                int table[] = (dx == 0
+                                int[] table = (dx == 0
                                         ? (dy == 1 ? stroke.downs : stroke.ups)
                                         : (dx == 1 ? stroke.rights : stroke.lefts));
                                 table[bid]++;
                                 old.tapping = false; // this is no longer a tap
-                                postInvalidate();
+                                removeCallbacks(redraw);
+                                postDelayed(redraw, draw_delay);
+                                //postInvalidateDelayed(draw_delay);
                             }
                             fingerTouches[fid] = btn;
                         }
@@ -395,9 +385,9 @@ public class ThumbkeyboardView extends View {
                     Log.i(TAG, "" + pattern);
                     handlePattern(stroke);
                     flushStroke();
-                    postInvalidate();
+                    removeCallbacks(redraw);
+                    post(redraw); // done swiping, update view immediately
                 }
-                anchorFinger = -1;
                 show();
                 break; }
             default:
@@ -489,11 +479,11 @@ public class ThumbkeyboardView extends View {
 
             final boolean show_labels_maybe = true;
             final boolean show_labels = Ime.config.showLabelsAlways ? true : show_labels_maybe;
-            bs[i].draw(canvas, any, show_labels
+            bs[i].draw(canvas, show_labels
                     ? (token == null ? "" : prettify(token))
                     : "");
 
-            if(i == 2 && token == null) {
+            if(false && i == 2 && token == null) { // nevermind that dumb thing
                 final Paint red = new Paint();
                 red.setStyle(Paint.Style.STROKE);
                 red.setStrokeWidth(pixels(3));
@@ -507,21 +497,19 @@ public class ThumbkeyboardView extends View {
     // describe a token to the user (lower case letter? special command?).
     // we can make this as pretty as we want.
     private String prettify(final String token) {
-        if("key SPACE".equals(token)) return "␣";
-        if("repeat".equals(token)) return "↺";
-        if("key DEL".equals(token)) return "⇐";
-        if("key ENTER".equals(token)) return "⏎";
-        if("key DPAD_LEFT".equals(token)) return "←";
-        if("key DPAD_UP".equals(token)) return "↑";
-        if("key DPAD_RIGHT".equals(token)) return "→";
-        if("key DPAD_DOWN".equals(token)) return "↓";
-        if(token.startsWith("key ")) {
-            final String key = token.substring(4);
+        if("repress".equals(token)) return "↺";
+        if(":space".equals(token)) return "␣";
+        if(":backspace".equals(token)) return "⇐";
+        if(":enter".equals(token)) return "⏎";
+        if(":dpad_left".equals(token)) return "←";
+        if(":dpad_up".equals(token)) return "↑";
+        if(":dpad_right".equals(token)) return "→";
+        if(":dpad_down".equals(token)) return "↓";
+        if(token.startsWith(":")) {
+            final String key = token.substring(1);
             return key.length() == 1
                     ? (modShift() ? key.toUpperCase() : key.toLowerCase()) // eg "key S"
                     : key; // eg "key DEL"
-        } else if(token.startsWith("input ")) {
-            return token.substring(6);
         }
         return token; // eg "input å"
     }
