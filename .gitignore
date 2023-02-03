@@ -1,0 +1,5 @@
+/app/build/
+.virtfs_metadata/
+/.gradle/
+/.idea/
+/local.properties
